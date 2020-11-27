@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.4.0]
+
+-   Some workflows require different actions for different packages. Most of this can be codified into config. However there are cases where you may need to run a command for a dynamic set of packages.
+    -   [2748d90](https://www.github.com/jbolda/covector/commit/2748d90cfe2dbe94050ccc85e932aff4260627d4) feat: filter pkgs ([#128](https://www.github.com/jbolda/covector/pull/128)) on 2020-11-26
+
 ## [0.3.1]
 
 -   The command sequence was piping to the return correctly, but in publish, we didn't properly concat the text. Fix that.

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0]
+
+-   Add extra outputs for which packages published and a list of packages. This is useful for chaining runs of the action together.
+    -   [7d3b0d6](https://www.github.com/jbolda/covector/commit/7d3b0d66d5ae1e826595535904513656a41cfac0) feat: add action output to better show which packages published ([#130](https://www.github.com/jbolda/covector/pull/130)) on 2020-11-26
+-   Some workflows require different actions for different packages. Most of this can be codified into config. However there are cases where you may need to run a command for a dynamic set of packages.
+    -   [2748d90](https://www.github.com/jbolda/covector/commit/2748d90cfe2dbe94050ccc85e932aff4260627d4) feat: filter pkgs ([#128](https://www.github.com/jbolda/covector/pull/128)) on 2020-11-26
+
 ## [0.2.6]
 
 -   The command sequence was piping to the return correctly, but in publish, we didn't properly concat the text. Fix that.

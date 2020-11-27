@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.2.0]
+
+-   Stream command output instead of waiting for completion. This is particularly helpful when a command hangs unexpectedly (such as when it asks for input in CI).
+    -   [d8cfcda](https://www.github.com/jbolda/covector/commit/d8cfcdac6ef972d466acb5da3d2329426b4bd2d9) stream command output through new @effection/node version ([#124](https://www.github.com/jbolda/covector/pull/124)) on 2020-11-23
+
 ## [0.1.0]
 
 -   Allow multiple publish sequences. Any command beginning with `publish` will invoke the related `getPublishedVersion`, e.g. `publishNPM` would look for and check `getPublishedVersionNPM`. This allows separation of concerns and re-run-ability for multiple deploy targets.

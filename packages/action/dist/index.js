@@ -64,7 +64,56 @@ exports.fs = fs;
 /***/ }),
 /* 2 */,
 /* 3 */,
-/* 4 */,
+/* 4 */
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+const stripAnsi = __webpack_require__(598);
+const isFullwidthCodePoint = __webpack_require__(759);
+const emojiRegex = __webpack_require__(439);
+
+const stringWidth = string => {
+	string = string.replace(emojiRegex(), '  ');
+
+	if (typeof string !== 'string' || string.length === 0) {
+		return 0;
+	}
+
+	string = stripAnsi(string);
+
+	let width = 0;
+
+	for (let i = 0; i < string.length; i++) {
+		const code = string.codePointAt(i);
+
+		// Ignore control characters
+		if (code <= 0x1F || (code >= 0x7F && code <= 0x9F)) {
+			continue;
+		}
+
+		// Ignore combining characters
+		if (code >= 0x300 && code <= 0x36F) {
+			continue;
+		}
+
+		// Surrogates
+		if (code > 0xFFFF) {
+			i++;
+		}
+
+		width += isFullwidthCodePoint(code) ? 2 : 1;
+	}
+
+	return width;
+};
+
+module.exports = stringWidth;
+// TODO: remove this in the next major version
+module.exports.default = stringWidth;
+
+
+/***/ }),
 /* 5 */,
 /* 6 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
@@ -405,7 +454,7 @@ module.exports = Comparator
 
 const {re, t} = __webpack_require__(629)
 const cmp = __webpack_require__(299)
-const debug = __webpack_require__(940)
+const debug = __webpack_require__(957)
 const SemVer = __webpack_require__(840)
 const Range = __webpack_require__(46)
 
@@ -748,7 +797,7 @@ const path = __webpack_require__(622);
 const yerror_1 = __webpack_require__(946);
 const decamelize = __webpack_require__(597);
 const setBlocking = __webpack_require__(411);
-const stringWidth = __webpack_require__(624);
+const stringWidth = __webpack_require__(4);
 function usage(yargs, y18n) {
     const __ = y18n.__;
     const self = {};
@@ -903,7 +952,7 @@ function usage(yargs, y18n) {
             return acc;
         }, {}));
         const theWrap = getWrap();
-        const ui = __webpack_require__(369)({
+        const ui = __webpack_require__(183)({
             width: theWrap,
             wrap: !!theWrap
         });
@@ -1383,11 +1432,7 @@ const Endpoints = {
     unstarRepoForAuthenticatedUser: ["DELETE /user/starred/{owner}/{repo}"]
   },
   apps: {
-    addRepoToInstallation: ["PUT /user/installations/{installation_id}/repositories/{repository_id}", {
-      mediaType: {
-        previews: ["machine-man"]
-      }
-    }],
+    addRepoToInstallation: ["PUT /user/installations/{installation_id}/repositories/{repository_id}"],
     checkToken: ["POST /applications/{client_id}/token"],
     createContentAttachment: ["POST /content_references/{content_reference_id}/attachments", {
       mediaType: {
@@ -1395,81 +1440,29 @@ const Endpoints = {
       }
     }],
     createFromManifest: ["POST /app-manifests/{code}/conversions"],
-    createInstallationAccessToken: ["POST /app/installations/{installation_id}/access_tokens", {
-      mediaType: {
-        previews: ["machine-man"]
-      }
-    }],
+    createInstallationAccessToken: ["POST /app/installations/{installation_id}/access_tokens"],
     deleteAuthorization: ["DELETE /applications/{client_id}/grant"],
-    deleteInstallation: ["DELETE /app/installations/{installation_id}", {
-      mediaType: {
-        previews: ["machine-man"]
-      }
-    }],
+    deleteInstallation: ["DELETE /app/installations/{installation_id}"],
     deleteToken: ["DELETE /applications/{client_id}/token"],
-    getAuthenticated: ["GET /app", {
-      mediaType: {
-        previews: ["machine-man"]
-      }
-    }],
-    getBySlug: ["GET /apps/{app_slug}", {
-      mediaType: {
-        previews: ["machine-man"]
-      }
-    }],
-    getInstallation: ["GET /app/installations/{installation_id}", {
-      mediaType: {
-        previews: ["machine-man"]
-      }
-    }],
-    getOrgInstallation: ["GET /orgs/{org}/installation", {
-      mediaType: {
-        previews: ["machine-man"]
-      }
-    }],
-    getRepoInstallation: ["GET /repos/{owner}/{repo}/installation", {
-      mediaType: {
-        previews: ["machine-man"]
-      }
-    }],
+    getAuthenticated: ["GET /app"],
+    getBySlug: ["GET /apps/{app_slug}"],
+    getInstallation: ["GET /app/installations/{installation_id}"],
+    getOrgInstallation: ["GET /orgs/{org}/installation"],
+    getRepoInstallation: ["GET /repos/{owner}/{repo}/installation"],
     getSubscriptionPlanForAccount: ["GET /marketplace_listing/accounts/{account_id}"],
     getSubscriptionPlanForAccountStubbed: ["GET /marketplace_listing/stubbed/accounts/{account_id}"],
-    getUserInstallation: ["GET /users/{username}/installation", {
-      mediaType: {
-        previews: ["machine-man"]
-      }
-    }],
+    getUserInstallation: ["GET /users/{username}/installation"],
     listAccountsForPlan: ["GET /marketplace_listing/plans/{plan_id}/accounts"],
     listAccountsForPlanStubbed: ["GET /marketplace_listing/stubbed/plans/{plan_id}/accounts"],
-    listInstallationReposForAuthenticatedUser: ["GET /user/installations/{installation_id}/repositories", {
-      mediaType: {
-        previews: ["machine-man"]
-      }
-    }],
-    listInstallations: ["GET /app/installations", {
-      mediaType: {
-        previews: ["machine-man"]
-      }
-    }],
-    listInstallationsForAuthenticatedUser: ["GET /user/installations", {
-      mediaType: {
-        previews: ["machine-man"]
-      }
-    }],
+    listInstallationReposForAuthenticatedUser: ["GET /user/installations/{installation_id}/repositories"],
+    listInstallations: ["GET /app/installations"],
+    listInstallationsForAuthenticatedUser: ["GET /user/installations"],
     listPlans: ["GET /marketplace_listing/plans"],
     listPlansStubbed: ["GET /marketplace_listing/stubbed/plans"],
-    listReposAccessibleToInstallation: ["GET /installation/repositories", {
-      mediaType: {
-        previews: ["machine-man"]
-      }
-    }],
+    listReposAccessibleToInstallation: ["GET /installation/repositories"],
     listSubscriptionsForAuthenticatedUser: ["GET /user/marketplace_purchases"],
     listSubscriptionsForAuthenticatedUserStubbed: ["GET /user/marketplace_purchases/stubbed"],
-    removeRepoFromInstallation: ["DELETE /user/installations/{installation_id}/repositories/{repository_id}", {
-      mediaType: {
-        previews: ["machine-man"]
-      }
-    }],
+    removeRepoFromInstallation: ["DELETE /user/installations/{installation_id}/repositories/{repository_id}"],
     resetToken: ["PATCH /applications/{client_id}/token"],
     revokeInstallationAccessToken: ["DELETE /installation/token"],
     suspendInstallation: ["PUT /app/installations/{installation_id}/suspended"],
@@ -1541,8 +1534,15 @@ const Endpoints = {
     }]
   },
   codeScanning: {
-    getAlert: ["GET /repos/{owner}/{repo}/code-scanning/alerts/{alert_id}"],
-    listAlertsForRepo: ["GET /repos/{owner}/{repo}/code-scanning/alerts"]
+    getAlert: ["GET /repos/{owner}/{repo}/code-scanning/alerts/{alert_number}", {}, {
+      renamedParameters: {
+        alert_id: "alert_number"
+      }
+    }],
+    listAlertsForRepo: ["GET /repos/{owner}/{repo}/code-scanning/alerts"],
+    listRecentAnalyses: ["GET /repos/{owner}/{repo}/code-scanning/analyses"],
+    updateAlert: ["PATCH /repos/{owner}/{repo}/code-scanning/alerts/{alert_number}"],
+    uploadSarif: ["POST /repos/{owner}/{repo}/code-scanning/sarifs"]
   },
   codesOfConduct: {
     getAllCodesOfConduct: ["GET /codes_of_conduct", {
@@ -1748,7 +1748,7 @@ const Endpoints = {
         previews: ["wyandotte"]
       }
     }],
-    listReposForUser: ["GET /user/{migration_id}/repositories", {
+    listReposForUser: ["GET /user/migrations/{migration_id}/repositories", {
       mediaType: {
         previews: ["wyandotte"]
       }
@@ -1784,11 +1784,7 @@ const Endpoints = {
     getMembershipForUser: ["GET /orgs/{org}/memberships/{username}"],
     getWebhook: ["GET /orgs/{org}/hooks/{hook_id}"],
     list: ["GET /organizations"],
-    listAppInstallations: ["GET /orgs/{org}/installations", {
-      mediaType: {
-        previews: ["machine-man"]
-      }
-    }],
+    listAppInstallations: ["GET /orgs/{org}/installations"],
     listBlockedUsers: ["GET /orgs/{org}/blocks"],
     listForAuthenticatedUser: ["GET /user/orgs"],
     listForUser: ["GET /users/{username}/orgs"],
@@ -2401,7 +2397,7 @@ const Endpoints = {
   }
 };
 
-const VERSION = "4.1.0";
+const VERSION = "4.2.1";
 
 function endpointsToMethods(octokit, endpointsMap) {
   const newMethods = {};
@@ -2515,7 +2511,7 @@ exports.restEndpointMethods = restEndpointMethods;
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
-var n=__webpack_require__(700);function r(n){return function(t){if("object"==typeof t&&"object"==typeof n){var e=t;return Object.entries(n).every((function(n){var t=n[0];return r(n[1])(e[t])}))}return t===n}}var t=Symbol.for("Symbol.subscription");function*e(n,r){for(var t=yield o(n);;){var e=yield t.next();if(e.done)return e.value;yield r(e.value)}}var i={from:function(n){return new u(n)}},u=function(){function n(n){this.source=n}var i=n.prototype;return i[t]=function(){return o(this.source)},i.map=function(n){return this.chain((function(r){return function(t){return e(r,(function*(r){t(n(r))}))}}))},i.filter=function(n){return this.chain((function(r){return function(t){return e(r,(function*(r){n(r)&&t(r)}))}}))},i.match=function(n){return this.filter(r(n))},i.chain=function(r){return new n(a(r(this.source)))},i.forEach=function(n){return e(this.source,n)},i.first=function*(){var n=yield o(this.source),r=yield n.next();return r.done?void 0:r.value},n}();function o(n){return n[t]?n[t]():n}var c={next:function(){throw new Error("dummy")}},s=function(){function t(n){this.subscription=n}t.of=function*(r){var e=new t(c);return yield n.resource(e,(function*(){e.subscription=yield o(r),yield}))};var e=t.prototype;return e.filter=function(n){var r=this.subscription;return new t({next:function*(){for(;;){var t=yield r.next();if(t.done)return t;if(n(t.value))return t}}})},e.match=function(n){return this.filter(r(n))},e.map=function(n){var r=this.subscription;return new t({next:function*(){for(;;){var t=yield r.next();return t.done?t:{done:!1,value:n(t.value)}}}})},e.first=function*(){var n=yield this.subscription.next();return n.done?void 0:n.value},e.expect=function*(){var n=yield this.subscription.next();if(n.done)throw new Error("expected subscription to contain a value");return n.value},e.forEach=function*(n){for(;;){var r=yield this.subscription.next();if(r.done)return r.value;yield n(r.value)}},e.next=function(){return this.subscription.next()},t}(),f=function(){var n=this;this.waiters=[],this.signal=function(r){var t=n.waiters.pop();t&&t(r)},this.wait=function(){return new Promise((function(r){return n.waiters.push(r)}))}};function a(r){return function*(){var t=[],e=new f,i=function(n){t.push({done:!1,value:n}),e.signal()};return yield n.resource(new s({next:function(){try{var n=e.wait();return t.length>0&&e.signal(),Promise.resolve(n.then((function(){return t.shift()})))}catch(n){return Promise.reject(n)}}}),(function*(){try{var n=yield r((function(n){return i(n)}));t.push({done:!0,value:n}),e.signal()}finally{i=function(n){throw function(n){var r=new Error("tried to publish a value: "+n+" on an already finished subscription");return r.name="TypeError",r}(n)}}}))}}exports.ChainableSubscription=s,exports.Subscribable=i,exports.SymbolSubscribable=t,exports.createSubscription=a,exports.forEach=e,exports.subscribe=function*(n){return yield s.of(n)};
+var n=__webpack_require__(700),r=Symbol.for("Symbol.subscription"),t={next:function(){throw new Error("dummy")}},e=function(){function e(n){this.subscription=n}e.of=function*(i){var u=new e(t);return yield n.resource(u,(function*(){u.subscription=yield function(n){return n[r]?n[r]():n}(i),yield}))},e.wrap=function*(r,i){var u=new e(t);return yield n.resource(u,(function*(){var n=yield r;u.subscription=i(n),yield}))};var i=e.prototype;return i.filter=function(n){var r=this.subscription;return new e({next:function*(){for(;;){var t=yield r.next();if(t.done)return t;if(n(t.value))return t}}})},i.match=function(n){return this.filter(function n(r){return function(t){if("object"==typeof t&&"object"==typeof r){var e=t;return Object.entries(r).every((function(r){var t=r[0];return n(r[1])(e[t])}))}return t===r}}(n))},i.map=function(n){var r=this.subscription;return new e({next:function*(){for(;;){var t=yield r.next();return t.done?t:{done:!1,value:n(t.value)}}}})},i.first=function*(){var n=yield this.subscription.next();return n.done?void 0:n.value},i.expect=function*(){var n=yield this.subscription.next();if(n.done)throw new Error("expected subscription to contain a value");return n.value},i.forEach=function*(n){for(;;){var r=yield this.subscription.next();if(r.done)return r.value;yield n(r.value)}},i.next=function(){return this.subscription.next()},e}();function i(n){var t;return Object.assign(n,((t={})[r]=function*(){return yield n},t.filter=function(r){return i((function*(){return yield e.wrap(n,(function(n){return n.filter(r)}))}))},t.match=function(r){return i((function*(){return yield e.wrap(n,(function(n){return n.match(r)}))}))},t.map=function(r){return i((function*(){return yield e.wrap(n,(function(n){return n.map(r)}))}))},t.first=function*(){return yield(yield n).first()},t.expect=function*(){return yield(yield n).expect()},t.forEach=function*(r){return yield(yield n).forEach(r)},t.next=function*(){return yield(yield n).next()},t))}var u=function(){var n=this;this.waiters=[],this.signal=function(r){var t=n.waiters.pop();t&&t(r)},this.wait=function(){return new Promise((function(r){return n.waiters.push(r)}))}};function o(n){return i((function*(){return yield e.of(n)}))}function c(n,r){var t=function(){try{throw new Error("trace")}catch(r){var e=r.stack.split("\n").slice(3,4),i=e[0];console.warn(n,"\n"+i)}t=r;for(var u=arguments.length,o=new Array(u),c=0;c<u;c++)o[c]=arguments[c];return r.call.apply(r,[this].concat(o))};return function(){for(var n,r=arguments.length,e=new Array(r),i=0;i<r;i++)e[i]=arguments[i];return(n=t).call.apply(n,[this].concat(e))}}var a={from:c("`Subscribable.from(source)` is deprecated, use `subscribe(source).map(...)` instead",(function(n){return o(n)}))},s=c("`forEach(source, ...)` is deprecated, use `subscribe(source).forEach(...)` instead",(function*(n,r){return yield o(n).forEach(r)}));exports.ChainableSubscription=e,exports.Subscribable=a,exports.SymbolSubscribable=r,exports.createSubscription=function(r){return i((function*(){var t=[],i=new u,o=function(n){t.push({done:!1,value:n}),i.signal()};return yield n.resource(new e({next:function(){try{var n=i.wait();return t.length>0&&i.signal(),Promise.resolve(n.then((function(){return t.shift()})))}catch(n){return Promise.reject(n)}}}),(function*(){try{var n=yield r((function(n){return o(n)}));t.push({done:!0,value:n}),i.signal()}finally{o=function(n){throw function(n){var r=new Error("tried to publish a value: "+n+" on an already finished subscription");return r.name="TypeError",r}(n)}}}))}))},exports.forEach=s,exports.subscribe=o;
 //# sourceMappingURL=subscription.cjs.production.min.js.map
 
 
@@ -2647,7 +2643,32 @@ function locate(value, fromIndex) {
 /***/ }),
 /* 35 */,
 /* 36 */,
-/* 37 */,
+/* 37 */
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+const shebangRegex = __webpack_require__(720);
+
+module.exports = (string = '') => {
+	const match = string.match(shebangRegex);
+
+	if (!match) {
+		return null;
+	}
+
+	const [path, argument] = match[0].replace(/#! ?/, '').split(' ');
+	const binary = path.split('/').pop();
+
+	if (binary === 'env') {
+		return argument;
+	}
+
+	return argument ? `${binary} ${argument}` : binary;
+};
+
+
+/***/ }),
 /* 38 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
@@ -2919,7 +2940,7 @@ class Range {
 module.exports = Range
 
 const Comparator = __webpack_require__(9)
-const debug = __webpack_require__(940)
+const debug = __webpack_require__(957)
 const SemVer = __webpack_require__(840)
 const {
   re,
@@ -3400,7 +3421,7 @@ module.exports = gte
 "use strict";
 
 
-var repeat = __webpack_require__(360)
+var repeat = __webpack_require__(342)
 
 module.exports = strong
 
@@ -3423,7 +3444,7 @@ function strong(node) {
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
-var e=__webpack_require__(700),r=__webpack_require__(910),o=__webpack_require__(129);function*t(e,o,t=[]){try{yield r.throwOnErrorEvent(e);let[n]=yield r.once(e,"exit");if(0!==n)throw new Error(`'${(o+t.join(" ")).trim()}' exited with non-zero exit code`)}finally{try{process.kill(-e.pid,"SIGTERM")}catch(e){}}}exports.ChildProcess={__proto__:null,spawn:function*(r,n,s){let i=o.spawn(r,n||[],Object.assign({},s,{detached:!0}));return yield e.resource(i,t(i,r,n))},fork:function*(r,n,s){let i=o.fork(r,n,Object.assign({},s,{detached:!0}));return yield e.resource(i,t(i,r,n))}},exports.main=function(r){return e.main(({context:e,spawn:o})=>{o((function*(){let o=()=>{e.halt()},t=()=>console.debug(e.toString());try{return process.on("SIGINT",o),process.on("SIGTERM",o),process.on("SIGUSR1",t),yield r}catch(e){console.error(e),process.exit(-1)}finally{process.off("SIGINT",o),process.off("SIGTERM",o),process.off("SIGUSR1",t)}}))})};
+var e=__webpack_require__(700),n=__webpack_require__(624),r=__webpack_require__(846),t=__webpack_require__(910),o=__webpack_require__(129),s=__webpack_require__(568),i=__webpack_require__(87),c=__webpack_require__(435),l=__webpack_require__(818);class a extends Error{constructor(e={}){super(e.message||"error"),this.options=e,this.name="EffectionMainError"}}function d(){return(d=Object.assign||function(e){for(var n=1;n<arguments.length;n++){var r=arguments[n];for(var t in r)Object.prototype.hasOwnProperty.call(r,t)&&(e[t]=r[t])}return e}).apply(this,arguments)}function u(e){var n;let{options:r}=e;return[e.code?"code: "+e.code:null,e.signal?"signal: "+e.signal:null,"env: "+JSON.stringify(r.env||{}),r.shell?"shell: "+r.shell:null,r.cwd?"cwd: "+r.cwd:null,`$ ${e.command} ${null===(n=r.arguments)||void 0===n?void 0:n.join(" ")}`.trim(),e.tail.join("")].filter(e=>!!e).join("\n")}function f(){let e=()=>{},n=()=>{},r=new Promise((r,t)=>{e=r,n=t});return{resolve:e,reject:n,promise:r}}function p(a,p={}){let[h,...w]=n.split(a),y=d({},p,{arguments:w.concat(p.arguments||[])});return"win32"===i.platform()?function*(n,o){let i=new r.Channel,a=new r.Channel,d=new r.Channel,p=[],h=f();function w(e){p.length<100&&p.push(e)}function*y(){let e=yield h.promise;if("status"===e.type){let[r,t]=e.value;return{command:n,options:o,code:r,signal:t,tail:p}}throw e.value}let m=c.spawn(n,o.arguments||[],{detached:!1,shell:!1,stdio:"pipe",windowsHide:!0,env:o.env,cwd:o.cwd}),{pid:E}=m;return yield e.resource({pid:E,stdin:i,stdout:a,stderr:d,join:y,expect:function*(){let e=yield y();if(0!=e.code){let n=new Error(u(e));throw n.name="ExecError",n}return e}},(function*(){let n=e=>h.resolve({type:"error",value:e});try{m.on("error",n),yield e.spawn(t.on(m.stdout,"data").forEach((function*([e]){w(e),a.send(e)}))),yield e.spawn(t.on(m.stderr,"data").forEach((function*([e]){w(e),d.send(e)}))),yield e.spawn(s.subscribe(i).forEach((function*(e){m.stdin.write(e)})));let r=yield t.once(m,"exit");h.resolve({type:"status",value:r})}finally{if(a.close(),d.close(),E){l.ctrlc(E);let e=m.stdin;if(e.writable)try{e.write("Y\n")}catch(e){}e.end()}}}))}(h,y):function*(n,i){let c=new r.Channel,l=new r.Channel,a=new r.Channel,d=[],p=f();function h(e){d.length<100&&d.push(e)}function*w(){let e=yield p.promise;if("status"===e.type){let[r,t]=e.value;return{command:n,options:i,code:r,signal:t,tail:d}}throw e.value}let y=o.spawn(n,i.arguments||[],{detached:!0,shell:i.shell,env:i.env,cwd:i.cwd}),{pid:m}=y;return yield e.resource({pid:m,stdin:c,stdout:l,stderr:a,join:w,expect:function*(){let e=yield w();if(0!=e.code){let n=new Error(u(e));throw n.name="ExecError",n}return e}},(function*(){let n=e=>p.resolve({type:"error",value:e});try{y.on("error",n),yield e.spawn(t.on(y.stdout,"data").forEach((function*([e]){h(e),l.send(e)}))),yield e.spawn(t.on(y.stderr,"data").forEach((function*([e]){h(e),a.send(e)}))),yield e.spawn(s.subscribe(c).forEach((function*(e){y.stdin.write(e)})));let r=yield t.once(y,"exit");p.resolve({type:"status",value:r})}finally{l.close(),a.close(),y.off("error",n);try{process.kill(-y.pid,"SIGTERM")}catch(e){}}}))}(h,y)}function h(e,n){let r=function(...t){try{throw new Error("trace")}catch(n){let[r]=n.stack.split("\n").slice(3,4);console.warn(e,"\n"+r)}return r=n,n.call(this,...t)};return function(...e){return r.call(this,...e)}}function*w(e,n,r=[]){try{yield t.throwOnErrorEvent(e);let[o]=yield t.once(e,"exit");if(0!==o)throw new Error(`'${(n+r.join(" ")).trim()}' exited with non-zero exit code`)}finally{try{process.kill(-e.pid,"SIGTERM")}catch(e){}}}exports.ChildProcess={__proto__:null,spawn:h("ChildProcess.spawn() in @effection/node is deprecated. Use exec() or daemon() for fine motor control of external processes",(function*(n,r,t){let s=o.spawn(n,r||[],Object.assign({},t,{detached:!0}));return yield e.resource(s,w(s,n,r))})),fork:h("ChildProcess.fork() in @effection/node is deprecated. Use exec() or daemon() for fine motor control of external processes",(function*(n,r,t){let s=o.fork(n,r,Object.assign({},t,{detached:!0}));return yield e.resource(s,w(s,n,r))}))},exports.MainError=a,exports.daemon=function*(n,t={}){let o=new r.Channel,i=new r.Channel,c=new r.Channel;return yield e.resource({stdin:o,stdout:i,stderr:c},(function*(){let r=yield p(n,t);yield e.spawn(s.subscribe(r.stdout).forEach((function*(e){i.send(e)}))),yield e.spawn(s.subscribe(r.stderr).forEach((function*(e){c.send(e)}))),yield e.spawn(s.subscribe(o).forEach((function*(e){r.stdin.send(e)})));let l=yield r.join(),a=new Error("daemon process quit unexpectedly\n"+u(l));throw a.name="DaemonExitError",a}))},exports.exec=p,exports.main=function(n){return e.main(({context:e,spawn:r})=>{r((function*(){let r=()=>{e.halt()},t=()=>console.debug(e.toString());try{return process.on("SIGINT",r),process.on("SIGTERM",r),process.on("SIGUSR1",t),yield n}catch(e){"EffectionMainError"===e.name?(e.options.message&&console.error(e.options.message),e.options.verbose&&console.error(e.stack),process.exit(e.options.exitCode||-1)):(console.error(e),process.exit(1))}finally{process.off("SIGINT",r),process.off("SIGTERM",r),process.off("SIGUSR1",t)}}))})},exports.stringifyExitStatus=u;
 //# sourceMappingURL=node.cjs.production.min.js.map
 
 
@@ -3436,7 +3457,7 @@ var e=__webpack_require__(700),r=__webpack_require__(910),o=__webpack_require__(
 
 "use strict";
 
-const stringWidth = __webpack_require__(624);
+const stringWidth = __webpack_require__(4);
 const stripAnsi = __webpack_require__(598);
 const ansiStyles = __webpack_require__(285);
 
@@ -3636,18 +3657,18 @@ function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'defau
 
 var endpoint = __webpack_require__(662);
 var universalUserAgent = __webpack_require__(523);
-var isPlainObject = _interopDefault(__webpack_require__(188));
+var isPlainObject = __webpack_require__(746);
 var nodeFetch = _interopDefault(__webpack_require__(850));
 var requestError = __webpack_require__(207);
 
-const VERSION = "5.4.6";
+const VERSION = "5.4.10";
 
 function getBufferResponse(response) {
   return response.arrayBuffer();
 }
 
 function fetchWrapper(requestOptions) {
-  if (isPlainObject(requestOptions.body) || Array.isArray(requestOptions.body)) {
+  if (isPlainObject.isPlainObject(requestOptions.body) || Array.isArray(requestOptions.body)) {
     requestOptions.body = JSON.stringify(requestOptions.body);
   }
 
@@ -3780,25 +3801,18 @@ exports.request = request;
 
 /***/ }),
 /* 60 */
-/***/ (function(module) {
+/***/ (function(module, __unusedexports, __webpack_require__) {
 
-"use strict";
-
-
-const pathKey = (options = {}) => {
-	const environment = options.env || process.env;
-	const platform = options.platform || process.platform;
-
-	if (platform !== 'win32') {
-		return 'PATH';
-	}
-
-	return Object.keys(environment).reverse().find(key => key.toUpperCase() === 'PATH') || 'Path';
-};
-
-module.exports = pathKey;
-// TODO: Remove this for the next major release
-module.exports.default = pathKey;
+const Range = __webpack_require__(46)
+const satisfies = (version, range, options) => {
+  try {
+    range = new Range(range, options)
+  } catch (er) {
+    return false
+  }
+  return range.test(version)
+}
+module.exports = satisfies
 
 
 /***/ }),
@@ -4293,60 +4307,1264 @@ const writeAllChangelogs = ({ writtenChanges }) => {
 /***/ }),
 /* 73 */,
 /* 74 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
-
-const { PassThrough } = __webpack_require__(413);
-
-module.exports = function (/*streams...*/) {
-  var sources = []
-  var output  = new PassThrough({objectMode: true})
-
-  output.setMaxListeners(0)
-
-  output.add = add
-  output.isEmpty = isEmpty
-
-  output.on('unpipe', remove)
-
-  Array.prototype.slice.call(arguments).forEach(add)
-
-  return output
-
-  function add (source) {
-    if (Array.isArray(source)) {
-      source.forEach(add)
-      return this
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isYargsInstance = exports.rebase = exports.Yargs = void 0;
+const command_1 = __webpack_require__(359);
+const common_types_1 = __webpack_require__(45);
+const yerror_1 = __webpack_require__(946);
+const usage_1 = __webpack_require__(21);
+const argsert_1 = __webpack_require__(997);
+const fs = __webpack_require__(747);
+const completion_1 = __webpack_require__(792);
+const path = __webpack_require__(622);
+const validation_1 = __webpack_require__(655);
+const obj_filter_1 = __webpack_require__(816);
+const apply_extends_1 = __webpack_require__(820);
+const middleware_1 = __webpack_require__(233);
+const processArgv = __webpack_require__(381);
+const is_promise_1 = __webpack_require__(91);
+const Parser = __webpack_require__(453);
+const y18nFactory = __webpack_require__(407);
+const setBlocking = __webpack_require__(411);
+const findUp = __webpack_require__(239);
+const requireMainFilename = __webpack_require__(630);
+function Yargs(processArgs = [], cwd = process.cwd(), parentRequire = require) {
+    const self = {};
+    let command;
+    let completion = null;
+    let groups = {};
+    const globalMiddleware = [];
+    let output = '';
+    const preservedGroups = {};
+    let usage;
+    let validation;
+    let handlerFinishCommand = null;
+    const y18n = y18nFactory({
+        directory: __webpack_require__.ab + "locales",
+        updateFiles: false
+    });
+    self.middleware = middleware_1.globalMiddlewareFactory(globalMiddleware, self);
+    self.scriptName = function (scriptName) {
+        self.customScriptName = true;
+        self.$0 = scriptName;
+        return self;
+    };
+    // ignore the node bin, specify this in your
+    // bin file with #!/usr/bin/env node
+    let default$0;
+    if (/\b(node|iojs|electron)(\.exe)?$/.test(process.argv[0])) {
+        default$0 = process.argv.slice(1, 2);
     }
-
-    sources.push(source);
-    source.once('end', remove.bind(null, source))
-    source.once('error', output.emit.bind(output, 'error'))
-    source.pipe(output, {end: false})
-    return this
-  }
-
-  function isEmpty () {
-    return sources.length == 0;
-  }
-
-  function remove (source) {
-    sources = sources.filter(function (it) { return it !== source })
-    if (!sources.length && output.readable) { output.end() }
-  }
+    else {
+        default$0 = process.argv.slice(0, 1);
+    }
+    self.$0 = default$0
+        .map(x => {
+        const b = rebase(cwd, x);
+        return x.match(/^(\/|([a-zA-Z]:)?\\)/) && b.length < x.length ? b : x;
+    })
+        .join(' ').trim();
+    if (process.env._ !== undefined && processArgv.getProcessArgvBin() === process.env._) {
+        self.$0 = process.env._.replace(`${path.dirname(process.execPath)}/`, '');
+    }
+    // use context object to keep track of resets, subcommand execution, etc
+    // submodules should modify and check the state of context as necessary
+    const context = { resets: -1, commands: [], fullCommands: [], files: [] };
+    self.getContext = () => context;
+    // puts yargs back into an initial state. any keys
+    // that have been set to "global" will not be reset
+    // by this action.
+    let options;
+    self.resetOptions = self.reset = function resetOptions(aliases = {}) {
+        context.resets++;
+        options = options || {};
+        // put yargs back into an initial state, this
+        // logic is used to build a nested command
+        // hierarchy.
+        const tmpOptions = {};
+        tmpOptions.local = options.local ? options.local : [];
+        tmpOptions.configObjects = options.configObjects ? options.configObjects : [];
+        // if a key has been explicitly set as local,
+        // we should reset it before passing options to command.
+        const localLookup = {};
+        tmpOptions.local.forEach((l) => {
+            localLookup[l] = true;
+            (aliases[l] || []).forEach((a) => {
+                localLookup[a] = true;
+            });
+        });
+        // add all groups not set to local to preserved groups
+        Object.assign(preservedGroups, Object.keys(groups).reduce((acc, groupName) => {
+            const keys = groups[groupName].filter(key => !(key in localLookup));
+            if (keys.length > 0) {
+                acc[groupName] = keys;
+            }
+            return acc;
+        }, {}));
+        // groups can now be reset
+        groups = {};
+        const arrayOptions = [
+            'array', 'boolean', 'string', 'skipValidation',
+            'count', 'normalize', 'number',
+            'hiddenOptions'
+        ];
+        const objectOptions = [
+            'narg', 'key', 'alias', 'default', 'defaultDescription',
+            'config', 'choices', 'demandedOptions', 'demandedCommands', 'coerce',
+            'deprecatedOptions'
+        ];
+        arrayOptions.forEach(k => {
+            tmpOptions[k] = (options[k] || []).filter(k => !localLookup[k]);
+        });
+        objectOptions.forEach((k) => {
+            tmpOptions[k] = obj_filter_1.objFilter(options[k], k => !localLookup[k]);
+        });
+        tmpOptions.envPrefix = options.envPrefix;
+        options = tmpOptions;
+        // if this is the first time being executed, create
+        // instances of all our helpers -- otherwise just reset.
+        usage = usage ? usage.reset(localLookup) : usage_1.usage(self, y18n);
+        validation = validation ? validation.reset(localLookup) : validation_1.validation(self, usage, y18n);
+        command = command ? command.reset() : command_1.command(self, usage, validation, globalMiddleware);
+        if (!completion)
+            completion = completion_1.completion(self, usage, command);
+        completionCommand = null;
+        output = '';
+        exitError = null;
+        hasOutput = false;
+        self.parsed = false;
+        return self;
+    };
+    self.resetOptions();
+    // temporary hack: allow "freezing" of reset-able state for parse(msg, cb)
+    const frozens = [];
+    function freeze() {
+        frozens.push({
+            options,
+            configObjects: options.configObjects.slice(0),
+            exitProcess,
+            groups,
+            strict,
+            strictCommands,
+            completionCommand,
+            output,
+            exitError,
+            hasOutput,
+            parsed: self.parsed,
+            parseFn,
+            parseContext,
+            handlerFinishCommand
+        });
+        usage.freeze();
+        validation.freeze();
+        command.freeze();
+    }
+    function unfreeze() {
+        const frozen = frozens.pop();
+        common_types_1.assertNotStrictEqual(frozen, undefined);
+        let configObjects;
+        ({
+            options,
+            configObjects,
+            exitProcess,
+            groups,
+            output,
+            exitError,
+            hasOutput,
+            parsed: self.parsed,
+            strict,
+            strictCommands,
+            completionCommand,
+            parseFn,
+            parseContext,
+            handlerFinishCommand
+        } = frozen);
+        options.configObjects = configObjects;
+        usage.unfreeze();
+        validation.unfreeze();
+        command.unfreeze();
+    }
+    self.boolean = function (keys) {
+        argsert_1.argsert('<array|string>', [keys], arguments.length);
+        populateParserHintArray('boolean', keys);
+        return self;
+    };
+    self.array = function (keys) {
+        argsert_1.argsert('<array|string>', [keys], arguments.length);
+        populateParserHintArray('array', keys);
+        return self;
+    };
+    self.number = function (keys) {
+        argsert_1.argsert('<array|string>', [keys], arguments.length);
+        populateParserHintArray('number', keys);
+        return self;
+    };
+    self.normalize = function (keys) {
+        argsert_1.argsert('<array|string>', [keys], arguments.length);
+        populateParserHintArray('normalize', keys);
+        return self;
+    };
+    self.count = function (keys) {
+        argsert_1.argsert('<array|string>', [keys], arguments.length);
+        populateParserHintArray('count', keys);
+        return self;
+    };
+    self.string = function (keys) {
+        argsert_1.argsert('<array|string>', [keys], arguments.length);
+        populateParserHintArray('string', keys);
+        return self;
+    };
+    self.requiresArg = function (keys) {
+        // the 2nd paramter [number] in the argsert the assertion is mandatory
+        // as populateParserHintSingleValueDictionary recursively calls requiresArg
+        // with Nan as a 2nd parameter, although we ignore it
+        argsert_1.argsert('<array|string|object> [number]', [keys], arguments.length);
+        // If someone configures nargs at the same time as requiresArg,
+        // nargs should take precedent,
+        // see: https://github.com/yargs/yargs/pull/1572
+        // TODO: make this work with aliases, using a check similar to
+        // checkAllAliases() in yargs-parser.
+        if (typeof keys === 'string' && options.narg[keys]) {
+            return self;
+        }
+        else {
+            populateParserHintSingleValueDictionary(self.requiresArg, 'narg', keys, NaN);
+        }
+        return self;
+    };
+    self.skipValidation = function (keys) {
+        argsert_1.argsert('<array|string>', [keys], arguments.length);
+        populateParserHintArray('skipValidation', keys);
+        return self;
+    };
+    function populateParserHintArray(type, keys) {
+        keys = [].concat(keys);
+        keys.forEach((key) => {
+            key = sanitizeKey(key);
+            options[type].push(key);
+        });
+    }
+    self.nargs = function (key, value) {
+        argsert_1.argsert('<string|object|array> [number]', [key, value], arguments.length);
+        populateParserHintSingleValueDictionary(self.nargs, 'narg', key, value);
+        return self;
+    };
+    self.choices = function (key, value) {
+        argsert_1.argsert('<object|string|array> [string|array]', [key, value], arguments.length);
+        populateParserHintArrayDictionary(self.choices, 'choices', key, value);
+        return self;
+    };
+    self.alias = function (key, value) {
+        argsert_1.argsert('<object|string|array> [string|array]', [key, value], arguments.length);
+        populateParserHintArrayDictionary(self.alias, 'alias', key, value);
+        return self;
+    };
+    // TODO: actually deprecate self.defaults.
+    self.default = self.defaults = function (key, value, defaultDescription) {
+        argsert_1.argsert('<object|string|array> [*] [string]', [key, value, defaultDescription], arguments.length);
+        if (defaultDescription) {
+            common_types_1.assertSingleKey(key);
+            options.defaultDescription[key] = defaultDescription;
+        }
+        if (typeof value === 'function') {
+            common_types_1.assertSingleKey(key);
+            if (!options.defaultDescription[key])
+                options.defaultDescription[key] = usage.functionDescription(value);
+            value = value.call();
+        }
+        populateParserHintSingleValueDictionary(self.default, 'default', key, value);
+        return self;
+    };
+    self.describe = function (key, desc) {
+        argsert_1.argsert('<object|string|array> [string]', [key, desc], arguments.length);
+        setKey(key, true);
+        usage.describe(key, desc);
+        return self;
+    };
+    function setKey(key, set) {
+        populateParserHintSingleValueDictionary(setKey, 'key', key, set);
+        return self;
+    }
+    function demandOption(keys, msg) {
+        argsert_1.argsert('<object|string|array> [string]', [keys, msg], arguments.length);
+        populateParserHintSingleValueDictionary(self.demandOption, 'demandedOptions', keys, msg);
+        return self;
+    }
+    self.demandOption = demandOption;
+    self.coerce = function (keys, value) {
+        argsert_1.argsert('<object|string|array> [function]', [keys, value], arguments.length);
+        populateParserHintSingleValueDictionary(self.coerce, 'coerce', keys, value);
+        return self;
+    };
+    function populateParserHintSingleValueDictionary(builder, type, key, value) {
+        populateParserHintDictionary(builder, type, key, value, (type, key, value) => {
+            options[type][key] = value;
+        });
+    }
+    function populateParserHintArrayDictionary(builder, type, key, value) {
+        populateParserHintDictionary(builder, type, key, value, (type, key, value) => {
+            options[type][key] = (options[type][key] || []).concat(value);
+        });
+    }
+    function populateParserHintDictionary(builder, type, key, value, singleKeyHandler) {
+        if (Array.isArray(key)) {
+            // an array of keys with one value ['x', 'y', 'z'], function parse () {}
+            key.forEach((k) => {
+                builder(k, value);
+            });
+        }
+        else if (((key) => typeof key === 'object')(key)) {
+            // an object of key value pairs: {'x': parse () {}, 'y': parse() {}}
+            for (const k of common_types_1.objectKeys(key)) {
+                builder(k, key[k]);
+            }
+        }
+        else {
+            singleKeyHandler(type, sanitizeKey(key), value);
+        }
+    }
+    function sanitizeKey(key) {
+        if (key === '__proto__')
+            return '___proto___';
+        return key;
+    }
+    function deleteFromParserHintObject(optionKey) {
+        // delete from all parsing hints:
+        // boolean, array, key, alias, etc.
+        common_types_1.objectKeys(options).forEach((hintKey) => {
+            // configObjects is not a parsing hint array
+            if (((key) => key === 'configObjects')(hintKey))
+                return;
+            const hint = options[hintKey];
+            if (Array.isArray(hint)) {
+                if (~hint.indexOf(optionKey))
+                    hint.splice(hint.indexOf(optionKey), 1);
+            }
+            else if (typeof hint === 'object') {
+                delete hint[optionKey];
+            }
+        });
+        // now delete the description from usage.js.
+        delete usage.getDescriptions()[optionKey];
+    }
+    self.config = function config(key = 'config', msg, parseFn) {
+        argsert_1.argsert('[object|string] [string|function] [function]', [key, msg, parseFn], arguments.length);
+        // allow a config object to be provided directly.
+        if ((typeof key === 'object') && !Array.isArray(key)) {
+            key = apply_extends_1.applyExtends(key, cwd, self.getParserConfiguration()['deep-merge-config']);
+            options.configObjects = (options.configObjects || []).concat(key);
+            return self;
+        }
+        // allow for a custom parsing function.
+        if (typeof msg === 'function') {
+            parseFn = msg;
+            msg = undefined;
+        }
+        self.describe(key, msg || usage.deferY18nLookup('Path to JSON config file'));
+        (Array.isArray(key) ? key : [key]).forEach((k) => {
+            options.config[k] = parseFn || true;
+        });
+        return self;
+    };
+    self.example = function (cmd, description) {
+        argsert_1.argsert('<string|array> [string]', [cmd, description], arguments.length);
+        if (Array.isArray(cmd)) {
+            cmd.forEach((exampleParams) => self.example(...exampleParams));
+        }
+        else {
+            usage.example(cmd, description);
+        }
+        return self;
+    };
+    self.command = function (cmd, description, builder, handler, middlewares, deprecated) {
+        argsert_1.argsert('<string|array|object> [string|boolean] [function|object] [function] [array] [boolean|string]', [cmd, description, builder, handler, middlewares, deprecated], arguments.length);
+        command.addHandler(cmd, description, builder, handler, middlewares, deprecated);
+        return self;
+    };
+    self.commandDir = function (dir, opts) {
+        argsert_1.argsert('<string> [object]', [dir, opts], arguments.length);
+        const req = parentRequire || require;
+        command.addDirectory(dir, self.getContext(), req, __webpack_require__(732)(), opts);
+        return self;
+    };
+    // TODO: deprecate self.demand in favor of
+    // .demandCommand() .demandOption().
+    self.demand = self.required = self.require = function demand(keys, max, msg) {
+        // you can optionally provide a 'max' key,
+        // which will raise an exception if too many '_'
+        // options are provided.
+        if (Array.isArray(max)) {
+            max.forEach((key) => {
+                common_types_1.assertNotStrictEqual(msg, true);
+                demandOption(key, msg);
+            });
+            max = Infinity;
+        }
+        else if (typeof max !== 'number') {
+            msg = max;
+            max = Infinity;
+        }
+        if (typeof keys === 'number') {
+            common_types_1.assertNotStrictEqual(msg, true);
+            self.demandCommand(keys, max, msg, msg);
+        }
+        else if (Array.isArray(keys)) {
+            keys.forEach((key) => {
+                common_types_1.assertNotStrictEqual(msg, true);
+                demandOption(key, msg);
+            });
+        }
+        else {
+            if (typeof msg === 'string') {
+                demandOption(keys, msg);
+            }
+            else if (msg === true || typeof msg === 'undefined') {
+                demandOption(keys);
+            }
+        }
+        return self;
+    };
+    self.demandCommand = function demandCommand(min = 1, max, minMsg, maxMsg) {
+        argsert_1.argsert('[number] [number|string] [string|null|undefined] [string|null|undefined]', [min, max, minMsg, maxMsg], arguments.length);
+        if (typeof max !== 'number') {
+            minMsg = max;
+            max = Infinity;
+        }
+        self.global('_', false);
+        options.demandedCommands._ = {
+            min,
+            max,
+            minMsg,
+            maxMsg
+        };
+        return self;
+    };
+    self.getDemandedOptions = () => {
+        argsert_1.argsert([], 0);
+        return options.demandedOptions;
+    };
+    self.getDemandedCommands = () => {
+        argsert_1.argsert([], 0);
+        return options.demandedCommands;
+    };
+    self.deprecateOption = function deprecateOption(option, message) {
+        argsert_1.argsert('<string> [string|boolean]', [option, message], arguments.length);
+        options.deprecatedOptions[option] = message;
+        return self;
+    };
+    self.getDeprecatedOptions = () => {
+        argsert_1.argsert([], 0);
+        return options.deprecatedOptions;
+    };
+    self.implies = function (key, value) {
+        argsert_1.argsert('<string|object> [number|string|array]', [key, value], arguments.length);
+        validation.implies(key, value);
+        return self;
+    };
+    self.conflicts = function (key1, key2) {
+        argsert_1.argsert('<string|object> [string|array]', [key1, key2], arguments.length);
+        validation.conflicts(key1, key2);
+        return self;
+    };
+    self.usage = function (msg, description, builder, handler) {
+        argsert_1.argsert('<string|null|undefined> [string|boolean] [function|object] [function]', [msg, description, builder, handler], arguments.length);
+        if (description !== undefined) {
+            common_types_1.assertNotStrictEqual(msg, null);
+            // .usage() can be used as an alias for defining
+            // a default command.
+            if ((msg || '').match(/^\$0( |$)/)) {
+                return self.command(msg, description, builder, handler);
+            }
+            else {
+                throw new yerror_1.YError('.usage() description must start with $0 if being used as alias for .command()');
+            }
+        }
+        else {
+            usage.usage(msg);
+            return self;
+        }
+    };
+    self.epilogue = self.epilog = function (msg) {
+        argsert_1.argsert('<string>', [msg], arguments.length);
+        usage.epilog(msg);
+        return self;
+    };
+    self.fail = function (f) {
+        argsert_1.argsert('<function>', [f], arguments.length);
+        usage.failFn(f);
+        return self;
+    };
+    self.onFinishCommand = function (f) {
+        argsert_1.argsert('<function>', [f], arguments.length);
+        handlerFinishCommand = f;
+        return self;
+    };
+    self.getHandlerFinishCommand = () => handlerFinishCommand;
+    self.check = function (f, _global) {
+        argsert_1.argsert('<function> [boolean]', [f, _global], arguments.length);
+        validation.check(f, _global !== false);
+        return self;
+    };
+    self.global = function global(globals, global) {
+        argsert_1.argsert('<string|array> [boolean]', [globals, global], arguments.length);
+        globals = [].concat(globals);
+        if (global !== false) {
+            options.local = options.local.filter(l => globals.indexOf(l) === -1);
+        }
+        else {
+            globals.forEach((g) => {
+                if (options.local.indexOf(g) === -1)
+                    options.local.push(g);
+            });
+        }
+        return self;
+    };
+    self.pkgConf = function pkgConf(key, rootPath) {
+        argsert_1.argsert('<string> [string]', [key, rootPath], arguments.length);
+        let conf = null;
+        // prefer cwd to require-main-filename in this method
+        // since we're looking for e.g. "nyc" config in nyc consumer
+        // rather than "yargs" config in nyc (where nyc is the main filename)
+        const obj = pkgUp(rootPath || cwd);
+        // If an object exists in the key, add it to options.configObjects
+        if (obj[key] && typeof obj[key] === 'object') {
+            conf = apply_extends_1.applyExtends(obj[key], rootPath || cwd, self.getParserConfiguration()['deep-merge-config']);
+            options.configObjects = (options.configObjects || []).concat(conf);
+        }
+        return self;
+    };
+    const pkgs = {};
+    function pkgUp(rootPath) {
+        const npath = rootPath || '*';
+        if (pkgs[npath])
+            return pkgs[npath];
+        let obj = {};
+        try {
+            let startDir = rootPath || requireMainFilename(parentRequire);
+            // When called in an environment that lacks require.main.filename, such as a jest test runner,
+            // startDir is already process.cwd(), and should not be shortened.
+            // Whether or not it is _actually_ a directory (e.g., extensionless bin) is irrelevant, find-up handles it.
+            if (!rootPath && path.extname(startDir)) {
+                startDir = path.dirname(startDir);
+            }
+            const pkgJsonPath = findUp.sync('package.json', {
+                cwd: startDir
+            });
+            common_types_1.assertNotStrictEqual(pkgJsonPath, undefined);
+            obj = JSON.parse(fs.readFileSync(pkgJsonPath).toString());
+        }
+        catch (noop) { }
+        pkgs[npath] = obj || {};
+        return pkgs[npath];
+    }
+    let parseFn = null;
+    let parseContext = null;
+    self.parse = function parse(args, shortCircuit, _parseFn) {
+        argsert_1.argsert('[string|array] [function|boolean|object] [function]', [args, shortCircuit, _parseFn], arguments.length);
+        freeze();
+        if (typeof args === 'undefined') {
+            const argv = self._parseArgs(processArgs);
+            const tmpParsed = self.parsed;
+            unfreeze();
+            // TODO: remove this compatibility hack when we release yargs@15.x:
+            self.parsed = tmpParsed;
+            return argv;
+        }
+        // a context object can optionally be provided, this allows
+        // additional information to be passed to a command handler.
+        if (typeof shortCircuit === 'object') {
+            parseContext = shortCircuit;
+            shortCircuit = _parseFn;
+        }
+        // by providing a function as a second argument to
+        // parse you can capture output that would otherwise
+        // default to printing to stdout/stderr.
+        if (typeof shortCircuit === 'function') {
+            parseFn = shortCircuit;
+            shortCircuit = false;
+        }
+        // completion short-circuits the parsing process,
+        // skipping validation, etc.
+        if (!shortCircuit)
+            processArgs = args;
+        if (parseFn)
+            exitProcess = false;
+        const parsed = self._parseArgs(args, !!shortCircuit);
+        completion.setParsed(self.parsed);
+        if (parseFn)
+            parseFn(exitError, parsed, output);
+        unfreeze();
+        return parsed;
+    };
+    self._getParseContext = () => parseContext || {};
+    self._hasParseCallback = () => !!parseFn;
+    self.option = self.options = function option(key, opt) {
+        argsert_1.argsert('<string|object> [object]', [key, opt], arguments.length);
+        if (typeof key === 'object') {
+            Object.keys(key).forEach((k) => {
+                self.options(k, key[k]);
+            });
+        }
+        else {
+            if (typeof opt !== 'object') {
+                opt = {};
+            }
+            options.key[key] = true; // track manually set keys.
+            if (opt.alias)
+                self.alias(key, opt.alias);
+            const deprecate = opt.deprecate || opt.deprecated;
+            if (deprecate) {
+                self.deprecateOption(key, deprecate);
+            }
+            const demand = opt.demand || opt.required || opt.require;
+            // A required option can be specified via "demand: true".
+            if (demand) {
+                self.demand(key, demand);
+            }
+            if (opt.demandOption) {
+                self.demandOption(key, typeof opt.demandOption === 'string' ? opt.demandOption : undefined);
+            }
+            if (opt.conflicts) {
+                self.conflicts(key, opt.conflicts);
+            }
+            if ('default' in opt) {
+                self.default(key, opt.default);
+            }
+            if (opt.implies !== undefined) {
+                self.implies(key, opt.implies);
+            }
+            if (opt.nargs !== undefined) {
+                self.nargs(key, opt.nargs);
+            }
+            if (opt.config) {
+                self.config(key, opt.configParser);
+            }
+            if (opt.normalize) {
+                self.normalize(key);
+            }
+            if (opt.choices) {
+                self.choices(key, opt.choices);
+            }
+            if (opt.coerce) {
+                self.coerce(key, opt.coerce);
+            }
+            if (opt.group) {
+                self.group(key, opt.group);
+            }
+            if (opt.boolean || opt.type === 'boolean') {
+                self.boolean(key);
+                if (opt.alias)
+                    self.boolean(opt.alias);
+            }
+            if (opt.array || opt.type === 'array') {
+                self.array(key);
+                if (opt.alias)
+                    self.array(opt.alias);
+            }
+            if (opt.number || opt.type === 'number') {
+                self.number(key);
+                if (opt.alias)
+                    self.number(opt.alias);
+            }
+            if (opt.string || opt.type === 'string') {
+                self.string(key);
+                if (opt.alias)
+                    self.string(opt.alias);
+            }
+            if (opt.count || opt.type === 'count') {
+                self.count(key);
+            }
+            if (typeof opt.global === 'boolean') {
+                self.global(key, opt.global);
+            }
+            if (opt.defaultDescription) {
+                options.defaultDescription[key] = opt.defaultDescription;
+            }
+            if (opt.skipValidation) {
+                self.skipValidation(key);
+            }
+            const desc = opt.describe || opt.description || opt.desc;
+            self.describe(key, desc);
+            if (opt.hidden) {
+                self.hide(key);
+            }
+            if (opt.requiresArg) {
+                self.requiresArg(key);
+            }
+        }
+        return self;
+    };
+    self.getOptions = () => options;
+    self.positional = function (key, opts) {
+        argsert_1.argsert('<string> <object>', [key, opts], arguments.length);
+        if (context.resets === 0) {
+            throw new yerror_1.YError(".positional() can only be called in a command's builder function");
+        }
+        // .positional() only supports a subset of the configuration
+        // options available to .option().
+        const supportedOpts = ['default', 'defaultDescription', 'implies', 'normalize',
+            'choices', 'conflicts', 'coerce', 'type', 'describe',
+            'desc', 'description', 'alias'];
+        opts = obj_filter_1.objFilter(opts, (k, v) => {
+            let accept = supportedOpts.indexOf(k) !== -1;
+            // type can be one of string|number|boolean.
+            if (k === 'type' && ['string', 'number', 'boolean'].indexOf(v) === -1)
+                accept = false;
+            return accept;
+        });
+        // copy over any settings that can be inferred from the command string.
+        const fullCommand = context.fullCommands[context.fullCommands.length - 1];
+        const parseOptions = fullCommand ? command.cmdToParseOptions(fullCommand) : {
+            array: [],
+            alias: {},
+            default: {},
+            demand: {}
+        };
+        common_types_1.objectKeys(parseOptions).forEach((pk) => {
+            const parseOption = parseOptions[pk];
+            if (Array.isArray(parseOption)) {
+                if (parseOption.indexOf(key) !== -1)
+                    opts[pk] = true;
+            }
+            else {
+                if (parseOption[key] && !(pk in opts))
+                    opts[pk] = parseOption[key];
+            }
+        });
+        self.group(key, usage.getPositionalGroupName());
+        return self.option(key, opts);
+    };
+    self.group = function group(opts, groupName) {
+        argsert_1.argsert('<string|array> <string>', [opts, groupName], arguments.length);
+        const existing = preservedGroups[groupName] || groups[groupName];
+        if (preservedGroups[groupName]) {
+            // we now only need to track this group name in groups.
+            delete preservedGroups[groupName];
+        }
+        const seen = {};
+        groups[groupName] = (existing || []).concat(opts).filter((key) => {
+            if (seen[key])
+                return false;
+            return (seen[key] = true);
+        });
+        return self;
+    };
+    // combine explicit and preserved groups. explicit groups should be first
+    self.getGroups = () => Object.assign({}, groups, preservedGroups);
+    // as long as options.envPrefix is not undefined,
+    // parser will apply env vars matching prefix to argv
+    self.env = function (prefix) {
+        argsert_1.argsert('[string|boolean]', [prefix], arguments.length);
+        if (prefix === false)
+            delete options.envPrefix;
+        else
+            options.envPrefix = prefix || '';
+        return self;
+    };
+    self.wrap = function (cols) {
+        argsert_1.argsert('<number|null|undefined>', [cols], arguments.length);
+        usage.wrap(cols);
+        return self;
+    };
+    let strict = false;
+    self.strict = function (enabled) {
+        argsert_1.argsert('[boolean]', [enabled], arguments.length);
+        strict = enabled !== false;
+        return self;
+    };
+    self.getStrict = () => strict;
+    let strictCommands = false;
+    self.strictCommands = function (enabled) {
+        argsert_1.argsert('[boolean]', [enabled], arguments.length);
+        strictCommands = enabled !== false;
+        return self;
+    };
+    self.getStrictCommands = () => strictCommands;
+    let parserConfig = {};
+    self.parserConfiguration = function parserConfiguration(config) {
+        argsert_1.argsert('<object>', [config], arguments.length);
+        parserConfig = config;
+        return self;
+    };
+    self.getParserConfiguration = () => parserConfig;
+    self.showHelp = function (level) {
+        argsert_1.argsert('[string|function]', [level], arguments.length);
+        if (!self.parsed)
+            self._parseArgs(processArgs); // run parser, if it has not already been executed.
+        if (command.hasDefaultCommand()) {
+            context.resets++; // override the restriction on top-level positoinals.
+            command.runDefaultBuilderOn(self);
+        }
+        usage.showHelp(level);
+        return self;
+    };
+    let versionOpt = null;
+    self.version = function version(opt, msg, ver) {
+        const defaultVersionOpt = 'version';
+        argsert_1.argsert('[boolean|string] [string] [string]', [opt, msg, ver], arguments.length);
+        // nuke the key previously configured
+        // to return version #.
+        if (versionOpt) {
+            deleteFromParserHintObject(versionOpt);
+            usage.version(undefined);
+            versionOpt = null;
+        }
+        if (arguments.length === 0) {
+            ver = guessVersion();
+            opt = defaultVersionOpt;
+        }
+        else if (arguments.length === 1) {
+            if (opt === false) { // disable default 'version' key.
+                return self;
+            }
+            ver = opt;
+            opt = defaultVersionOpt;
+        }
+        else if (arguments.length === 2) {
+            ver = msg;
+            msg = undefined;
+        }
+        versionOpt = typeof opt === 'string' ? opt : defaultVersionOpt;
+        msg = msg || usage.deferY18nLookup('Show version number');
+        usage.version(ver || undefined);
+        self.boolean(versionOpt);
+        self.describe(versionOpt, msg);
+        return self;
+    };
+    function guessVersion() {
+        const obj = pkgUp();
+        return obj.version || 'unknown';
+    }
+    let helpOpt = null;
+    self.addHelpOpt = self.help = function addHelpOpt(opt, msg) {
+        const defaultHelpOpt = 'help';
+        argsert_1.argsert('[string|boolean] [string]', [opt, msg], arguments.length);
+        // nuke the key previously configured
+        // to return help.
+        if (helpOpt) {
+            deleteFromParserHintObject(helpOpt);
+            helpOpt = null;
+        }
+        if (arguments.length === 1) {
+            if (opt === false)
+                return self;
+        }
+        // use arguments, fallback to defaults for opt and msg
+        helpOpt = typeof opt === 'string' ? opt : defaultHelpOpt;
+        self.boolean(helpOpt);
+        self.describe(helpOpt, msg || usage.deferY18nLookup('Show help'));
+        return self;
+    };
+    const defaultShowHiddenOpt = 'show-hidden';
+    options.showHiddenOpt = defaultShowHiddenOpt;
+    self.addShowHiddenOpt = self.showHidden = function addShowHiddenOpt(opt, msg) {
+        argsert_1.argsert('[string|boolean] [string]', [opt, msg], arguments.length);
+        if (arguments.length === 1) {
+            if (opt === false)
+                return self;
+        }
+        const showHiddenOpt = typeof opt === 'string' ? opt : defaultShowHiddenOpt;
+        self.boolean(showHiddenOpt);
+        self.describe(showHiddenOpt, msg || usage.deferY18nLookup('Show hidden options'));
+        options.showHiddenOpt = showHiddenOpt;
+        return self;
+    };
+    self.hide = function hide(key) {
+        argsert_1.argsert('<string>', [key], arguments.length);
+        options.hiddenOptions.push(key);
+        return self;
+    };
+    self.showHelpOnFail = function showHelpOnFail(enabled, message) {
+        argsert_1.argsert('[boolean|string] [string]', [enabled, message], arguments.length);
+        usage.showHelpOnFail(enabled, message);
+        return self;
+    };
+    var exitProcess = true;
+    self.exitProcess = function (enabled = true) {
+        argsert_1.argsert('[boolean]', [enabled], arguments.length);
+        exitProcess = enabled;
+        return self;
+    };
+    self.getExitProcess = () => exitProcess;
+    var completionCommand = null;
+    self.completion = function (cmd, desc, fn) {
+        argsert_1.argsert('[string] [string|boolean|function] [function]', [cmd, desc, fn], arguments.length);
+        // a function to execute when generating
+        // completions can be provided as the second
+        // or third argument to completion.
+        if (typeof desc === 'function') {
+            fn = desc;
+            desc = undefined;
+        }
+        // register the completion command.
+        completionCommand = cmd || completionCommand || 'completion';
+        if (!desc && desc !== false) {
+            desc = 'generate completion script';
+        }
+        self.command(completionCommand, desc);
+        // a function can be provided
+        if (fn)
+            completion.registerFunction(fn);
+        return self;
+    };
+    self.showCompletionScript = function ($0, cmd) {
+        argsert_1.argsert('[string] [string]', [$0, cmd], arguments.length);
+        $0 = $0 || self.$0;
+        _logger.log(completion.generateCompletionScript($0, cmd || completionCommand || 'completion'));
+        return self;
+    };
+    self.getCompletion = function (args, done) {
+        argsert_1.argsert('<array> <function>', [args, done], arguments.length);
+        completion.getCompletion(args, done);
+    };
+    self.locale = function (locale) {
+        argsert_1.argsert('[string]', [locale], arguments.length);
+        if (!locale) {
+            guessLocale();
+            return y18n.getLocale();
+        }
+        detectLocale = false;
+        y18n.setLocale(locale);
+        return self;
+    };
+    self.updateStrings = self.updateLocale = function (obj) {
+        argsert_1.argsert('<object>', [obj], arguments.length);
+        detectLocale = false;
+        y18n.updateLocale(obj);
+        return self;
+    };
+    let detectLocale = true;
+    self.detectLocale = function (detect) {
+        argsert_1.argsert('<boolean>', [detect], arguments.length);
+        detectLocale = detect;
+        return self;
+    };
+    self.getDetectLocale = () => detectLocale;
+    var hasOutput = false;
+    var exitError = null;
+    // maybe exit, always capture
+    // context about why we wanted to exit.
+    self.exit = (code, err) => {
+        hasOutput = true;
+        exitError = err;
+        if (exitProcess)
+            process.exit(code);
+    };
+    // we use a custom logger that buffers output,
+    // so that we can print to non-CLIs, e.g., chat-bots.
+    const _logger = {
+        log(...args) {
+            if (!self._hasParseCallback())
+                console.log(...args);
+            hasOutput = true;
+            if (output.length)
+                output += '\n';
+            output += args.join(' ');
+        },
+        error(...args) {
+            if (!self._hasParseCallback())
+                console.error(...args);
+            hasOutput = true;
+            if (output.length)
+                output += '\n';
+            output += args.join(' ');
+        }
+    };
+    self._getLoggerInstance = () => _logger;
+    // has yargs output an error our help
+    // message in the current execution context.
+    self._hasOutput = () => hasOutput;
+    self._setHasOutput = () => {
+        hasOutput = true;
+    };
+    let recommendCommands;
+    self.recommendCommands = function (recommend = true) {
+        argsert_1.argsert('[boolean]', [recommend], arguments.length);
+        recommendCommands = recommend;
+        return self;
+    };
+    self.getUsageInstance = () => usage;
+    self.getValidationInstance = () => validation;
+    self.getCommandInstance = () => command;
+    self.terminalWidth = () => {
+        argsert_1.argsert([], 0);
+        return typeof process.stdout.columns !== 'undefined' ? process.stdout.columns : null;
+    };
+    Object.defineProperty(self, 'argv', {
+        get: () => self._parseArgs(processArgs),
+        enumerable: true
+    });
+    self._parseArgs = function parseArgs(args, shortCircuit, _calledFromCommand, commandIndex) {
+        let skipValidation = !!_calledFromCommand;
+        args = args || processArgs;
+        options.__ = y18n.__;
+        options.configuration = self.getParserConfiguration();
+        const populateDoubleDash = !!options.configuration['populate--'];
+        const config = Object.assign({}, options.configuration, {
+            'populate--': true
+        });
+        const parsed = Parser.detailed(args, Object.assign({}, options, {
+            configuration: config
+        }));
+        let argv = parsed.argv;
+        if (parseContext)
+            argv = Object.assign({}, argv, parseContext);
+        const aliases = parsed.aliases;
+        argv.$0 = self.$0;
+        self.parsed = parsed;
+        try {
+            guessLocale(); // guess locale lazily, so that it can be turned off in chain.
+            // while building up the argv object, there
+            // are two passes through the parser. If completion
+            // is being performed short-circuit on the first pass.
+            if (shortCircuit) {
+                return (populateDoubleDash || _calledFromCommand) ? argv : self._copyDoubleDash(argv);
+            }
+            // if there's a handler associated with a
+            // command defer processing to it.
+            if (helpOpt) {
+                // consider any multi-char helpOpt alias as a valid help command
+                // unless all helpOpt aliases are single-char
+                // note that parsed.aliases is a normalized bidirectional map :)
+                const helpCmds = [helpOpt]
+                    .concat(aliases[helpOpt] || [])
+                    .filter(k => k.length > 1);
+                // check if help should trigger and strip it from _.
+                if (~helpCmds.indexOf(argv._[argv._.length - 1])) {
+                    argv._.pop();
+                    argv[helpOpt] = true;
+                }
+            }
+            const handlerKeys = command.getCommands();
+            const requestCompletions = completion.completionKey in argv;
+            const skipRecommendation = argv[helpOpt] || requestCompletions;
+            const skipDefaultCommand = skipRecommendation && (handlerKeys.length > 1 || handlerKeys[0] !== '$0');
+            if (argv._.length) {
+                if (handlerKeys.length) {
+                    let firstUnknownCommand;
+                    for (let i = (commandIndex || 0), cmd; argv._[i] !== undefined; i++) {
+                        cmd = String(argv._[i]);
+                        if (~handlerKeys.indexOf(cmd) && cmd !== completionCommand) {
+                            // commands are executed using a recursive algorithm that executes
+                            // the deepest command first; we keep track of the position in the
+                            // argv._ array that is currently being executed.
+                            const innerArgv = command.runCommand(cmd, self, parsed, i + 1);
+                            return populateDoubleDash ? innerArgv : self._copyDoubleDash(innerArgv);
+                        }
+                        else if (!firstUnknownCommand && cmd !== completionCommand) {
+                            firstUnknownCommand = cmd;
+                            break;
+                        }
+                    }
+                    // run the default command, if defined
+                    if (command.hasDefaultCommand() && !skipDefaultCommand) {
+                        const innerArgv = command.runCommand(null, self, parsed);
+                        return populateDoubleDash ? innerArgv : self._copyDoubleDash(innerArgv);
+                    }
+                    // recommend a command if recommendCommands() has
+                    // been enabled, and no commands were found to execute
+                    if (recommendCommands && firstUnknownCommand && !skipRecommendation) {
+                        validation.recommendCommands(firstUnknownCommand, handlerKeys);
+                    }
+                }
+                // generate a completion script for adding to ~/.bashrc.
+                if (completionCommand && ~argv._.indexOf(completionCommand) && !requestCompletions) {
+                    if (exitProcess)
+                        setBlocking(true);
+                    self.showCompletionScript();
+                    self.exit(0);
+                }
+            }
+            else if (command.hasDefaultCommand() && !skipDefaultCommand) {
+                const innerArgv = command.runCommand(null, self, parsed);
+                return populateDoubleDash ? innerArgv : self._copyDoubleDash(innerArgv);
+            }
+            // we must run completions first, a user might
+            // want to complete the --help or --version option.
+            if (requestCompletions) {
+                if (exitProcess)
+                    setBlocking(true);
+                // we allow for asynchronous completions,
+                // e.g., loading in a list of commands from an API.
+                args = [].concat(args);
+                const completionArgs = args.slice(args.indexOf(`--${completion.completionKey}`) + 1);
+                completion.getCompletion(completionArgs, (completions) => {
+                    ;
+                    (completions || []).forEach((completion) => {
+                        _logger.log(completion);
+                    });
+                    self.exit(0);
+                });
+                return (populateDoubleDash || _calledFromCommand) ? argv : self._copyDoubleDash(argv);
+            }
+            // Handle 'help' and 'version' options
+            // if we haven't already output help!
+            if (!hasOutput) {
+                Object.keys(argv).forEach((key) => {
+                    if (key === helpOpt && argv[key]) {
+                        if (exitProcess)
+                            setBlocking(true);
+                        skipValidation = true;
+                        self.showHelp('log');
+                        self.exit(0);
+                    }
+                    else if (key === versionOpt && argv[key]) {
+                        if (exitProcess)
+                            setBlocking(true);
+                        skipValidation = true;
+                        usage.showVersion();
+                        self.exit(0);
+                    }
+                });
+            }
+            // Check if any of the options to skip validation were provided
+            if (!skipValidation && options.skipValidation.length > 0) {
+                skipValidation = Object.keys(argv).some(key => options.skipValidation.indexOf(key) >= 0 && argv[key] === true);
+            }
+            // If the help or version options where used and exitProcess is false,
+            // or if explicitly skipped, we won't run validations.
+            if (!skipValidation) {
+                if (parsed.error)
+                    throw new yerror_1.YError(parsed.error.message);
+                // if we're executed via bash completion, don't
+                // bother with validation.
+                if (!requestCompletions) {
+                    self._runValidation(argv, aliases, {}, parsed.error);
+                }
+            }
+        }
+        catch (err) {
+            if (err instanceof yerror_1.YError)
+                usage.fail(err.message, err);
+            else
+                throw err;
+        }
+        return (populateDoubleDash || _calledFromCommand) ? argv : self._copyDoubleDash(argv);
+    };
+    // to simplify the parsing of positionals in commands,
+    // we temporarily populate '--' rather than _, with arguments
+    // after the '--' directive. After the parse, we copy these back.
+    self._copyDoubleDash = function (argv) {
+        if (is_promise_1.isPromise(argv) || !argv._ || !argv['--'])
+            return argv;
+        argv._.push.apply(argv._, argv['--']);
+        // TODO(bcoe): refactor command parsing such that this delete is not
+        // necessary: https://github.com/yargs/yargs/issues/1482
+        try {
+            delete argv['--'];
+        }
+        catch (_err) { }
+        return argv;
+    };
+    self._runValidation = function runValidation(argv, aliases, positionalMap, parseErrors, isDefaultCommand = false) {
+        if (parseErrors)
+            throw new yerror_1.YError(parseErrors.message);
+        validation.nonOptionCount(argv);
+        validation.requiredArguments(argv);
+        let failedStrictCommands = false;
+        if (strictCommands) {
+            failedStrictCommands = validation.unknownCommands(argv);
+        }
+        if (strict && !failedStrictCommands) {
+            validation.unknownArguments(argv, aliases, positionalMap, isDefaultCommand);
+        }
+        validation.customChecks(argv, aliases);
+        validation.limitedChoices(argv);
+        validation.implications(argv);
+        validation.conflicting(argv);
+    };
+    function guessLocale() {
+        if (!detectLocale)
+            return;
+        const locale = process.env.LC_ALL || process.env.LC_MESSAGES || process.env.LANG || process.env.LANGUAGE || 'en_US';
+        self.locale(locale.replace(/[.:].*/, ''));
+    }
+    // an app should almost always have --version and --help,
+    // if you *really* want to disable this use .help(false)/.version(false).
+    self.help();
+    self.version();
+    return self;
 }
+exports.Yargs = Yargs;
+// rebase an absolute path to a relative one with respect to a base directory
+// exported for tests
+function rebase(base, dir) {
+    return path.relative(base, dir);
+}
+exports.rebase = rebase;
+function isYargsInstance(y) {
+    return !!y && (typeof y._parseArgs === 'function');
+}
+exports.isYargsInstance = isYargsInstance;
 
 
 /***/ }),
 /* 75 */,
 /* 76 */
-/***/ (function(module) {
+/***/ (function(module, __unusedexports, __webpack_require__) {
 
 "use strict";
 
-module.exports = /^#!(.*)/;
+
+const fill = __webpack_require__(939);
+const utils = __webpack_require__(49);
+
+const compile = (ast, options = {}) => {
+  let walk = (node, parent = {}) => {
+    let invalidBlock = utils.isInvalidBrace(parent);
+    let invalidNode = node.invalid === true && options.escapeInvalid === true;
+    let invalid = invalidBlock === true || invalidNode === true;
+    let prefix = options.escapeInvalid === true ? '\\' : '';
+    let output = '';
+
+    if (node.isOpen === true) {
+      return prefix + node.value;
+    }
+    if (node.isClose === true) {
+      return prefix + node.value;
+    }
+
+    if (node.type === 'open') {
+      return invalid ? (prefix + node.value) : '(';
+    }
+
+    if (node.type === 'close') {
+      return invalid ? (prefix + node.value) : ')';
+    }
+
+    if (node.type === 'comma') {
+      return node.prev.type === 'comma' ? '' : (invalid ? node.value : '|');
+    }
+
+    if (node.value) {
+      return node.value;
+    }
+
+    if (node.nodes && node.ranges > 0) {
+      let args = utils.reduce(node.nodes);
+      let range = fill(...args, { ...options, wrap: false, toRegex: true });
+
+      if (range.length !== 0) {
+        return args.length > 1 && range.length > 1 ? `(${range})` : range;
+      }
+    }
+
+    if (node.nodes) {
+      for (let child of node.nodes) {
+        output += walk(child, node);
+      }
+    }
+    return output;
+  };
+
+  return walk(ast);
+};
+
+module.exports = compile;
 
 
 /***/ }),
@@ -4380,125 +5598,7 @@ module.exports = patch
 
 
 /***/ }),
-/* 79 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-"use strict";
-
-const os = __webpack_require__(87);
-const onExit = __webpack_require__(145);
-
-const DEFAULT_FORCE_KILL_TIMEOUT = 1000 * 5;
-
-// Monkey-patches `childProcess.kill()` to add `forceKillAfterTimeout` behavior
-const spawnedKill = (kill, signal = 'SIGTERM', options = {}) => {
-	const killResult = kill(signal);
-	setKillTimeout(kill, signal, options, killResult);
-	return killResult;
-};
-
-const setKillTimeout = (kill, signal, options, killResult) => {
-	if (!shouldForceKill(signal, options, killResult)) {
-		return;
-	}
-
-	const timeout = getForceKillAfterTimeout(options);
-	const t = setTimeout(() => {
-		kill('SIGKILL');
-	}, timeout);
-
-	// Guarded because there's no `.unref()` when `execa` is used in the renderer
-	// process in Electron. This cannot be tested since we don't run tests in
-	// Electron.
-	// istanbul ignore else
-	if (t.unref) {
-		t.unref();
-	}
-};
-
-const shouldForceKill = (signal, {forceKillAfterTimeout}, killResult) => {
-	return isSigterm(signal) && forceKillAfterTimeout !== false && killResult;
-};
-
-const isSigterm = signal => {
-	return signal === os.constants.signals.SIGTERM ||
-		(typeof signal === 'string' && signal.toUpperCase() === 'SIGTERM');
-};
-
-const getForceKillAfterTimeout = ({forceKillAfterTimeout = true}) => {
-	if (forceKillAfterTimeout === true) {
-		return DEFAULT_FORCE_KILL_TIMEOUT;
-	}
-
-	if (!Number.isFinite(forceKillAfterTimeout) || forceKillAfterTimeout < 0) {
-		throw new TypeError(`Expected the \`forceKillAfterTimeout\` option to be a non-negative integer, got \`${forceKillAfterTimeout}\` (${typeof forceKillAfterTimeout})`);
-	}
-
-	return forceKillAfterTimeout;
-};
-
-// `childProcess.cancel()`
-const spawnedCancel = (spawned, context) => {
-	const killResult = spawned.kill();
-
-	if (killResult) {
-		context.isCanceled = true;
-	}
-};
-
-const timeoutKill = (spawned, signal, reject) => {
-	spawned.kill(signal);
-	reject(Object.assign(new Error('Timed out'), {timedOut: true, signal}));
-};
-
-// `timeout` option handling
-const setupTimeout = (spawned, {timeout, killSignal = 'SIGTERM'}, spawnedPromise) => {
-	if (timeout === 0 || timeout === undefined) {
-		return spawnedPromise;
-	}
-
-	if (!Number.isFinite(timeout) || timeout < 0) {
-		throw new TypeError(`Expected the \`timeout\` option to be a non-negative integer, got \`${timeout}\` (${typeof timeout})`);
-	}
-
-	let timeoutId;
-	const timeoutPromise = new Promise((resolve, reject) => {
-		timeoutId = setTimeout(() => {
-			timeoutKill(spawned, killSignal, reject);
-		}, timeout);
-	});
-
-	const safeSpawnedPromise = spawnedPromise.finally(() => {
-		clearTimeout(timeoutId);
-	});
-
-	return Promise.race([timeoutPromise, safeSpawnedPromise]);
-};
-
-// `cleanup` option handling
-const setExitHandler = async (spawned, {cleanup, detached}, timedPromise) => {
-	if (!cleanup || detached) {
-		return timedPromise;
-	}
-
-	const removeExitHandler = onExit(() => {
-		spawned.kill();
-	});
-
-	return timedPromise.finally(() => {
-		removeExitHandler();
-	});
-};
-
-module.exports = {
-	spawnedKill,
-	spawnedCancel,
-	setupTimeout,
-	setExitHandler
-};
-
-
-/***/ }),
+/* 79 */,
 /* 80 */,
 /* 81 */
 /***/ (function(module) {
@@ -4647,7 +5747,7 @@ var xtend = __webpack_require__(81)
 var encode = __webpack_require__(291)
 var defaults = __webpack_require__(730)
 var escapeFactory = __webpack_require__(567)
-var identity = __webpack_require__(491)
+var identity = __webpack_require__(948)
 
 module.exports = setOptions
 
@@ -5245,22 +6345,7 @@ module.exports = {
 
 
 /***/ }),
-/* 95 */
-/***/ (function(module) {
-
-"use strict";
-
-
-module.exports = tableCell
-
-var lineFeed = /\r?\n/g
-
-function tableCell(node) {
-  return this.all(node).join('').replace(lineFeed, ' ')
-}
-
-
-/***/ }),
+/* 95 */,
 /* 96 */
 /***/ (function(module) {
 
@@ -5397,9 +6482,23 @@ function imageReference(node) {
 
 
 var effection = __webpack_require__(700);
+var shellwords = __webpack_require__(624);
+var channel = __webpack_require__(846);
 var events = __webpack_require__(910);
 var childProcess = __webpack_require__(129);
+var subscription = __webpack_require__(568);
+var os = __webpack_require__(87);
+var crossSpawn = __webpack_require__(435);
+var ctrlcWindows = __webpack_require__(818);
 
+class MainError extends Error {
+  constructor(options = {}) {
+    super(options.message || "error");
+    this.options = options;
+    this.name = "EffectionMainError";
+  }
+
+}
 function main(operation) {
   return effection.main(({
     context: mainContext,
@@ -5418,8 +6517,20 @@ function main(operation) {
         process.on('SIGUSR1', debug);
         return yield operation;
       } catch (e) {
-        console.error(e);
-        process.exit(-1);
+        if (e.name === 'EffectionMainError') {
+          if (e.options.message) {
+            console.error(e.options.message);
+          }
+
+          if (e.options.verbose) {
+            console.error(e.stack);
+          }
+
+          process.exit(e.options.exitCode || -1);
+        } else {
+          console.error(e);
+          process.exit(1);
+        }
       } finally {
         process.off('SIGINT', interrupt);
         process.off('SIGTERM', interrupt);
@@ -5427,6 +6538,354 @@ function main(operation) {
       }
     });
   });
+}
+
+function _extends() {
+  _extends = Object.assign || function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+
+  return _extends.apply(this, arguments);
+}
+
+function stringifyExitStatus(status) {
+  var _options$arguments;
+
+  let {
+    options
+  } = status;
+  let code = status.code ? `code: ${status.code}` : null;
+  let signal = status.signal ? `signal: ${status.signal}` : null;
+  let env = `env: ${JSON.stringify(options.env || {})}`;
+  let shell = options.shell ? `shell: ${options.shell}` : null;
+  let cwd = options.cwd ? `cwd: ${options.cwd}` : null;
+  let command = `$ ${status.command} ${(_options$arguments = options.arguments) === null || _options$arguments === void 0 ? void 0 : _options$arguments.join(" ")}`.trim();
+  let tail = status.tail.join("");
+  return [code, signal, env, shell, cwd, command, tail].filter(item => !!item).join("\n");
+}
+
+function Deferred() {
+  let resolve = () => {
+    return;
+  };
+
+  let reject = () => {
+    return;
+  };
+
+  let promise = new Promise((_resolve, _reject) => {
+    resolve = _resolve;
+    reject = _reject;
+  });
+  return {
+    resolve,
+    reject,
+    promise
+  };
+}
+
+const createPosixProcess = function* (command, options) {
+  let stdin = new channel.Channel();
+  let stdout = new channel.Channel();
+  let stderr = new channel.Channel();
+  let tail = [];
+  let getResult = Deferred();
+
+  function addToTail(chunk) {
+    if (tail.length < 100) {
+      tail.push(chunk);
+    }
+  }
+
+  function* join() {
+    let result = yield getResult.promise;
+
+    if (result.type === 'status') {
+      let [code, signal] = result.value;
+      return {
+        command,
+        options,
+        code,
+        signal,
+        tail
+      };
+    } else {
+      throw result.value;
+    }
+  }
+
+  function* expect() {
+    let status = yield join();
+
+    if (status.code != 0) {
+      let error = new Error(stringifyExitStatus(status));
+      error.name = `ExecError`;
+      throw error;
+    } else {
+      return status;
+    }
+  } // Killing all child processes started by this command is surprisingly
+  // tricky. If a process spawns another processes and we kill the parent,
+  // then the child process is NOT automatically killed. Instead we're using
+  // the `detached` option to force the child into its own process group,
+  // which all of its children in turn will inherit. By sending the signal to
+  // `-pid` rather than `pid`, we are sending it to the entire process group
+  // instead. This will send the signal to all processes started by the child
+  // process.
+  //
+  // More information here: https://unix.stackexchange.com/questions/14815/process-descendants
+
+
+  let childProcess$1 = childProcess.spawn(command, options.arguments || [], {
+    detached: true,
+    shell: options.shell,
+    env: options.env,
+    cwd: options.cwd
+  });
+  let {
+    pid
+  } = childProcess$1;
+  return yield effection.resource({
+    pid,
+    stdin,
+    stdout,
+    stderr,
+    join,
+    expect
+  }, function* () {
+    let onError = value => getResult.resolve({
+      type: 'error',
+      value
+    });
+
+    try {
+      childProcess$1.on('error', onError);
+      yield effection.spawn(events.on(childProcess$1.stdout, 'data').forEach(function* ([data]) {
+        addToTail(data);
+        stdout.send(data);
+      }));
+      yield effection.spawn(events.on(childProcess$1.stderr, 'data').forEach(function* ([data]) {
+        addToTail(data);
+        stderr.send(data);
+      }));
+      yield effection.spawn(subscription.subscribe(stdin).forEach(function* (data) {
+        childProcess$1.stdin.write(data);
+      }));
+      let value = yield events.once(childProcess$1, 'exit');
+      getResult.resolve({
+        type: 'status',
+        value
+      });
+    } finally {
+      stdout.close();
+      stderr.close();
+      childProcess$1.off('error', onError);
+
+      try {
+        process.kill(-childProcess$1.pid, "SIGTERM");
+      } catch (e) {// do nothing, process is probably already dead
+      }
+    }
+  });
+};
+
+const createWin32Process = function* (command, options) {
+  let stdin = new channel.Channel();
+  let stdout = new channel.Channel();
+  let stderr = new channel.Channel();
+  let tail = [];
+  let getResult = Deferred();
+
+  function addToTail(chunk) {
+    if (tail.length < 100) {
+      tail.push(chunk);
+    }
+  }
+
+  function* join() {
+    let result = yield getResult.promise;
+
+    if (result.type === "status") {
+      let [code, signal] = result.value;
+      return {
+        command,
+        options,
+        code,
+        signal,
+        tail
+      };
+    } else {
+      throw result.value;
+    }
+  }
+
+  function* expect() {
+    let status = yield join();
+
+    if (status.code != 0) {
+      let error = new Error(stringifyExitStatus(status));
+      error.name = `ExecError`;
+      throw error;
+    } else {
+      return status;
+    }
+  }
+
+  let childProcess = crossSpawn.spawn(command, options.arguments || [], {
+    // We lose exit information and events if this is detached in windows
+    // and it opens a window in windows+powershell.
+    detached: false,
+    // When windows shell is true, it runs with cmd.exe by default, but
+    // node has trouble with PATHEXT and exe. It can't run exe directly for example.
+    // `cross-spawn` handles running it with the shell in windows if needed.
+    // Neither mac nor linux need shell and we run it detached.
+    shell: false,
+    // With stdio as pipe, windows gets stuck where neither the child nor the
+    // parent wants to close the stream, so we call it ourselves in the exit event.
+    stdio: "pipe",
+    // Hide the child window so that killing it will not block the parent
+    // with a Terminate Batch Process (Y/n)
+    windowsHide: true,
+    env: options.env,
+    cwd: options.cwd
+  });
+  let {
+    pid
+  } = childProcess;
+  return yield effection.resource({
+    pid,
+    stdin,
+    stdout,
+    stderr,
+    join,
+    expect
+  }, function* () {
+    let onError = value => getResult.resolve({
+      type: "error",
+      value
+    });
+
+    try {
+      childProcess.on("error", onError);
+      yield effection.spawn(events.on(childProcess.stdout, "data").forEach(function* ([data]) {
+        addToTail(data);
+        stdout.send(data);
+      }));
+      yield effection.spawn(events.on(childProcess.stderr, "data").forEach(function* ([data]) {
+        addToTail(data);
+        stderr.send(data);
+      }));
+      yield effection.spawn(subscription.subscribe(stdin).forEach(function* (data) {
+        childProcess.stdin.write(data);
+      }));
+      let value = yield events.once(childProcess, "exit");
+      getResult.resolve({
+        type: "status",
+        value
+      });
+    } finally {
+      stdout.close();
+      stderr.close();
+
+      if (pid) {
+        ctrlcWindows.ctrlc(pid);
+        let stdin = childProcess.stdin;
+
+        if (stdin.writable) {
+          try {
+            //Terminate batch process (Y/N)
+            stdin.write("Y\n");
+          } catch (_err) {
+            /* not much we can do here */
+          }
+        }
+
+        stdin.end();
+      }
+    }
+  });
+};
+const isWin32 = () => os.platform() === "win32";
+
+/**
+ * Execute `command` with `options`. You should use this operation for processes
+ * that have a finite lifetime and on which you may wish to synchronize on the
+ * exit status. If you want to start a process like a server that spins up and runs
+ * forever, consider using `daemon()`
+ */
+
+function exec(command, options = {}) {
+  let [cmd, ...args] = shellwords.split(command);
+
+  let opts = _extends({}, options, {
+    arguments: args.concat(options.arguments || [])
+  });
+
+  if (isWin32()) {
+    return createWin32Process(cmd, opts);
+  } else {
+    return createPosixProcess(cmd, opts);
+  }
+}
+
+/**
+ * Start a long-running process, like a web server that run perpetually.
+ * Daemon operations are expected to run forever, and if they exit pre-maturely
+ * before the operation containing them passes out of scope it raises an error.
+ */
+
+function* daemon(command, options = {}) {
+  let stdin = new channel.Channel();
+  let stdout = new channel.Channel();
+  let stderr = new channel.Channel();
+  return yield effection.resource({
+    stdin,
+    stdout,
+    stderr
+  }, function* () {
+    let process = yield exec(command, options);
+    yield effection.spawn(subscription.subscribe(process.stdout).forEach(function* (chunk) {
+      stdout.send(chunk);
+    }));
+    yield effection.spawn(subscription.subscribe(process.stderr).forEach(function* (chunk) {
+      stderr.send(chunk);
+    }));
+    yield effection.spawn(subscription.subscribe(stdin).forEach(function* (chunk) {
+      process.stdin.send(chunk);
+    }));
+    let status = yield process.join();
+    let error = new Error(`daemon process quit unexpectedly\n${stringifyExitStatus(status)}`);
+    error.name = 'DaemonExitError';
+    throw error;
+  });
+}
+
+function deprecated(message, fn) {
+  let impl = function (...args) {
+    try {
+      throw new Error('trace');
+    } catch (trace) {
+      let [line] = trace.stack.split("\n").slice(3, 4);
+      console.warn(message, "\n" + line);
+    }
+
+    impl = fn;
+    return fn.call(this, ...args);
+  };
+
+  return function (...args) {
+    return impl.call(this, ...args);
+  };
 }
 
 function* supervise(child, command, args = []) {
@@ -5455,18 +6914,18 @@ function* supervise(child, command, args = []) {
   }
 }
 
-function* spawn(command, args, options) {
+const spawn = /*#__PURE__*/deprecated("ChildProcess.spawn() in @effection/node is deprecated. Use exec() or daemon() for fine motor control of external processes", function* spawn(command, args, options) {
   let child = childProcess.spawn(command, args || [], Object.assign({}, options, {
     detached: true
   }));
   return yield effection.resource(child, supervise(child, command, args));
-}
-function* fork(module, args, options) {
+});
+const fork = /*#__PURE__*/deprecated("ChildProcess.fork() in @effection/node is deprecated. Use exec() or daemon() for fine motor control of external processes", function* fork(module, args, options) {
   let child = childProcess.fork(module, args, Object.assign({}, options, {
     detached: true
   }));
   return yield effection.resource(child, supervise(child, module, args));
-}
+});
 
 var child_process = {
   __proto__: null,
@@ -5475,7 +6934,11 @@ var child_process = {
 };
 
 exports.ChildProcess = child_process;
+exports.MainError = MainError;
+exports.daemon = daemon;
+exports.exec = exec;
 exports.main = main;
+exports.stringifyExitStatus = stringifyExitStatus;
 //# sourceMappingURL=node.cjs.development.js.map
 
 
@@ -5518,7 +6981,248 @@ function stringify(options) {
 /* 105 */,
 /* 106 */,
 /* 107 */,
-/* 108 */,
+/* 108 */
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+const { readPkgFile, writePkgFile } = __webpack_require__(916);
+const { compareBumps } = __webpack_require__(749);
+const semver = __webpack_require__(534);
+const cloneDeep = __webpack_require__(607);
+const path = __webpack_require__(622);
+
+module.exports.apply = function* ({
+  commands,
+  config,
+  cwd = process.cwd(),
+  bump = true,
+}) {
+  const changes = commands.reduce((finalChanges, command) => {
+    finalChanges[command.pkg] = command;
+    return finalChanges;
+  }, {});
+  let allPackages = yield readAll({ changes, config, cwd });
+
+  const bumps = bumpAll({ changes, allPackages });
+  if (bump) {
+    yield writeAll({
+      bumps: bumps.reduce(
+        (final, current) => (!current.vfile ? final : final.concat([current])),
+        []
+      ),
+    });
+  } else {
+    bumps.forEach((b) => {
+      if (!!b) console.log(`${b.name} planned to be bumped to ${b.version}`);
+    });
+  }
+  return bumps;
+};
+
+const readAll = async ({ changes, config, cwd = process.cwd() }) => {
+  let files = Object.keys(changes).reduce((fileList, change) => {
+    fileList[change] = {};
+    if (changes[change].parents.length > 0)
+      changes[change].parents.forEach((parent) => (fileList[parent] = {}));
+    return fileList;
+  }, {});
+
+  const pkgs = Object.keys(files);
+  const pkgFiles = await Promise.all(
+    Object.keys(files).map((pkg) =>
+      !config.packages[pkg].path
+        ? { name: pkg }
+        : readPkgFile({
+            file: path.join(
+              cwd,
+              config.packages[pkg].path,
+              !!config.packages[pkg].manager &&
+                config.packages[pkg].manager === "rust"
+                ? "Cargo.toml"
+                : "package.json"
+            ),
+            nickname: pkg,
+          })
+    )
+  );
+
+  return pkgs.reduce((list, pkg, index) => {
+    list[pkg] = pkgFiles[index];
+    return list;
+  }, files);
+};
+
+const writeAll = function* ({ bumps }) {
+  for (let bump of bumps) {
+    yield writePkgFile({ packageFile: bump });
+  }
+};
+
+const resolveParents = ({ config }) => {
+  return Object.keys(config.packages).reduce((parents, pkg) => {
+    parents[pkg] = [];
+    Object.keys(config.packages).forEach((parent) => {
+      if (
+        !!config.packages[parent].dependencies &&
+        config.packages[parent].dependencies.includes(pkg)
+      )
+        parents[pkg].push(parent);
+    });
+    return parents;
+  }, {});
+};
+
+module.exports.changesConsideringParents = ({ assembledChanges, config }) => {
+  const parents = resolveParents({ config });
+
+  let changes = Object.keys(assembledChanges.releases).reduce(
+    (list, change) => {
+      list[change] = assembledChanges.releases[change];
+      list[change].parents = parents[change];
+      return list;
+    },
+    {}
+  );
+
+  Object.keys(changes).forEach((main) => {
+    if (changes[main].parents.length > 0) {
+      changes[main].parents.forEach((pkg) => {
+        if (!!changes[pkg]) {
+          // if a change is planned on the parent
+          // compare and bump the parent if the child is higher
+          changes[pkg].type = compareBumps(
+            changes[main].type,
+            changes[pkg].type
+          );
+        } else {
+          // if the parent doesn't have a release
+          // add one to adopt the next version of it's child
+          changes[pkg] = cloneDeep(changes[main]);
+          if (changes[pkg].changes) {
+            changes[pkg].changes.forEach((parentChange) => {
+              parentChange.meta.dependencies = `Bumped due to a bump in ${main}.`;
+            });
+          }
+          changes[pkg].parents = parents[pkg];
+        }
+      });
+    }
+  });
+
+  return { releases: changes, changes: assembledChanges.changes };
+};
+
+const bumpAll = ({ changes, allPackages }) => {
+  let packageFiles = { ...allPackages };
+  for (let pkg of Object.keys(changes)) {
+    if (!packageFiles[pkg].vfile) continue;
+    console.log(`bumping ${pkg} with ${changes[pkg].type}`);
+    packageFiles[pkg] = bumpMain({
+      packageFile: packageFiles[pkg],
+      bumpType: changes[pkg].type,
+    });
+    if (!!changes[pkg].dependencies) {
+      for (let pkgDep of changes[pkg].dependencies) {
+        if (!!changes[pkgDep]) {
+          packageFiles[pkg] = bumpDeps({
+            packageFile: packageFiles[pkg],
+            dep: pkgDep,
+            bumpType: changes[pkgDep].type,
+          });
+        }
+      }
+    }
+  }
+
+  return Object.keys(packageFiles).map((pkg) => packageFiles[pkg]);
+};
+
+const bumpMain = ({ packageFile, bumpType }) => {
+  let pkg = { ...packageFile };
+  let next = semver.inc(pkg.version, bumpType);
+  pkg.version = next;
+  pkg.versionMajor = semver.major(next);
+  pkg.versionMinor = semver.minor(next);
+  pkg.versionPatch = semver.patch(next);
+  if (pkg.vfile.extname === ".json") {
+    // for javascript
+    pkg.pkg.version = semver.inc(pkg.pkg.version, bumpType);
+  } else if (pkg.vfile.extname === ".toml") {
+    // for rust
+    pkg.pkg.package.version = semver.inc(pkg.pkg.package.version, bumpType);
+  }
+  return pkg;
+};
+
+const bumpDeps = ({ packageFile, dep, bumpType }) => {
+  let pkg = { ...packageFile };
+
+  if (!!pkg.pkg.dependencies)
+    Object.keys(pkg.pkg.dependencies).forEach((existingDep) => {
+      if (existingDep === dep) {
+        if (pkg.vfile.extname === ".json") {
+          // for javascript
+          pkg.pkg.dependencies[dep] = semver.inc(
+            pkg.pkg.dependencies[dep],
+            bumpType
+          );
+        } else if (pkg.vfile.extname === ".toml") {
+          // for rust
+          if (typeof pkg.pkg.dependencies[dep] === "object") {
+            pkg.pkg.dependencies[dep].version = incWithPartials(
+              pkg.pkg.dependencies[dep].version,
+              bumpType
+            );
+          } else {
+            pkg.pkg.dependencies[dep] = incWithPartials(
+              pkg.pkg.dependencies[dep],
+              bumpType
+            );
+          }
+        }
+      }
+    });
+
+  if (!!pkg.pkg.devDependencies)
+    Object.keys(pkg.pkg.devDependencies).forEach((existingDep) => {
+      if (existingDep === dep) {
+        if (pkg.vfile.extname === ".json") {
+          // for javascript
+          pkg.pkg.devDependencies[dep] = semver.inc(
+            pkg.pkg.devDependencies[dep],
+            bumpType
+          );
+        }
+      }
+    });
+
+  return pkg;
+};
+
+const incWithPartials = (version, bumpType) => {
+  if (semver.valid(version)) {
+    return semver.inc(version, bumpType);
+  } else {
+    try {
+      const fullVersion = semver
+        .inc(semver.coerce(version), bumpType)
+        .split(".");
+      if (version.split(".").length === 2) {
+        return [].concat(fullVersion[0], fullVersion[1]).join(".");
+      } else if (version.split(".").length === 1) {
+        return fullVersion[0];
+      } else {
+        // failsafe is better than null
+        return fullVersion.join(".");
+      }
+    } catch {
+      // failsafe is better than null
+      return semver.inc(semver.coerce(version), bumpType);
+    }
+  }
+};
+
+
+/***/ }),
 /* 109 */,
 /* 110 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
@@ -6605,47 +8309,7 @@ module.exports = parse;
 
 
 /***/ }),
-/* 111 */
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(exports,"__esModule",{value:true});exports.getSignals=void 0;var _os=__webpack_require__(87);
-
-var _core=__webpack_require__(208);
-var _realtime=__webpack_require__(843);
-
-
-
-const getSignals=function(){
-const realtimeSignals=(0,_realtime.getRealtimeSignals)();
-const signals=[..._core.SIGNALS,...realtimeSignals].map(normalizeSignal);
-return signals;
-};exports.getSignals=getSignals;
-
-
-
-
-
-
-
-const normalizeSignal=function({
-name,
-number:defaultNumber,
-description,
-action,
-forced=false,
-standard})
-{
-const{
-signals:{[name]:constantSignal}}=
-_os.constants;
-const supported=constantSignal!==undefined;
-const number=supported?constantSignal:defaultNumber;
-return{name,number,description,supported,action,forced,standard};
-};
-//# sourceMappingURL=signals.js.map
-
-/***/ }),
+/* 111 */,
 /* 112 */,
 /* 113 */,
 /* 114 */,
@@ -6752,33 +8416,47 @@ function length(value) {
 "use strict";
 
 
-const isStream = stream =>
-	stream !== null &&
-	typeof stream === 'object' &&
-	typeof stream.pipe === 'function';
+// A line containing no characters, or a line containing only spaces (U+0020) or
+// tabs (U+0009), is called a blank line.
+// See <https://spec.commonmark.org/0.29/#blank-line>.
+var reBlankLine = /^[ \t]*(\n|$)/
 
-isStream.writable = stream =>
-	isStream(stream) &&
-	stream.writable !== false &&
-	typeof stream._write === 'function' &&
-	typeof stream._writableState === 'object';
+// Note that though blank lines play a special role in lists to determine
+// whether the list is tight or loose
+// (<https://spec.commonmark.org/0.29/#blank-lines>), it’s done by the list
+// tokenizer and this blank line tokenizer does not have to be responsible for
+// that.
+// Therefore, configs such as `blankLine.notInList` do not have to be set here.
+module.exports = blankLine
 
-isStream.readable = stream =>
-	isStream(stream) &&
-	stream.readable !== false &&
-	typeof stream._read === 'function' &&
-	typeof stream._readableState === 'object';
+function blankLine(eat, value, silent) {
+  var match
+  var subvalue = ''
+  var index = 0
+  var length = value.length
 
-isStream.duplex = stream =>
-	isStream.writable(stream) &&
-	isStream.readable(stream);
+  while (index < length) {
+    match = reBlankLine.exec(value.slice(index))
 
-isStream.transform = stream =>
-	isStream.duplex(stream) &&
-	typeof stream._transform === 'function' &&
-	typeof stream._transformState === 'object';
+    if (match == null) {
+      break
+    }
 
-module.exports = isStream;
+    index += match[0].length
+    subvalue += match[0]
+  }
+
+  if (subvalue === '') {
+    return
+  }
+
+  /* istanbul ignore if - never used (yet) */
+  if (silent) {
+    return true
+  }
+
+  eat(subvalue)
+}
 
 
 /***/ }),
@@ -6829,7 +8507,60 @@ module.exports = new Type('tag:yaml.org,2002:merge', {
 
 
 /***/ }),
-/* 131 */,
+/* 131 */
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+module.exports = formatPretty
+
+var toHexadecimal = __webpack_require__(334)
+var toDecimal = __webpack_require__(200)
+var toNamed = __webpack_require__(301)
+
+// Encode `character` according to `options`.
+function formatPretty(code, next, options) {
+  var named
+  var numeric
+  var decimal
+
+  if (options.useNamedReferences || options.useShortestReferences) {
+    named = toNamed(
+      code,
+      next,
+      options.omitOptionalSemicolons,
+      options.attribute
+    )
+  }
+
+  if (options.useShortestReferences || !named) {
+    numeric = toHexadecimal(code, next, options.omitOptionalSemicolons)
+
+    // Use the shortest numeric reference when requested.
+    // A simple algorithm would use decimal for all code points under 100, as
+    // those are shorter than hexadecimal:
+    //
+    // * `&#99;` vs `&#x63;` (decimal shorter)
+    // * `&#100;` vs `&#x64;` (equal)
+    //
+    // However, because we take `next` into consideration when `omit` is used,
+    // And it would be possible that decimals are shorter on bigger values as
+    // well if `next` is hexadecimal but not decimal, we instead compare both.
+    if (options.useShortestReferences) {
+      decimal = toDecimal(code, next, options.omitOptionalSemicolons)
+
+      if (decimal.length < numeric.length) {
+        numeric = decimal
+      }
+    }
+  }
+
+  return named &&
+    (!options.useShortestReferences || named.length < numeric.length)
+    ? named
+    : numeric
+}
+
+
+/***/ }),
 /* 132 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
@@ -6847,7 +8578,7 @@ module.exports = neq
 "use strict";
 
 
-var uri = __webpack_require__(764)
+var uri = __webpack_require__(452)
 var title = __webpack_require__(919)
 
 module.exports = definition
@@ -7131,7 +8862,7 @@ function table(eat, value, silent) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const common = __webpack_require__(720);
+const common = __webpack_require__(907);
 class Reader {
     constructor(_root, _settings) {
         this._root = _root;
@@ -7201,220 +8932,51 @@ if (process.env.NODE_ENV === 'production') {
 
 /***/ }),
 /* 143 */,
-/* 144 */
-/***/ (function(module) {
+/* 144 */,
+/* 145 */
+/***/ (function(module, __unusedexports, __webpack_require__) {
 
 "use strict";
 
 
-// A line containing no characters, or a line containing only spaces (U+0020) or
-// tabs (U+0009), is called a blank line.
-// See <https://spec.commonmark.org/0.29/#blank-line>.
-var reBlankLine = /^[ \t]*(\n|$)/
+var locate = __webpack_require__(82)
 
-// Note that though blank lines play a special role in lists to determine
-// whether the list is tight or loose
-// (<https://spec.commonmark.org/0.29/#blank-lines>), it’s done by the list
-// tokenizer and this blank line tokenizer does not have to be responsible for
-// that.
-// Therefore, configs such as `blankLine.notInList` do not have to be set here.
-module.exports = blankLine
+module.exports = hardBreak
+hardBreak.locator = locate
 
-function blankLine(eat, value, silent) {
-  var match
-  var subvalue = ''
-  var index = 0
+var space = ' '
+var lineFeed = '\n'
+var minBreakLength = 2
+
+function hardBreak(eat, value, silent) {
   var length = value.length
+  var index = -1
+  var queue = ''
+  var character
 
-  while (index < length) {
-    match = reBlankLine.exec(value.slice(index))
+  while (++index < length) {
+    character = value.charAt(index)
 
-    if (match == null) {
-      break
-    }
-
-    index += match[0].length
-    subvalue += match[0]
-  }
-
-  if (subvalue === '') {
-    return
-  }
-
-  /* istanbul ignore if - never used (yet) */
-  if (silent) {
-    return true
-  }
-
-  eat(subvalue)
-}
-
-
-/***/ }),
-/* 145 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-// Note: since nyc uses this module to output coverage, any lines
-// that are in the direct sync flow of nyc's outputCoverage are
-// ignored, since we can never get coverage for them.
-var assert = __webpack_require__(357)
-var signals = __webpack_require__(573)
-var isWin = /^win/i.test(process.platform)
-
-var EE = __webpack_require__(614)
-/* istanbul ignore if */
-if (typeof EE !== 'function') {
-  EE = EE.EventEmitter
-}
-
-var emitter
-if (process.__signal_exit_emitter__) {
-  emitter = process.__signal_exit_emitter__
-} else {
-  emitter = process.__signal_exit_emitter__ = new EE()
-  emitter.count = 0
-  emitter.emitted = {}
-}
-
-// Because this emitter is a global, we have to check to see if a
-// previous version of this library failed to enable infinite listeners.
-// I know what you're about to say.  But literally everything about
-// signal-exit is a compromise with evil.  Get used to it.
-if (!emitter.infinite) {
-  emitter.setMaxListeners(Infinity)
-  emitter.infinite = true
-}
-
-module.exports = function (cb, opts) {
-  assert.equal(typeof cb, 'function', 'a callback must be provided for exit handler')
-
-  if (loaded === false) {
-    load()
-  }
-
-  var ev = 'exit'
-  if (opts && opts.alwaysLast) {
-    ev = 'afterexit'
-  }
-
-  var remove = function () {
-    emitter.removeListener(ev, cb)
-    if (emitter.listeners('exit').length === 0 &&
-        emitter.listeners('afterexit').length === 0) {
-      unload()
-    }
-  }
-  emitter.on(ev, cb)
-
-  return remove
-}
-
-module.exports.unload = unload
-function unload () {
-  if (!loaded) {
-    return
-  }
-  loaded = false
-
-  signals.forEach(function (sig) {
-    try {
-      process.removeListener(sig, sigListeners[sig])
-    } catch (er) {}
-  })
-  process.emit = originalProcessEmit
-  process.reallyExit = originalProcessReallyExit
-  emitter.count -= 1
-}
-
-function emit (event, code, signal) {
-  if (emitter.emitted[event]) {
-    return
-  }
-  emitter.emitted[event] = true
-  emitter.emit(event, code, signal)
-}
-
-// { <signal>: <listener fn>, ... }
-var sigListeners = {}
-signals.forEach(function (sig) {
-  sigListeners[sig] = function listener () {
-    // If there are no other listeners, an exit is coming!
-    // Simplest way: remove us and then re-send the signal.
-    // We know that this will kill the process, so we can
-    // safely emit now.
-    var listeners = process.listeners(sig)
-    if (listeners.length === emitter.count) {
-      unload()
-      emit('exit', null, sig)
-      /* istanbul ignore next */
-      emit('afterexit', null, sig)
-      /* istanbul ignore next */
-      if (isWin && sig === 'SIGHUP') {
-        // "SIGHUP" throws an `ENOSYS` error on Windows,
-        // so use a supported signal instead
-        sig = 'SIGINT'
+    if (character === lineFeed) {
+      if (index < minBreakLength) {
+        return
       }
-      process.kill(process.pid, sig)
+
+      /* istanbul ignore if - never used (yet) */
+      if (silent) {
+        return true
+      }
+
+      queue += character
+
+      return eat(queue)({type: 'break'})
     }
-  }
-})
 
-module.exports.signals = function () {
-  return signals
-}
-
-module.exports.load = load
-
-var loaded = false
-
-function load () {
-  if (loaded) {
-    return
-  }
-  loaded = true
-
-  // This is the number of onSignalExit's that are in play.
-  // It's important so that we can count the correct number of
-  // listeners on signals, and don't wait for the other one to
-  // handle it instead of us.
-  emitter.count += 1
-
-  signals = signals.filter(function (sig) {
-    try {
-      process.on(sig, sigListeners[sig])
-      return true
-    } catch (er) {
-      return false
+    if (character !== space) {
+      return
     }
-  })
 
-  process.emit = processEmit
-  process.reallyExit = processReallyExit
-}
-
-var originalProcessReallyExit = process.reallyExit
-function processReallyExit (code) {
-  process.exitCode = code || 0
-  emit('exit', process.exitCode, null)
-  /* istanbul ignore next */
-  emit('afterexit', process.exitCode, null)
-  /* istanbul ignore next */
-  originalProcessReallyExit.call(process, process.exitCode)
-}
-
-var originalProcessEmit = process.emit
-function processEmit (ev, arg) {
-  if (ev === 'exit') {
-    if (arg !== undefined) {
-      process.exitCode = arg
-    }
-    var ret = originalProcessEmit.apply(this, arguments)
-    emit('exit', process.exitCode, null)
-    /* istanbul ignore next */
-    emit('afterexit', process.exitCode, null)
-    return ret
-  } else {
-    return originalProcessEmit.apply(this, arguments)
+    queue += character
   }
 }
 
@@ -7422,69 +8984,7 @@ function processEmit (ev, arg) {
 /***/ }),
 /* 146 */,
 /* 147 */,
-/* 148 */
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const utils = __webpack_require__(17);
-class EntryFilter {
-    constructor(_settings, _micromatchOptions) {
-        this._settings = _settings;
-        this._micromatchOptions = _micromatchOptions;
-        this.index = new Map();
-    }
-    getFilter(positive, negative) {
-        const positiveRe = utils.pattern.convertPatternsToRe(positive, this._micromatchOptions);
-        const negativeRe = utils.pattern.convertPatternsToRe(negative, this._micromatchOptions);
-        return (entry) => this._filter(entry, positiveRe, negativeRe);
-    }
-    _filter(entry, positiveRe, negativeRe) {
-        if (this._settings.unique && this._isDuplicateEntry(entry)) {
-            return false;
-        }
-        if (this._onlyFileFilter(entry) || this._onlyDirectoryFilter(entry)) {
-            return false;
-        }
-        if (this._isSkippedByAbsoluteNegativePatterns(entry.path, negativeRe)) {
-            return false;
-        }
-        const filepath = this._settings.baseNameMatch ? entry.name : entry.path;
-        const isMatched = this._isMatchToPatterns(filepath, positiveRe) && !this._isMatchToPatterns(entry.path, negativeRe);
-        if (this._settings.unique && isMatched) {
-            this._createIndexRecord(entry);
-        }
-        return isMatched;
-    }
-    _isDuplicateEntry(entry) {
-        return this.index.has(entry.path);
-    }
-    _createIndexRecord(entry) {
-        this.index.set(entry.path, undefined);
-    }
-    _onlyFileFilter(entry) {
-        return this._settings.onlyFiles && !entry.dirent.isFile();
-    }
-    _onlyDirectoryFilter(entry) {
-        return this._settings.onlyDirectories && !entry.dirent.isDirectory();
-    }
-    _isSkippedByAbsoluteNegativePatterns(entryPath, patternsRe) {
-        if (!this._settings.absolute) {
-            return false;
-        }
-        const fullpath = utils.path.makeAbsolute(this._settings.cwd, entryPath);
-        return utils.pattern.matchAny(fullpath, patternsRe);
-    }
-    _isMatchToPatterns(entryPath, patternsRe) {
-        const filepath = utils.path.removeLeadingDotSegment(entryPath);
-        return utils.pattern.matchAny(filepath, patternsRe);
-    }
-}
-exports.default = EntryFilter;
-
-
-/***/ }),
+/* 148 */,
 /* 149 */,
 /* 150 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
@@ -7892,12 +9392,11 @@ function locate(value, fromIndex) {
 /***/ }),
 /* 152 */,
 /* 153 */
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
+/***/ (function(__unusedmodule, exports) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const url = __webpack_require__(835);
 function getProxyUrl(reqUrl) {
     let usingSsl = reqUrl.protocol === 'https:';
     let proxyUrl;
@@ -7912,7 +9411,7 @@ function getProxyUrl(reqUrl) {
         proxyVar = process.env['http_proxy'] || process.env['HTTP_PROXY'];
     }
     if (proxyVar) {
-        proxyUrl = url.parse(proxyVar);
+        proxyUrl = new URL(proxyVar);
     }
     return proxyUrl;
 }
@@ -8020,7 +9519,7 @@ var proto = Compiler.prototype
 // Enter and exit helpers. */
 proto.enterLink = toggle('inLink', false)
 proto.enterTable = toggle('inTable', false)
-proto.enterLinkReference = __webpack_require__(990)
+proto.enterLinkReference = __webpack_require__(214)
 
 // Configuration.
 proto.options = __webpack_require__(730)
@@ -8030,7 +9529,7 @@ proto.compile = __webpack_require__(202)
 proto.visit = __webpack_require__(382)
 proto.all = __webpack_require__(884)
 proto.block = __webpack_require__(92)
-proto.visitOrderedItems = __webpack_require__(176)
+proto.visitOrderedItems = __webpack_require__(352)
 proto.visitUnorderedItems = __webpack_require__(594)
 
 // Expose visitors.
@@ -8056,7 +9555,7 @@ proto.visitors = {
   definition: __webpack_require__(135),
   image: __webpack_require__(980),
   table: __webpack_require__(751),
-  tableCell: __webpack_require__(95)
+  tableCell: __webpack_require__(220)
 }
 
 
@@ -9964,56 +11463,7 @@ exports.default = ProviderAsync;
 
 
 /***/ }),
-/* 176 */
-/***/ (function(module) {
-
-"use strict";
-
-
-module.exports = orderedItems
-
-var lineFeed = '\n'
-var dot = '.'
-
-var blank = lineFeed + lineFeed
-
-// Visit ordered list items.
-//
-// Starts the list with
-// `node.start` and increments each following list item
-// bullet by one:
-//
-//     2. foo
-//     3. bar
-//
-// In `incrementListMarker: false` mode, does not increment
-// each marker and stays on `node.start`:
-//
-//     1. foo
-//     1. bar
-function orderedItems(node) {
-  var self = this
-  var fn = self.visitors.listItem
-  var increment = self.options.incrementListMarker
-  var values = []
-  var start = node.start
-  var children = node.children
-  var length = children.length
-  var index = -1
-  var bullet
-
-  start = start == null ? 1 : start
-
-  while (++index < length) {
-    bullet = (increment ? start + index : start) + dot
-    values[index] = fn.call(self, children[index], node, index, bullet)
-  }
-
-  return values.join(node.spread ? blank : lineFeed)
-}
-
-
-/***/ }),
+/* 176 */,
 /* 177 */,
 /* 178 */
 /***/ (function(module) {
@@ -10132,7 +11582,367 @@ module.exports = diff
 
 
 /***/ }),
-/* 183 */,
+/* 183 */
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+
+const stringWidth = __webpack_require__(4)
+const stripAnsi = __webpack_require__(598)
+const wrap = __webpack_require__(58)
+
+const align = {
+  right: alignRight,
+  center: alignCenter
+}
+const top = 0
+const right = 1
+const bottom = 2
+const left = 3
+
+class UI {
+  constructor (opts) {
+    this.width = opts.width
+    this.wrap = opts.wrap
+    this.rows = []
+  }
+
+  span (...args) {
+    const cols = this.div(...args)
+    cols.span = true
+  }
+
+  resetOutput () {
+    this.rows = []
+  }
+
+  div (...args) {
+    if (args.length === 0) {
+      this.div('')
+    }
+
+    if (this.wrap && this._shouldApplyLayoutDSL(...args)) {
+      return this._applyLayoutDSL(args[0])
+    }
+
+    const cols = args.map(arg => {
+      if (typeof arg === 'string') {
+        return this._colFromString(arg)
+      }
+
+      return arg
+    })
+
+    this.rows.push(cols)
+    return cols
+  }
+
+  _shouldApplyLayoutDSL (...args) {
+    return args.length === 1 && typeof args[0] === 'string' &&
+      /[\t\n]/.test(args[0])
+  }
+
+  _applyLayoutDSL (str) {
+    const rows = str.split('\n').map(row => row.split('\t'))
+    let leftColumnWidth = 0
+
+    // simple heuristic for layout, make sure the
+    // second column lines up along the left-hand.
+    // don't allow the first column to take up more
+    // than 50% of the screen.
+    rows.forEach(columns => {
+      if (columns.length > 1 && stringWidth(columns[0]) > leftColumnWidth) {
+        leftColumnWidth = Math.min(
+          Math.floor(this.width * 0.5),
+          stringWidth(columns[0])
+        )
+      }
+    })
+
+    // generate a table:
+    //  replacing ' ' with padding calculations.
+    //  using the algorithmically generated width.
+    rows.forEach(columns => {
+      this.div(...columns.map((r, i) => {
+        return {
+          text: r.trim(),
+          padding: this._measurePadding(r),
+          width: (i === 0 && columns.length > 1) ? leftColumnWidth : undefined
+        }
+      }))
+    })
+
+    return this.rows[this.rows.length - 1]
+  }
+
+  _colFromString (text) {
+    return {
+      text,
+      padding: this._measurePadding(text)
+    }
+  }
+
+  _measurePadding (str) {
+    // measure padding without ansi escape codes
+    const noAnsi = stripAnsi(str)
+    return [0, noAnsi.match(/\s*$/)[0].length, 0, noAnsi.match(/^\s*/)[0].length]
+  }
+
+  toString () {
+    const lines = []
+
+    this.rows.forEach(row => {
+      this.rowToString(row, lines)
+    })
+
+    // don't display any lines with the
+    // hidden flag set.
+    return lines
+      .filter(line => !line.hidden)
+      .map(line => line.text)
+      .join('\n')
+  }
+
+  rowToString (row, lines) {
+    this._rasterize(row).forEach((rrow, r) => {
+      let str = ''
+      rrow.forEach((col, c) => {
+        const { width } = row[c] // the width with padding.
+        const wrapWidth = this._negatePadding(row[c]) // the width without padding.
+
+        let ts = col // temporary string used during alignment/padding.
+
+        if (wrapWidth > stringWidth(col)) {
+          ts += ' '.repeat(wrapWidth - stringWidth(col))
+        }
+
+        // align the string within its column.
+        if (row[c].align && row[c].align !== 'left' && this.wrap) {
+          ts = align[row[c].align](ts, wrapWidth)
+          if (stringWidth(ts) < wrapWidth) {
+            ts += ' '.repeat(width - stringWidth(ts) - 1)
+          }
+        }
+
+        // apply border and padding to string.
+        const padding = row[c].padding || [0, 0, 0, 0]
+        if (padding[left]) {
+          str += ' '.repeat(padding[left])
+        }
+
+        str += addBorder(row[c], ts, '| ')
+        str += ts
+        str += addBorder(row[c], ts, ' |')
+        if (padding[right]) {
+          str += ' '.repeat(padding[right])
+        }
+
+        // if prior row is span, try to render the
+        // current row on the prior line.
+        if (r === 0 && lines.length > 0) {
+          str = this._renderInline(str, lines[lines.length - 1])
+        }
+      })
+
+      // remove trailing whitespace.
+      lines.push({
+        text: str.replace(/ +$/, ''),
+        span: row.span
+      })
+    })
+
+    return lines
+  }
+
+  // if the full 'source' can render in
+  // the target line, do so.
+  _renderInline (source, previousLine) {
+    const leadingWhitespace = source.match(/^ */)[0].length
+    const target = previousLine.text
+    const targetTextWidth = stringWidth(target.trimRight())
+
+    if (!previousLine.span) {
+      return source
+    }
+
+    // if we're not applying wrapping logic,
+    // just always append to the span.
+    if (!this.wrap) {
+      previousLine.hidden = true
+      return target + source
+    }
+
+    if (leadingWhitespace < targetTextWidth) {
+      return source
+    }
+
+    previousLine.hidden = true
+
+    return target.trimRight() + ' '.repeat(leadingWhitespace - targetTextWidth) + source.trimLeft()
+  }
+
+  _rasterize (row) {
+    const rrows = []
+    const widths = this._columnWidths(row)
+    let wrapped
+
+    // word wrap all columns, and create
+    // a data-structure that is easy to rasterize.
+    row.forEach((col, c) => {
+      // leave room for left and right padding.
+      col.width = widths[c]
+      if (this.wrap) {
+        wrapped = wrap(col.text, this._negatePadding(col), { hard: true }).split('\n')
+      } else {
+        wrapped = col.text.split('\n')
+      }
+
+      if (col.border) {
+        wrapped.unshift('.' + '-'.repeat(this._negatePadding(col) + 2) + '.')
+        wrapped.push("'" + '-'.repeat(this._negatePadding(col) + 2) + "'")
+      }
+
+      // add top and bottom padding.
+      if (col.padding) {
+        wrapped.unshift(...new Array(col.padding[top] || 0).fill(''))
+        wrapped.push(...new Array(col.padding[bottom] || 0).fill(''))
+      }
+
+      wrapped.forEach((str, r) => {
+        if (!rrows[r]) {
+          rrows.push([])
+        }
+
+        const rrow = rrows[r]
+
+        for (let i = 0; i < c; i++) {
+          if (rrow[i] === undefined) {
+            rrow.push('')
+          }
+        }
+
+        rrow.push(str)
+      })
+    })
+
+    return rrows
+  }
+
+  _negatePadding (col) {
+    let wrapWidth = col.width
+    if (col.padding) {
+      wrapWidth -= (col.padding[left] || 0) + (col.padding[right] || 0)
+    }
+
+    if (col.border) {
+      wrapWidth -= 4
+    }
+
+    return wrapWidth
+  }
+
+  _columnWidths (row) {
+    if (!this.wrap) {
+      return row.map(col => {
+        return col.width || stringWidth(col.text)
+      })
+    }
+
+    let unset = row.length
+    let remainingWidth = this.width
+
+    // column widths can be set in config.
+    const widths = row.map(col => {
+      if (col.width) {
+        unset--
+        remainingWidth -= col.width
+        return col.width
+      }
+
+      return undefined
+    })
+
+    // any unset widths should be calculated.
+    const unsetWidth = unset ? Math.floor(remainingWidth / unset) : 0
+
+    return widths.map((w, i) => {
+      if (w === undefined) {
+        return Math.max(unsetWidth, _minWidth(row[i]))
+      }
+
+      return w
+    })
+  }
+}
+
+function addBorder (col, ts, style) {
+  if (col.border) {
+    if (/[.']-+[.']/.test(ts)) {
+      return ''
+    }
+
+    if (ts.trim().length !== 0) {
+      return style
+    }
+
+    return '  '
+  }
+
+  return ''
+}
+
+// calculates the minimum width of
+// a column, based on padding preferences.
+function _minWidth (col) {
+  const padding = col.padding || []
+  const minWidth = 1 + (padding[left] || 0) + (padding[right] || 0)
+  if (col.border) {
+    return minWidth + 4
+  }
+
+  return minWidth
+}
+
+function getWindowWidth () {
+  /* istanbul ignore next: depends on terminal */
+  if (typeof process === 'object' && process.stdout && process.stdout.columns) {
+    return process.stdout.columns
+  }
+}
+
+function alignRight (str, width) {
+  str = str.trim()
+  const strWidth = stringWidth(str)
+
+  if (strWidth < width) {
+    return ' '.repeat(width - strWidth) + str
+  }
+
+  return str
+}
+
+function alignCenter (str, width) {
+  str = str.trim()
+  const strWidth = stringWidth(str)
+
+  /* istanbul ignore next */
+  if (strWidth >= width) {
+    return str
+  }
+
+  return ' '.repeat((width - strWidth) >> 1) + str
+}
+
+module.exports = function (opts = {}) {
+  return new UI({
+    width: opts.width || getWindowWidth() || /* istanbul ignore next */ 80,
+    wrap: opts.wrap !== false
+  })
+}
+
+
+/***/ }),
 /* 184 */,
 /* 185 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
@@ -10240,57 +12050,22 @@ function checkMode (stat, options) {
 /***/ }),
 /* 187 */,
 /* 188 */
-/***/ (function(module) {
+/***/ (function(module, __unusedexports, __webpack_require__) {
 
 "use strict";
 
 
-/*!
- * isobject <https://github.com/jonschlinkert/isobject>
- *
- * Copyright (c) 2014-2017, Jon Schlinkert.
- * Released under the MIT License.
- */
+var characterEntities = __webpack_require__(671)
 
-function isObject(val) {
-  return val != null && typeof val === 'object' && Array.isArray(val) === false;
+module.exports = decodeEntity
+
+var own = {}.hasOwnProperty
+
+function decodeEntity(characters) {
+  return own.call(characterEntities, characters)
+    ? characterEntities[characters]
+    : false
 }
-
-/*!
- * is-plain-object <https://github.com/jonschlinkert/is-plain-object>
- *
- * Copyright (c) 2014-2017, Jon Schlinkert.
- * Released under the MIT License.
- */
-
-function isObjectObject(o) {
-  return isObject(o) === true
-    && Object.prototype.toString.call(o) === '[object Object]';
-}
-
-function isPlainObject(o) {
-  var ctor,prot;
-
-  if (isObjectObject(o) === false) return false;
-
-  // If has modified constructor
-  ctor = o.constructor;
-  if (typeof ctor !== 'function') return false;
-
-  // If has modified prototype
-  prot = ctor.prototype;
-  if (isObjectObject(prot) === false) return false;
-
-  // If constructor does not have an Object-specific method
-  if (prot.hasOwnProperty('isPrototypeOf') === false) {
-    return false;
-  }
-
-  // Most likely a plain Object
-  return true;
-}
-
-module.exports = isPlainObject;
 
 
 /***/ }),
@@ -10324,6 +12099,7 @@ function fastqueue (context, worker, concurrency) {
   var queueHead = null
   var queueTail = null
   var _running = 0
+  var errorHandler = null
 
   var self = {
     push: push,
@@ -10340,7 +12116,8 @@ function fastqueue (context, worker, concurrency) {
     unshift: unshift,
     empty: noop,
     kill: kill,
-    killAndDrain: killAndDrain
+    killAndDrain: killAndDrain,
+    error: error
   }
 
   return self
@@ -10397,6 +12174,7 @@ function fastqueue (context, worker, concurrency) {
     current.release = release
     current.value = value
     current.callback = done || noop
+    current.errorHandler = errorHandler
 
     if (_running === self.concurrency || self.paused) {
       if (queueTail) {
@@ -10472,6 +12250,10 @@ function fastqueue (context, worker, concurrency) {
     self.drain()
     self.drain = noop
   }
+
+  function error (handler) {
+    errorHandler = handler
+  }
 }
 
 function noop () {}
@@ -10482,13 +12264,19 @@ function Task () {
   this.next = null
   this.release = noop
   this.context = null
+  this.errorHandler = null
 
   var self = this
 
   this.worked = function worked (err, result) {
     var callback = self.callback
+    var errorHandler = self.errorHandler
+    var val = self.value
     self.value = null
     self.callback = noop
+    if (self.errorHandler) {
+      errorHandler(err, val)
+    }
     callback.call(self.context, err, result)
     self.release(self)
   }
@@ -10526,7 +12314,7 @@ exports.isEmpty = isEmpty;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = __webpack_require__(622);
-const fsStat = __webpack_require__(892);
+const fsStat = __webpack_require__(573);
 const fs = __webpack_require__(310);
 class Settings {
     constructor(_options = {}) {
@@ -10552,7 +12340,21 @@ exports.default = Settings;
 /***/ }),
 /* 198 */,
 /* 199 */,
-/* 200 */,
+/* 200 */
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+module.exports = toDecimalReference
+
+var fromCharCode = __webpack_require__(362)
+
+// Transform `code` into a decimal character reference.
+function toDecimalReference(code, next, omit) {
+  var value = '&#' + String(code)
+  return omit && next && !/\d/.test(fromCharCode(next)) ? value : value + ';'
+}
+
+
+/***/ }),
 /* 201 */
 /***/ (function(__unusedmodule, exports) {
 
@@ -11001,350 +12803,8 @@ exports.RequestError = RequestError;
 
 
 /***/ }),
-/* 208 */
-/***/ (function(__unusedmodule, exports) {
-
-"use strict";
-Object.defineProperty(exports,"__esModule",{value:true});exports.SIGNALS=void 0;
-
-const SIGNALS=[
-{
-name:"SIGHUP",
-number:1,
-action:"terminate",
-description:"Terminal closed",
-standard:"posix"},
-
-{
-name:"SIGINT",
-number:2,
-action:"terminate",
-description:"User interruption with CTRL-C",
-standard:"ansi"},
-
-{
-name:"SIGQUIT",
-number:3,
-action:"core",
-description:"User interruption with CTRL-\\",
-standard:"posix"},
-
-{
-name:"SIGILL",
-number:4,
-action:"core",
-description:"Invalid machine instruction",
-standard:"ansi"},
-
-{
-name:"SIGTRAP",
-number:5,
-action:"core",
-description:"Debugger breakpoint",
-standard:"posix"},
-
-{
-name:"SIGABRT",
-number:6,
-action:"core",
-description:"Aborted",
-standard:"ansi"},
-
-{
-name:"SIGIOT",
-number:6,
-action:"core",
-description:"Aborted",
-standard:"bsd"},
-
-{
-name:"SIGBUS",
-number:7,
-action:"core",
-description:
-"Bus error due to misaligned, non-existing address or paging error",
-standard:"bsd"},
-
-{
-name:"SIGEMT",
-number:7,
-action:"terminate",
-description:"Command should be emulated but is not implemented",
-standard:"other"},
-
-{
-name:"SIGFPE",
-number:8,
-action:"core",
-description:"Floating point arithmetic error",
-standard:"ansi"},
-
-{
-name:"SIGKILL",
-number:9,
-action:"terminate",
-description:"Forced termination",
-standard:"posix",
-forced:true},
-
-{
-name:"SIGUSR1",
-number:10,
-action:"terminate",
-description:"Application-specific signal",
-standard:"posix"},
-
-{
-name:"SIGSEGV",
-number:11,
-action:"core",
-description:"Segmentation fault",
-standard:"ansi"},
-
-{
-name:"SIGUSR2",
-number:12,
-action:"terminate",
-description:"Application-specific signal",
-standard:"posix"},
-
-{
-name:"SIGPIPE",
-number:13,
-action:"terminate",
-description:"Broken pipe or socket",
-standard:"posix"},
-
-{
-name:"SIGALRM",
-number:14,
-action:"terminate",
-description:"Timeout or timer",
-standard:"posix"},
-
-{
-name:"SIGTERM",
-number:15,
-action:"terminate",
-description:"Termination",
-standard:"ansi"},
-
-{
-name:"SIGSTKFLT",
-number:16,
-action:"terminate",
-description:"Stack is empty or overflowed",
-standard:"other"},
-
-{
-name:"SIGCHLD",
-number:17,
-action:"ignore",
-description:"Child process terminated, paused or unpaused",
-standard:"posix"},
-
-{
-name:"SIGCLD",
-number:17,
-action:"ignore",
-description:"Child process terminated, paused or unpaused",
-standard:"other"},
-
-{
-name:"SIGCONT",
-number:18,
-action:"unpause",
-description:"Unpaused",
-standard:"posix",
-forced:true},
-
-{
-name:"SIGSTOP",
-number:19,
-action:"pause",
-description:"Paused",
-standard:"posix",
-forced:true},
-
-{
-name:"SIGTSTP",
-number:20,
-action:"pause",
-description:"Paused using CTRL-Z or \"suspend\"",
-standard:"posix"},
-
-{
-name:"SIGTTIN",
-number:21,
-action:"pause",
-description:"Background process cannot read terminal input",
-standard:"posix"},
-
-{
-name:"SIGBREAK",
-number:21,
-action:"terminate",
-description:"User interruption with CTRL-BREAK",
-standard:"other"},
-
-{
-name:"SIGTTOU",
-number:22,
-action:"pause",
-description:"Background process cannot write to terminal output",
-standard:"posix"},
-
-{
-name:"SIGURG",
-number:23,
-action:"ignore",
-description:"Socket received out-of-band data",
-standard:"bsd"},
-
-{
-name:"SIGXCPU",
-number:24,
-action:"core",
-description:"Process timed out",
-standard:"bsd"},
-
-{
-name:"SIGXFSZ",
-number:25,
-action:"core",
-description:"File too big",
-standard:"bsd"},
-
-{
-name:"SIGVTALRM",
-number:26,
-action:"terminate",
-description:"Timeout or timer",
-standard:"bsd"},
-
-{
-name:"SIGPROF",
-number:27,
-action:"terminate",
-description:"Timeout or timer",
-standard:"bsd"},
-
-{
-name:"SIGWINCH",
-number:28,
-action:"ignore",
-description:"Terminal window size changed",
-standard:"bsd"},
-
-{
-name:"SIGIO",
-number:29,
-action:"terminate",
-description:"I/O is available",
-standard:"other"},
-
-{
-name:"SIGPOLL",
-number:29,
-action:"terminate",
-description:"Watched event",
-standard:"other"},
-
-{
-name:"SIGINFO",
-number:29,
-action:"ignore",
-description:"Request for process information",
-standard:"other"},
-
-{
-name:"SIGPWR",
-number:30,
-action:"terminate",
-description:"Device running out of power",
-standard:"systemv"},
-
-{
-name:"SIGSYS",
-number:31,
-action:"core",
-description:"Invalid system call",
-standard:"other"},
-
-{
-name:"SIGUNUSED",
-number:31,
-action:"terminate",
-description:"Invalid system call",
-standard:"other"}];exports.SIGNALS=SIGNALS;
-//# sourceMappingURL=core.js.map
-
-/***/ }),
-/* 209 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-"use strict";
-
-const pump = __webpack_require__(957);
-const bufferStream = __webpack_require__(352);
-
-class MaxBufferError extends Error {
-	constructor() {
-		super('maxBuffer exceeded');
-		this.name = 'MaxBufferError';
-	}
-}
-
-async function getStream(inputStream, options) {
-	if (!inputStream) {
-		return Promise.reject(new Error('Expected a stream'));
-	}
-
-	options = {
-		maxBuffer: Infinity,
-		...options
-	};
-
-	const {maxBuffer} = options;
-
-	let stream;
-	await new Promise((resolve, reject) => {
-		const rejectPromise = error => {
-			if (error) { // A null check
-				error.bufferedData = stream.getBufferedValue();
-			}
-
-			reject(error);
-		};
-
-		stream = pump(inputStream, bufferStream(options), error => {
-			if (error) {
-				rejectPromise(error);
-				return;
-			}
-
-			resolve();
-		});
-
-		stream.on('data', () => {
-			if (stream.getBufferedLength() > maxBuffer) {
-				rejectPromise(new MaxBufferError());
-			}
-		});
-	});
-
-	return stream.getBufferedValue();
-}
-
-module.exports = getStream;
-// TODO: Remove this for the next major release
-module.exports.default = getStream;
-module.exports.buffer = (stream, options) => getStream(stream, {...options, encoding: 'buffer'});
-module.exports.array = (stream, options) => getStream(stream, {...options, array: true});
-module.exports.MaxBufferError = MaxBufferError;
-
-
-/***/ }),
+/* 208 */,
+/* 209 */,
 /* 210 */,
 /* 211 */
 /***/ (function(module) {
@@ -11354,63 +12814,73 @@ module.exports = require("https");
 /***/ }),
 /* 212 */,
 /* 213 */
-/***/ (function(module) {
+/***/ (function(module, __unusedexports, __webpack_require__) {
 
-module.exports = ["cent","copy","divide","gt","lt","not","para","times"];
+const SemVer = __webpack_require__(840)
+const Range = __webpack_require__(46)
+
+const maxSatisfying = (versions, range, options) => {
+  let max = null
+  let maxSV = null
+  let rangeObj = null
+  try {
+    rangeObj = new Range(range, options)
+  } catch (er) {
+    return null
+  }
+  versions.forEach((v) => {
+    if (rangeObj.test(v)) {
+      // satisfies(v, range, options)
+      if (!max || maxSV.compare(v) === -1) {
+        // compare(max, v, true)
+        max = v
+        maxSV = new SemVer(max, options)
+      }
+    }
+  })
+  return max
+}
+module.exports = maxSatisfying
+
 
 /***/ }),
 /* 214 */
-/***/ (function(module) {
+/***/ (function(module, __unusedexports, __webpack_require__) {
 
 "use strict";
 
 
-/*!
- * isobject <https://github.com/jonschlinkert/isobject>
- *
- * Copyright (c) 2014-2017, Jon Schlinkert.
- * Released under the MIT License.
- */
+var identity = __webpack_require__(948)
 
-function isObject(val) {
-  return val != null && typeof val === 'object' && Array.isArray(val) === false;
-}
+module.exports = enter
 
-/*!
- * is-plain-object <https://github.com/jonschlinkert/is-plain-object>
- *
- * Copyright (c) 2014-2017, Jon Schlinkert.
- * Released under the MIT License.
- */
+// Shortcut and collapsed link references need no escaping and encoding during
+// the processing of child nodes (it must be implied from identifier).
+//
+// This toggler turns encoding and escaping off for shortcut and collapsed
+// references.
+//
+// Implies `enterLink`.
+function enter(compiler, node) {
+  var encode = compiler.encode
+  var escape = compiler.escape
+  var exitLink = compiler.enterLink()
 
-function isObjectObject(o) {
-  return isObject(o) === true
-    && Object.prototype.toString.call(o) === '[object Object]';
-}
-
-function isPlainObject(o) {
-  var ctor,prot;
-
-  if (isObjectObject(o) === false) return false;
-
-  // If has modified constructor
-  ctor = o.constructor;
-  if (typeof ctor !== 'function') return false;
-
-  // If has modified prototype
-  prot = ctor.prototype;
-  if (isObjectObject(prot) === false) return false;
-
-  // If constructor does not have an Object-specific method
-  if (prot.hasOwnProperty('isPrototypeOf') === false) {
-    return false;
+  if (node.referenceType !== 'shortcut' && node.referenceType !== 'collapsed') {
+    return exitLink
   }
 
-  // Most likely a plain Object
-  return true;
-}
+  compiler.escape = identity
+  compiler.encode = identity
 
-module.exports = isPlainObject;
+  return exit
+
+  function exit() {
+    compiler.encode = encode
+    compiler.escape = escape
+    exitLink()
+  }
+}
 
 
 /***/ }),
@@ -11430,61 +12900,18 @@ module.exports = compare
 /* 218 */,
 /* 219 */,
 /* 220 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
+/***/ (function(module) {
 
 "use strict";
 
 
-const path = __webpack_require__(622);
-const which = __webpack_require__(505);
-const getPathKey = __webpack_require__(805);
+module.exports = tableCell
 
-function resolveCommandAttempt(parsed, withoutPathExt) {
-    const env = parsed.options.env || process.env;
-    const cwd = process.cwd();
-    const hasCustomCwd = parsed.options.cwd != null;
-    // Worker threads do not have process.chdir()
-    const shouldSwitchCwd = hasCustomCwd && process.chdir !== undefined && !process.chdir.disabled;
+var lineFeed = /\r?\n/g
 
-    // If a custom `cwd` was specified, we need to change the process cwd
-    // because `which` will do stat calls but does not support a custom cwd
-    if (shouldSwitchCwd) {
-        try {
-            process.chdir(parsed.options.cwd);
-        } catch (err) {
-            /* Empty */
-        }
-    }
-
-    let resolved;
-
-    try {
-        resolved = which.sync(parsed.command, {
-            path: env[getPathKey({ env })],
-            pathExt: withoutPathExt ? path.delimiter : undefined,
-        });
-    } catch (e) {
-        /* Empty */
-    } finally {
-        if (shouldSwitchCwd) {
-            process.chdir(cwd);
-        }
-    }
-
-    // If we successfully resolved, ensure that an absolute path is returned
-    // Note that when a custom `cwd` was used, we need to resolve to an absolute path based on it
-    if (resolved) {
-        resolved = path.resolve(hasCustomCwd ? parsed.options.cwd : '', resolved);
-    }
-
-    return resolved;
+function tableCell(node) {
+  return this.all(node).join('').replace(lineFeed, ' ')
 }
-
-function resolveCommand(parsed) {
-    return resolveCommandAttempt(parsed) || resolveCommandAttempt(parsed, true);
-}
-
-module.exports = resolveCommand;
 
 
 /***/ }),
@@ -11871,28 +13298,7 @@ function getSettings(settingsOrOptions = {}) {
 
 
 /***/ }),
-/* 228 */
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const utils = __webpack_require__(17);
-class ErrorFilter {
-    constructor(_settings) {
-        this._settings = _settings;
-    }
-    getFilter() {
-        return (error) => this._isNonFatalError(error);
-    }
-    _isNonFatalError(error) {
-        return utils.errno.isEnoentCodeError(error) || this._settings.suppressErrors;
-    }
-}
-exports.default = ErrorFilter;
-
-
-/***/ }),
+/* 228 */,
 /* 229 */
 /***/ (function(__unusedmodule, exports) {
 
@@ -12065,7 +13471,104 @@ module.exports = new Type('tag:yaml.org,2002:bool', {
 
 
 /***/ }),
-/* 232 */,
+/* 232 */
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+
+const path = __webpack_require__(622);
+const resolveCommand = __webpack_require__(288);
+const escape = __webpack_require__(962);
+const readShebang = __webpack_require__(427);
+
+const isWin = process.platform === 'win32';
+const isExecutableRegExp = /\.(?:com|exe)$/i;
+const isCmdShimRegExp = /node_modules[\\/].bin[\\/][^\\/]+\.cmd$/i;
+
+function detectShebang(parsed) {
+    parsed.file = resolveCommand(parsed);
+
+    const shebang = parsed.file && readShebang(parsed.file);
+
+    if (shebang) {
+        parsed.args.unshift(parsed.file);
+        parsed.command = shebang;
+
+        return resolveCommand(parsed);
+    }
+
+    return parsed.file;
+}
+
+function parseNonShell(parsed) {
+    if (!isWin) {
+        return parsed;
+    }
+
+    // Detect & add support for shebangs
+    const commandFile = detectShebang(parsed);
+
+    // We don't need a shell if the command filename is an executable
+    const needsShell = !isExecutableRegExp.test(commandFile);
+
+    // If a shell is required, use cmd.exe and take care of escaping everything correctly
+    // Note that `forceShell` is an hidden option used only in tests
+    if (parsed.options.forceShell || needsShell) {
+        // Need to double escape meta chars if the command is a cmd-shim located in `node_modules/.bin/`
+        // The cmd-shim simply calls execute the package bin file with NodeJS, proxying any argument
+        // Because the escape of metachars with ^ gets interpreted when the cmd.exe is first called,
+        // we need to double escape them
+        const needsDoubleEscapeMetaChars = isCmdShimRegExp.test(commandFile);
+
+        // Normalize posix paths into OS compatible paths (e.g.: foo/bar -> foo\bar)
+        // This is necessary otherwise it will always fail with ENOENT in those cases
+        parsed.command = path.normalize(parsed.command);
+
+        // Escape command & arguments
+        parsed.command = escape.command(parsed.command);
+        parsed.args = parsed.args.map((arg) => escape.argument(arg, needsDoubleEscapeMetaChars));
+
+        const shellCommand = [parsed.command].concat(parsed.args).join(' ');
+
+        parsed.args = ['/d', '/s', '/c', `"${shellCommand}"`];
+        parsed.command = process.env.comspec || 'cmd.exe';
+        parsed.options.windowsVerbatimArguments = true; // Tell node's spawn that the arguments are already escaped
+    }
+
+    return parsed;
+}
+
+function parse(command, args, options) {
+    // Normalize arguments, similar to nodejs
+    if (args && !Array.isArray(args)) {
+        options = args;
+        args = null;
+    }
+
+    args = args ? args.slice(0) : []; // Clone array to avoid changing the original
+    options = Object.assign({}, options); // Clone object to avoid changing the original
+
+    // Build our parsed object
+    const parsed = {
+        command,
+        args,
+        options,
+        file: undefined,
+        original: {
+            command,
+            args,
+        },
+    };
+
+    // Delegate further parsing to shell or non-shell
+    return options.shell ? parsed : parseNonShell(parsed);
+}
+
+module.exports = parse;
+
+
+/***/ }),
 /* 233 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -12361,68 +13864,27 @@ module.exports.stop = stop;
 /* 240 */,
 /* 241 */,
 /* 242 */
-/***/ (function(module) {
+/***/ (function(module, __unusedexports, __webpack_require__) {
 
 "use strict";
+// Standard YAML's Core schema.
+// http://www.yaml.org/spec/1.2/spec.html#id2804923
+//
+// NOTE: JS-YAML does not support schema-specific tag resolution restrictions.
+// So, Core schema has no distinctions from JSON schema is JS-YAML.
 
 
-const isWin = process.platform === 'win32';
 
-function notFoundError(original, syscall) {
-    return Object.assign(new Error(`${syscall} ${original.command} ENOENT`), {
-        code: 'ENOENT',
-        errno: 'ENOENT',
-        syscall: `${syscall} ${original.command}`,
-        path: original.command,
-        spawnargs: original.args,
-    });
-}
 
-function hookChildProcess(cp, parsed) {
-    if (!isWin) {
-        return;
-    }
 
-    const originalEmit = cp.emit;
+var Schema = __webpack_require__(717);
 
-    cp.emit = function (name, arg1) {
-        // If emitting "exit" event and exit code is 1, we need to check if
-        // the command exists and emit an "error" instead
-        // See https://github.com/IndigoUnited/node-cross-spawn/issues/16
-        if (name === 'exit') {
-            const err = verifyENOENT(arg1, parsed, 'spawn');
 
-            if (err) {
-                return originalEmit.call(cp, 'error', err);
-            }
-        }
-
-        return originalEmit.apply(cp, arguments); // eslint-disable-line prefer-rest-params
-    };
-}
-
-function verifyENOENT(status, parsed) {
-    if (isWin && status === 1 && !parsed.file) {
-        return notFoundError(parsed.original, 'spawn');
-    }
-
-    return null;
-}
-
-function verifyENOENTSync(status, parsed) {
-    if (isWin && status === 1 && !parsed.file) {
-        return notFoundError(parsed.original, 'spawnSync');
-    }
-
-    return null;
-}
-
-module.exports = {
-    hookChildProcess,
-    verifyENOENT,
-    verifyENOENTSync,
-    notFoundError,
-};
+module.exports = new Schema({
+  include: [
+    __webpack_require__(937)
+  ]
+});
 
 
 /***/ }),
@@ -12435,7 +13897,7 @@ module.exports = {
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = __webpack_require__(622);
-const fsStat = __webpack_require__(892);
+const fsStat = __webpack_require__(573);
 const utils = __webpack_require__(17);
 class Reader {
     constructor(_settings) {
@@ -12471,6 +13933,7 @@ exports.default = Reader;
 /* 246 */
 /***/ (function(module) {
 
+/*! run-parallel. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> */
 module.exports = runParallel
 
 function runParallel (tasks, cb) {
@@ -12529,7 +13992,7 @@ function runParallel (tasks, cb) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const fsStat = __webpack_require__(892);
+const fsStat = __webpack_require__(573);
 const rpl = __webpack_require__(246);
 const constants_1 = __webpack_require__(416);
 const utils = __webpack_require__(1);
@@ -12663,22 +14126,7 @@ module.exports = parse
 
 
 /***/ }),
-/* 250 */
-/***/ (function(module) {
-
-"use strict";
-
-
-const pTry = (fn, ...arguments_) => new Promise(resolve => {
-	resolve(fn(...arguments_));
-});
-
-module.exports = pTry;
-// TODO: remove this in the next major version
-module.exports.default = pTry;
-
-
-/***/ }),
+/* 250 */,
 /* 251 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
@@ -12915,33 +14363,67 @@ function sync (path, options) {
 
 /***/ }),
 /* 266 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
+/***/ (function(__unusedmodule, exports) {
 
-const SemVer = __webpack_require__(840)
-const Range = __webpack_require__(46)
+"use strict";
 
-const maxSatisfying = (versions, range, options) => {
-  let max = null
-  let maxSV = null
-  let rangeObj = null
-  try {
-    rangeObj = new Range(range, options)
-  } catch (er) {
-    return null
-  }
-  versions.forEach((v) => {
-    if (rangeObj.test(v)) {
-      // satisfies(v, range, options)
-      if (!max || maxSV.compare(v) === -1) {
-        // compare(max, v, true)
-        max = v
-        maxSV = new SemVer(max, options)
-      }
+/*
+Copyright (c) 2011 Andrei Mackenzie
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.levenshtein = void 0;
+// levenshtein distance algorithm, pulled from Andrei Mackenzie's MIT licensed.
+// gist, which can be found here: https://gist.github.com/andrei-m/982927
+// Compute the edit distance between the two given strings
+function levenshtein(a, b) {
+    if (a.length === 0)
+        return b.length;
+    if (b.length === 0)
+        return a.length;
+    const matrix = [];
+    // increment along the first column of each row
+    let i;
+    for (i = 0; i <= b.length; i++) {
+        matrix[i] = [i];
     }
-  })
-  return max
+    // increment each column in the first row
+    let j;
+    for (j = 0; j <= a.length; j++) {
+        matrix[0][j] = j;
+    }
+    // Fill in the rest of the matrix
+    for (i = 1; i <= b.length; i++) {
+        for (j = 1; j <= a.length; j++) {
+            if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                matrix[i][j] = matrix[i - 1][j - 1];
+            }
+            else {
+                matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, // substitution
+                Math.min(matrix[i][j - 1] + 1, // insertion
+                matrix[i - 1][j] + 1)); // deletion
+            }
+        }
+    }
+    return matrix[b.length][a.length];
 }
-module.exports = maxSatisfying
+exports.levenshtein = levenshtein;
 
 
 /***/ }),
@@ -13620,7 +15102,7 @@ module.exports = function extend() {
 /* 275 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const { MAX_SAFE_COMPONENT_LENGTH } = __webpack_require__(511)
+const { MAX_SAFE_COMPONENT_LENGTH } = __webpack_require__(656)
 const debug = __webpack_require__(434)
 exports = module.exports = {}
 
@@ -14157,7 +15639,65 @@ Object.defineProperty(module, 'exports', {
 /***/ }),
 /* 286 */,
 /* 287 */,
-/* 288 */,
+/* 288 */
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+
+const path = __webpack_require__(622);
+const which = __webpack_require__(505);
+const getPathKey = __webpack_require__(375);
+
+function resolveCommandAttempt(parsed, withoutPathExt) {
+    const env = parsed.options.env || process.env;
+    const cwd = process.cwd();
+    const hasCustomCwd = parsed.options.cwd != null;
+    // Worker threads do not have process.chdir()
+    const shouldSwitchCwd = hasCustomCwd && process.chdir !== undefined && !process.chdir.disabled;
+
+    // If a custom `cwd` was specified, we need to change the process cwd
+    // because `which` will do stat calls but does not support a custom cwd
+    if (shouldSwitchCwd) {
+        try {
+            process.chdir(parsed.options.cwd);
+        } catch (err) {
+            /* Empty */
+        }
+    }
+
+    let resolved;
+
+    try {
+        resolved = which.sync(parsed.command, {
+            path: env[getPathKey({ env })],
+            pathExt: withoutPathExt ? path.delimiter : undefined,
+        });
+    } catch (e) {
+        /* Empty */
+    } finally {
+        if (shouldSwitchCwd) {
+            process.chdir(cwd);
+        }
+    }
+
+    // If we successfully resolved, ensure that an absolute path is returned
+    // Note that when a custom `cwd` was used, we need to resolve to an absolute path based on it
+    if (resolved) {
+        resolved = path.resolve(hasCustomCwd ? parsed.options.cwd : '', resolved);
+    }
+
+    return resolved;
+}
+
+function resolveCommand(parsed) {
+    return resolveCommandAttempt(parsed) || resolveCommandAttempt(parsed, true);
+}
+
+module.exports = resolveCommand;
+
+
+/***/ }),
 /* 289 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
@@ -14165,7 +15705,7 @@ Object.defineProperty(module, 'exports', {
 
 module.exports = parseString
 
-const TOMLParser = __webpack_require__(725)
+const TOMLParser = __webpack_require__(329)
 const prettyError = __webpack_require__(985)
 
 function parseString (str) {
@@ -14320,163 +15860,7 @@ function parseString (str) {
 "use strict";
 
 
-var entities = __webpack_require__(869)
-var legacy = __webpack_require__(447)
-var hexadecimal = __webpack_require__(970)
-var decimal = __webpack_require__(858)
-var alphanumerical = __webpack_require__(668)
-var dangerous = __webpack_require__(213)
-
-module.exports = encode
-encode.escape = escape
-
-var own = {}.hasOwnProperty
-
-// Characters
-var equalsTo = 61
-
-// List of enforced escapes.
-var escapes = ['"', "'", '<', '>', '&', '`']
-
-// Map of characters to names.
-var characters = construct()
-
-// Default escapes.
-var defaultEscapes = toExpression(escapes)
-
-// Surrogate pairs.
-var surrogatePair = /[\uD800-\uDBFF][\uDC00-\uDFFF]/g
-
-// Non-ASCII characters.
-// eslint-disable-next-line no-control-regex, unicorn/no-hex-escape
-var bmp = /[\x01-\t\x0B\f\x0E-\x1F\x7F\x81\x8D\x8F\x90\x9D\xA0-\uFFFF]/g
-
-// Encode special characters in `value`.
-function encode(value, options) {
-  var settings = options || {}
-  var subset = settings.subset
-  var set = subset ? toExpression(subset) : defaultEscapes
-  var escapeOnly = settings.escapeOnly
-  var omit = settings.omitOptionalSemicolons
-
-  value = value.replace(set, replace)
-
-  if (subset || escapeOnly) {
-    return value
-  }
-
-  return value
-    .replace(surrogatePair, replaceSurrogatePair)
-    .replace(bmp, replace)
-
-  function replaceSurrogatePair(pair, pos, slice) {
-    return toHexReference(
-      (pair.charCodeAt(0) - 0xd800) * 0x400 +
-        pair.charCodeAt(1) -
-        0xdc00 +
-        0x10000,
-      slice.charCodeAt(pos + 2),
-      omit
-    )
-  }
-
-  function replace(char, pos, slice) {
-    return one(char, slice.charCodeAt(pos + 1), settings)
-  }
-}
-
-// Shortcut to escape special characters in HTML.
-function escape(value) {
-  return encode(value, {escapeOnly: true, useNamedReferences: true})
-}
-
-// Encode `char` according to `options`.
-function one(char, next, options) {
-  var shortest = options.useShortestReferences
-  var omit = options.omitOptionalSemicolons
-  var named
-  var code
-  var numeric
-  var decimal
-
-  if ((shortest || options.useNamedReferences) && own.call(characters, char)) {
-    named = toNamed(characters[char], next, omit, options.attribute)
-  }
-
-  if (shortest || !named) {
-    code = char.charCodeAt(0)
-    numeric = toHexReference(code, next, omit)
-
-    // Use the shortest numeric reference when requested.
-    // A simple algorithm would use decimal for all code points under 100, as
-    // those are shorter than hexadecimal:
-    //
-    // * `&#99;` vs `&#x63;` (decimal shorter)
-    // * `&#100;` vs `&#x64;` (equal)
-    //
-    // However, because we take `next` into consideration when `omit` is used,
-    // And it would be possible that decimals are shorter on bigger values as
-    // well if `next` is hexadecimal but not decimal, we instead compare both.
-    if (shortest) {
-      decimal = toDecimalReference(code, next, omit)
-
-      if (decimal.length < numeric.length) {
-        numeric = decimal
-      }
-    }
-  }
-
-  if (named && (!shortest || named.length < numeric.length)) {
-    return named
-  }
-
-  return numeric
-}
-
-// Transform `code` into an entity.
-function toNamed(name, next, omit, attribute) {
-  var value = '&' + name
-
-  if (
-    omit &&
-    own.call(legacy, name) &&
-    dangerous.indexOf(name) === -1 &&
-    (!attribute || (next && next !== equalsTo && !alphanumerical(next)))
-  ) {
-    return value
-  }
-
-  return value + ';'
-}
-
-// Transform `code` into a hexadecimal character reference.
-function toHexReference(code, next, omit) {
-  var value = '&#x' + code.toString(16).toUpperCase()
-  return omit && next && !hexadecimal(next) ? value : value + ';'
-}
-
-// Transform `code` into a decimal character reference.
-function toDecimalReference(code, next, omit) {
-  var value = '&#' + String(code)
-  return omit && next && !decimal(next) ? value : value + ';'
-}
-
-// Create an expression for `characters`.
-function toExpression(characters) {
-  return new RegExp('[' + characters.join('') + ']', 'g')
-}
-
-// Construct the map.
-function construct() {
-  var chars = {}
-  var name
-
-  for (name in entities) {
-    chars[entities[name]] = name
-  }
-
-  return chars
-}
+module.exports = __webpack_require__(621)
 
 
 /***/ }),
@@ -14486,7 +15870,7 @@ function construct() {
 
 const Range = __webpack_require__(46)
 const { ANY } = __webpack_require__(9)
-const satisfies = __webpack_require__(845)
+const satisfies = __webpack_require__(60)
 const compare = __webpack_require__(217)
 
 // Complex range `r1 || r2 || ...` is a subset of `R1 || R2 || ...` iff:
@@ -14645,22 +16029,11 @@ module.exports = subset
 /* 294 */,
 /* 295 */,
 /* 296 */
-/***/ (function(module) {
+/***/ (function(module, __unusedexports, __webpack_require__) {
 
-"use strict";
-
-
-const mimicFn = (to, from) => {
-	for (const prop of Reflect.ownKeys(from)) {
-		Object.defineProperty(to, prop, Object.getOwnPropertyDescriptor(from, prop));
-	}
-
-	return to;
-};
-
-module.exports = mimicFn;
-// TODO: Remove this for the next major release
-module.exports.default = mimicFn;
+const compare = __webpack_require__(217)
+const lt = (a, b, loose) => compare(a, b, loose) < 0
+module.exports = lt
 
 
 /***/ }),
@@ -14673,7 +16046,7 @@ const eq = __webpack_require__(901)
 const neq = __webpack_require__(132)
 const gt = __webpack_require__(855)
 const gte = __webpack_require__(989)
-const lt = __webpack_require__(921)
+const lt = __webpack_require__(296)
 const lte = __webpack_require__(508)
 
 const cmp = (a, op, b, loose) => {
@@ -14743,23 +16116,60 @@ exports.default = Settings;
 
 
 /***/ }),
-/* 301 */,
+/* 301 */
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+module.exports = toNamed
+
+var legacy = __webpack_require__(447)
+var characters = __webpack_require__(754)
+var fromCharCode = __webpack_require__(362)
+var own = __webpack_require__(694)
+var dangerous = __webpack_require__(639)
+
+// Transform `code` into a named character reference.
+function toNamed(code, next, omit, attribute) {
+  var character = fromCharCode(code)
+  var name
+  var value
+
+  if (own.call(characters, character)) {
+    name = characters[character]
+    value = '&' + name
+
+    if (
+      omit &&
+      own.call(legacy, name) &&
+      dangerous.indexOf(name) === -1 &&
+      (!attribute ||
+        (next && next !== 61 /* `=` */ && /[^\da-z]/i.test(fromCharCode(next))))
+    ) {
+      return value
+    }
+
+    return value + ';'
+  }
+
+  return ''
+}
+
+
+/***/ }),
 /* 302 */,
 /* 303 */,
 /* 304 */,
 /* 305 */,
 /* 306 */,
 /* 307 */
-/***/ (function(module) {
+/***/ (function(module, __unusedexports, __webpack_require__) {
 
-"use strict";
-
-
-module.exports = locate
-
-function locate(value, fromIndex) {
-  return value.indexOf('`', fromIndex)
+const Range = __webpack_require__(46)
+const intersects = (r1, r2, options) => {
+  r1 = new Range(r1, options)
+  r2 = new Range(r2, options)
+  return r1.intersects(r2)
 }
+module.exports = intersects
 
 
 /***/ }),
@@ -15057,52 +16467,1378 @@ function strong(eat, value, silent) {
 
 "use strict";
 
-const path = __webpack_require__(622);
-const pathKey = __webpack_require__(60);
+/* eslint-disable no-new-wrappers, no-eval, camelcase, operator-linebreak */
+module.exports = makeParserClass(__webpack_require__(929))
+module.exports.makeParserClass = makeParserClass
 
-const npmRunPath = options => {
-	options = {
-		cwd: process.cwd(),
-		path: process.env[pathKey()],
-		execPath: process.execPath,
-		...options
-	};
+class TomlError extends Error {
+  constructor (msg) {
+    super(msg)
+    this.name = 'TomlError'
+    /* istanbul ignore next */
+    if (Error.captureStackTrace) Error.captureStackTrace(this, TomlError)
+    this.fromTOML = true
+    this.wrapped = null
+  }
+}
+TomlError.wrap = err => {
+  const terr = new TomlError(err.message)
+  terr.code = err.code
+  terr.wrapped = err
+  return terr
+}
+module.exports.TomlError = TomlError
 
-	let previous;
-	let cwdPath = path.resolve(options.cwd);
-	const result = [];
+const createDateTime = __webpack_require__(721)
+const createDateTimeFloat = __webpack_require__(499)
+const createDate = __webpack_require__(67)
+const createTime = __webpack_require__(680)
 
-	while (previous !== cwdPath) {
-		result.push(path.join(cwdPath, 'node_modules/.bin'));
-		previous = cwdPath;
-		cwdPath = path.resolve(cwdPath, '..');
-	}
+const CTRL_I = 0x09
+const CTRL_J = 0x0A
+const CTRL_M = 0x0D
+const CTRL_CHAR_BOUNDARY = 0x1F // the last non-character in the latin1 region of unicode, except DEL
+const CHAR_SP = 0x20
+const CHAR_QUOT = 0x22
+const CHAR_NUM = 0x23
+const CHAR_APOS = 0x27
+const CHAR_PLUS = 0x2B
+const CHAR_COMMA = 0x2C
+const CHAR_HYPHEN = 0x2D
+const CHAR_PERIOD = 0x2E
+const CHAR_0 = 0x30
+const CHAR_1 = 0x31
+const CHAR_7 = 0x37
+const CHAR_9 = 0x39
+const CHAR_COLON = 0x3A
+const CHAR_EQUALS = 0x3D
+const CHAR_A = 0x41
+const CHAR_E = 0x45
+const CHAR_F = 0x46
+const CHAR_T = 0x54
+const CHAR_U = 0x55
+const CHAR_Z = 0x5A
+const CHAR_LOWBAR = 0x5F
+const CHAR_a = 0x61
+const CHAR_b = 0x62
+const CHAR_e = 0x65
+const CHAR_f = 0x66
+const CHAR_i = 0x69
+const CHAR_l = 0x6C
+const CHAR_n = 0x6E
+const CHAR_o = 0x6F
+const CHAR_r = 0x72
+const CHAR_s = 0x73
+const CHAR_t = 0x74
+const CHAR_u = 0x75
+const CHAR_x = 0x78
+const CHAR_z = 0x7A
+const CHAR_LCUB = 0x7B
+const CHAR_RCUB = 0x7D
+const CHAR_LSQB = 0x5B
+const CHAR_BSOL = 0x5C
+const CHAR_RSQB = 0x5D
+const CHAR_DEL = 0x7F
+const SURROGATE_FIRST = 0xD800
+const SURROGATE_LAST = 0xDFFF
 
-	// Ensure the running `node` binary is used
-	const execPathDir = path.resolve(options.cwd, options.execPath, '..');
-	result.push(execPathDir);
+const escapes = {
+  [CHAR_b]: '\u0008',
+  [CHAR_t]: '\u0009',
+  [CHAR_n]: '\u000A',
+  [CHAR_f]: '\u000C',
+  [CHAR_r]: '\u000D',
+  [CHAR_QUOT]: '\u0022',
+  [CHAR_BSOL]: '\u005C'
+}
 
-	return result.concat(options.path).join(path.delimiter);
-};
+function isDigit (cp) {
+  return cp >= CHAR_0 && cp <= CHAR_9
+}
+function isHexit (cp) {
+  return (cp >= CHAR_A && cp <= CHAR_F) || (cp >= CHAR_a && cp <= CHAR_f) || (cp >= CHAR_0 && cp <= CHAR_9)
+}
+function isBit (cp) {
+  return cp === CHAR_1 || cp === CHAR_0
+}
+function isOctit (cp) {
+  return (cp >= CHAR_0 && cp <= CHAR_7)
+}
+function isAlphaNumQuoteHyphen (cp) {
+  return (cp >= CHAR_A && cp <= CHAR_Z)
+      || (cp >= CHAR_a && cp <= CHAR_z)
+      || (cp >= CHAR_0 && cp <= CHAR_9)
+      || cp === CHAR_APOS
+      || cp === CHAR_QUOT
+      || cp === CHAR_LOWBAR
+      || cp === CHAR_HYPHEN
+}
+function isAlphaNumHyphen (cp) {
+  return (cp >= CHAR_A && cp <= CHAR_Z)
+      || (cp >= CHAR_a && cp <= CHAR_z)
+      || (cp >= CHAR_0 && cp <= CHAR_9)
+      || cp === CHAR_LOWBAR
+      || cp === CHAR_HYPHEN
+}
+const _type = Symbol('type')
+const _declared = Symbol('declared')
 
-module.exports = npmRunPath;
-// TODO: Remove this for the next major release
-module.exports.default = npmRunPath;
+const hasOwnProperty = Object.prototype.hasOwnProperty
+const defineProperty = Object.defineProperty
+const descriptor = {configurable: true, enumerable: true, writable: true, value: undefined}
 
-module.exports.env = options => {
-	options = {
-		env: process.env,
-		...options
-	};
+function hasKey (obj, key) {
+  if (hasOwnProperty.call(obj, key)) return true
+  if (key === '__proto__') defineProperty(obj, '__proto__', descriptor)
+  return false
+}
 
-	const env = {...options.env};
-	const path = pathKey({env});
+const INLINE_TABLE = Symbol('inline-table')
+function InlineTable () {
+  return Object.defineProperties({}, {
+    [_type]: {value: INLINE_TABLE}
+  })
+}
+function isInlineTable (obj) {
+  if (obj === null || typeof (obj) !== 'object') return false
+  return obj[_type] === INLINE_TABLE
+}
 
-	options.path = env[path];
-	env[path] = module.exports(options);
+const TABLE = Symbol('table')
+function Table () {
+  return Object.defineProperties({}, {
+    [_type]: {value: TABLE},
+    [_declared]: {value: false, writable: true}
+  })
+}
+function isTable (obj) {
+  if (obj === null || typeof (obj) !== 'object') return false
+  return obj[_type] === TABLE
+}
 
-	return env;
-};
+const _contentType = Symbol('content-type')
+const INLINE_LIST = Symbol('inline-list')
+function InlineList (type) {
+  return Object.defineProperties([], {
+    [_type]: {value: INLINE_LIST},
+    [_contentType]: {value: type}
+  })
+}
+function isInlineList (obj) {
+  if (obj === null || typeof (obj) !== 'object') return false
+  return obj[_type] === INLINE_LIST
+}
+
+const LIST = Symbol('list')
+function List () {
+  return Object.defineProperties([], {
+    [_type]: {value: LIST}
+  })
+}
+function isList (obj) {
+  if (obj === null || typeof (obj) !== 'object') return false
+  return obj[_type] === LIST
+}
+
+// in an eval, to let bundlers not slurp in a util proxy
+let _custom
+try {
+  const utilInspect = eval("require('util').inspect")
+  _custom = utilInspect.custom
+} catch (_) {
+  /* eval require not available in transpiled bundle */
+}
+/* istanbul ignore next */
+const _inspect = _custom || 'inspect'
+
+class BoxedBigInt {
+  constructor (value) {
+    try {
+      this.value = global.BigInt.asIntN(64, value)
+    } catch (_) {
+      /* istanbul ignore next */
+      this.value = null
+    }
+    Object.defineProperty(this, _type, {value: INTEGER})
+  }
+  isNaN () {
+    return this.value === null
+  }
+  /* istanbul ignore next */
+  toString () {
+    return String(this.value)
+  }
+  /* istanbul ignore next */
+  [_inspect] () {
+    return `[BigInt: ${this.toString()}]}`
+  }
+  valueOf () {
+    return this.value
+  }
+}
+
+const INTEGER = Symbol('integer')
+function Integer (value) {
+  let num = Number(value)
+  // -0 is a float thing, not an int thing
+  if (Object.is(num, -0)) num = 0
+  /* istanbul ignore else */
+  if (global.BigInt && !Number.isSafeInteger(num)) {
+    return new BoxedBigInt(value)
+  } else {
+    /* istanbul ignore next */
+    return Object.defineProperties(new Number(num), {
+      isNaN: {value: function () { return isNaN(this) }},
+      [_type]: {value: INTEGER},
+      [_inspect]: {value: () => `[Integer: ${value}]`}
+    })
+  }
+}
+function isInteger (obj) {
+  if (obj === null || typeof (obj) !== 'object') return false
+  return obj[_type] === INTEGER
+}
+
+const FLOAT = Symbol('float')
+function Float (value) {
+  /* istanbul ignore next */
+  return Object.defineProperties(new Number(value), {
+    [_type]: {value: FLOAT},
+    [_inspect]: {value: () => `[Float: ${value}]`}
+  })
+}
+function isFloat (obj) {
+  if (obj === null || typeof (obj) !== 'object') return false
+  return obj[_type] === FLOAT
+}
+
+function tomlType (value) {
+  const type = typeof value
+  if (type === 'object') {
+    /* istanbul ignore if */
+    if (value === null) return 'null'
+    if (value instanceof Date) return 'datetime'
+    /* istanbul ignore else */
+    if (_type in value) {
+      switch (value[_type]) {
+        case INLINE_TABLE: return 'inline-table'
+        case INLINE_LIST: return 'inline-list'
+        /* istanbul ignore next */
+        case TABLE: return 'table'
+        /* istanbul ignore next */
+        case LIST: return 'list'
+        case FLOAT: return 'float'
+        case INTEGER: return 'integer'
+      }
+    }
+  }
+  return type
+}
+
+function makeParserClass (Parser) {
+  class TOMLParser extends Parser {
+    constructor () {
+      super()
+      this.ctx = this.obj = Table()
+    }
+
+    /* MATCH HELPER */
+    atEndOfWord () {
+      return this.char === CHAR_NUM || this.char === CTRL_I || this.char === CHAR_SP || this.atEndOfLine()
+    }
+    atEndOfLine () {
+      return this.char === Parser.END || this.char === CTRL_J || this.char === CTRL_M
+    }
+
+    parseStart () {
+      if (this.char === Parser.END) {
+        return null
+      } else if (this.char === CHAR_LSQB) {
+        return this.call(this.parseTableOrList)
+      } else if (this.char === CHAR_NUM) {
+        return this.call(this.parseComment)
+      } else if (this.char === CTRL_J || this.char === CHAR_SP || this.char === CTRL_I || this.char === CTRL_M) {
+        return null
+      } else if (isAlphaNumQuoteHyphen(this.char)) {
+        return this.callNow(this.parseAssignStatement)
+      } else {
+        throw this.error(new TomlError(`Unknown character "${this.char}"`))
+      }
+    }
+
+    // HELPER, this strips any whitespace and comments to the end of the line
+    // then RETURNS. Last state in a production.
+    parseWhitespaceToEOL () {
+      if (this.char === CHAR_SP || this.char === CTRL_I || this.char === CTRL_M) {
+        return null
+      } else if (this.char === CHAR_NUM) {
+        return this.goto(this.parseComment)
+      } else if (this.char === Parser.END || this.char === CTRL_J) {
+        return this.return()
+      } else {
+        throw this.error(new TomlError('Unexpected character, expected only whitespace or comments till end of line'))
+      }
+    }
+
+    /* ASSIGNMENT: key = value */
+    parseAssignStatement () {
+      return this.callNow(this.parseAssign, this.recordAssignStatement)
+    }
+    recordAssignStatement (kv) {
+      let target = this.ctx
+      let finalKey = kv.key.pop()
+      for (let kw of kv.key) {
+        if (hasKey(target, kw) && (!isTable(target[kw]) || target[kw][_declared])) {
+          throw this.error(new TomlError("Can't redefine existing key"))
+        }
+        target = target[kw] = target[kw] || Table()
+      }
+      if (hasKey(target, finalKey)) {
+        throw this.error(new TomlError("Can't redefine existing key"))
+      }
+      // unbox our numbers
+      if (isInteger(kv.value) || isFloat(kv.value)) {
+        target[finalKey] = kv.value.valueOf()
+      } else {
+        target[finalKey] = kv.value
+      }
+      return this.goto(this.parseWhitespaceToEOL)
+    }
+
+    /* ASSSIGNMENT expression, key = value possibly inside an inline table */
+    parseAssign () {
+      return this.callNow(this.parseKeyword, this.recordAssignKeyword)
+    }
+    recordAssignKeyword (key) {
+      if (this.state.resultTable) {
+        this.state.resultTable.push(key)
+      } else {
+        this.state.resultTable = [key]
+      }
+      return this.goto(this.parseAssignKeywordPreDot)
+    }
+    parseAssignKeywordPreDot () {
+      if (this.char === CHAR_PERIOD) {
+        return this.next(this.parseAssignKeywordPostDot)
+      } else if (this.char !== CHAR_SP && this.char !== CTRL_I) {
+        return this.goto(this.parseAssignEqual)
+      }
+    }
+    parseAssignKeywordPostDot () {
+      if (this.char !== CHAR_SP && this.char !== CTRL_I) {
+        return this.callNow(this.parseKeyword, this.recordAssignKeyword)
+      }
+    }
+
+    parseAssignEqual () {
+      if (this.char === CHAR_EQUALS) {
+        return this.next(this.parseAssignPreValue)
+      } else {
+        throw this.error(new TomlError('Invalid character, expected "="'))
+      }
+    }
+    parseAssignPreValue () {
+      if (this.char === CHAR_SP || this.char === CTRL_I) {
+        return null
+      } else {
+        return this.callNow(this.parseValue, this.recordAssignValue)
+      }
+    }
+    recordAssignValue (value) {
+      return this.returnNow({key: this.state.resultTable, value: value})
+    }
+
+    /* COMMENTS: #...eol */
+    parseComment () {
+      do {
+        if (this.char === Parser.END || this.char === CTRL_J) {
+          return this.return()
+        }
+      } while (this.nextChar())
+    }
+
+    /* TABLES AND LISTS, [foo] and [[foo]] */
+    parseTableOrList () {
+      if (this.char === CHAR_LSQB) {
+        this.next(this.parseList)
+      } else {
+        return this.goto(this.parseTable)
+      }
+    }
+
+    /* TABLE [foo.bar.baz] */
+    parseTable () {
+      this.ctx = this.obj
+      return this.goto(this.parseTableNext)
+    }
+    parseTableNext () {
+      if (this.char === CHAR_SP || this.char === CTRL_I) {
+        return null
+      } else {
+        return this.callNow(this.parseKeyword, this.parseTableMore)
+      }
+    }
+    parseTableMore (keyword) {
+      if (this.char === CHAR_SP || this.char === CTRL_I) {
+        return null
+      } else if (this.char === CHAR_RSQB) {
+        if (hasKey(this.ctx, keyword) && (!isTable(this.ctx[keyword]) || this.ctx[keyword][_declared])) {
+          throw this.error(new TomlError("Can't redefine existing key"))
+        } else {
+          this.ctx = this.ctx[keyword] = this.ctx[keyword] || Table()
+          this.ctx[_declared] = true
+        }
+        return this.next(this.parseWhitespaceToEOL)
+      } else if (this.char === CHAR_PERIOD) {
+        if (!hasKey(this.ctx, keyword)) {
+          this.ctx = this.ctx[keyword] = Table()
+        } else if (isTable(this.ctx[keyword])) {
+          this.ctx = this.ctx[keyword]
+        } else if (isList(this.ctx[keyword])) {
+          this.ctx = this.ctx[keyword][this.ctx[keyword].length - 1]
+        } else {
+          throw this.error(new TomlError("Can't redefine existing key"))
+        }
+        return this.next(this.parseTableNext)
+      } else {
+        throw this.error(new TomlError('Unexpected character, expected whitespace, . or ]'))
+      }
+    }
+
+    /* LIST [[a.b.c]] */
+    parseList () {
+      this.ctx = this.obj
+      return this.goto(this.parseListNext)
+    }
+    parseListNext () {
+      if (this.char === CHAR_SP || this.char === CTRL_I) {
+        return null
+      } else {
+        return this.callNow(this.parseKeyword, this.parseListMore)
+      }
+    }
+    parseListMore (keyword) {
+      if (this.char === CHAR_SP || this.char === CTRL_I) {
+        return null
+      } else if (this.char === CHAR_RSQB) {
+        if (!hasKey(this.ctx, keyword)) {
+          this.ctx[keyword] = List()
+        }
+        if (isInlineList(this.ctx[keyword])) {
+          throw this.error(new TomlError("Can't extend an inline array"))
+        } else if (isList(this.ctx[keyword])) {
+          const next = Table()
+          this.ctx[keyword].push(next)
+          this.ctx = next
+        } else {
+          throw this.error(new TomlError("Can't redefine an existing key"))
+        }
+        return this.next(this.parseListEnd)
+      } else if (this.char === CHAR_PERIOD) {
+        if (!hasKey(this.ctx, keyword)) {
+          this.ctx = this.ctx[keyword] = Table()
+        } else if (isInlineList(this.ctx[keyword])) {
+          throw this.error(new TomlError("Can't extend an inline array"))
+        } else if (isInlineTable(this.ctx[keyword])) {
+          throw this.error(new TomlError("Can't extend an inline table"))
+        } else if (isList(this.ctx[keyword])) {
+          this.ctx = this.ctx[keyword][this.ctx[keyword].length - 1]
+        } else if (isTable(this.ctx[keyword])) {
+          this.ctx = this.ctx[keyword]
+        } else {
+          throw this.error(new TomlError("Can't redefine an existing key"))
+        }
+        return this.next(this.parseListNext)
+      } else {
+        throw this.error(new TomlError('Unexpected character, expected whitespace, . or ]'))
+      }
+    }
+    parseListEnd (keyword) {
+      if (this.char === CHAR_RSQB) {
+        return this.next(this.parseWhitespaceToEOL)
+      } else {
+        throw this.error(new TomlError('Unexpected character, expected whitespace, . or ]'))
+      }
+    }
+
+    /* VALUE string, number, boolean, inline list, inline object */
+    parseValue () {
+      if (this.char === Parser.END) {
+        throw this.error(new TomlError('Key without value'))
+      } else if (this.char === CHAR_QUOT) {
+        return this.next(this.parseDoubleString)
+      } if (this.char === CHAR_APOS) {
+        return this.next(this.parseSingleString)
+      } else if (this.char === CHAR_HYPHEN || this.char === CHAR_PLUS) {
+        return this.goto(this.parseNumberSign)
+      } else if (this.char === CHAR_i) {
+        return this.next(this.parseInf)
+      } else if (this.char === CHAR_n) {
+        return this.next(this.parseNan)
+      } else if (isDigit(this.char)) {
+        return this.goto(this.parseNumberOrDateTime)
+      } else if (this.char === CHAR_t || this.char === CHAR_f) {
+        return this.goto(this.parseBoolean)
+      } else if (this.char === CHAR_LSQB) {
+        return this.call(this.parseInlineList, this.recordValue)
+      } else if (this.char === CHAR_LCUB) {
+        return this.call(this.parseInlineTable, this.recordValue)
+      } else {
+        throw this.error(new TomlError('Unexpected character, expecting string, number, datetime, boolean, inline array or inline table'))
+      }
+    }
+    recordValue (value) {
+      return this.returnNow(value)
+    }
+
+    parseInf () {
+      if (this.char === CHAR_n) {
+        return this.next(this.parseInf2)
+      } else {
+        throw this.error(new TomlError('Unexpected character, expected "inf", "+inf" or "-inf"'))
+      }
+    }
+    parseInf2 () {
+      if (this.char === CHAR_f) {
+        if (this.state.buf === '-') {
+          return this.return(-Infinity)
+        } else {
+          return this.return(Infinity)
+        }
+      } else {
+        throw this.error(new TomlError('Unexpected character, expected "inf", "+inf" or "-inf"'))
+      }
+    }
+
+    parseNan () {
+      if (this.char === CHAR_a) {
+        return this.next(this.parseNan2)
+      } else {
+        throw this.error(new TomlError('Unexpected character, expected "nan"'))
+      }
+    }
+    parseNan2 () {
+      if (this.char === CHAR_n) {
+        return this.return(NaN)
+      } else {
+        throw this.error(new TomlError('Unexpected character, expected "nan"'))
+      }
+    }
+
+    /* KEYS, barewords or basic, literal, or dotted */
+    parseKeyword () {
+      if (this.char === CHAR_QUOT) {
+        return this.next(this.parseBasicString)
+      } else if (this.char === CHAR_APOS) {
+        return this.next(this.parseLiteralString)
+      } else {
+        return this.goto(this.parseBareKey)
+      }
+    }
+
+    /* KEYS: barewords */
+    parseBareKey () {
+      do {
+        if (this.char === Parser.END) {
+          throw this.error(new TomlError('Key ended without value'))
+        } else if (isAlphaNumHyphen(this.char)) {
+          this.consume()
+        } else if (this.state.buf.length === 0) {
+          throw this.error(new TomlError('Empty bare keys are not allowed'))
+        } else {
+          return this.returnNow()
+        }
+      } while (this.nextChar())
+    }
+
+    /* STRINGS, single quoted (literal) */
+    parseSingleString () {
+      if (this.char === CHAR_APOS) {
+        return this.next(this.parseLiteralMultiStringMaybe)
+      } else {
+        return this.goto(this.parseLiteralString)
+      }
+    }
+    parseLiteralString () {
+      do {
+        if (this.char === CHAR_APOS) {
+          return this.return()
+        } else if (this.atEndOfLine()) {
+          throw this.error(new TomlError('Unterminated string'))
+        } else if (this.char === CHAR_DEL || (this.char <= CTRL_CHAR_BOUNDARY && this.char !== CTRL_I)) {
+          throw this.errorControlCharInString()
+        } else {
+          this.consume()
+        }
+      } while (this.nextChar())
+    }
+    parseLiteralMultiStringMaybe () {
+      if (this.char === CHAR_APOS) {
+        return this.next(this.parseLiteralMultiString)
+      } else {
+        return this.returnNow()
+      }
+    }
+    parseLiteralMultiString () {
+      if (this.char === CTRL_M) {
+        return null
+      } else if (this.char === CTRL_J) {
+        return this.next(this.parseLiteralMultiStringContent)
+      } else {
+        return this.goto(this.parseLiteralMultiStringContent)
+      }
+    }
+    parseLiteralMultiStringContent () {
+      do {
+        if (this.char === CHAR_APOS) {
+          return this.next(this.parseLiteralMultiEnd)
+        } else if (this.char === Parser.END) {
+          throw this.error(new TomlError('Unterminated multi-line string'))
+        } else if (this.char === CHAR_DEL || (this.char <= CTRL_CHAR_BOUNDARY && this.char !== CTRL_I && this.char !== CTRL_J && this.char !== CTRL_M)) {
+          throw this.errorControlCharInString()
+        } else {
+          this.consume()
+        }
+      } while (this.nextChar())
+    }
+    parseLiteralMultiEnd () {
+      if (this.char === CHAR_APOS) {
+        return this.next(this.parseLiteralMultiEnd2)
+      } else {
+        this.state.buf += "'"
+        return this.goto(this.parseLiteralMultiStringContent)
+      }
+    }
+    parseLiteralMultiEnd2 () {
+      if (this.char === CHAR_APOS) {
+        return this.return()
+      } else {
+        this.state.buf += "''"
+        return this.goto(this.parseLiteralMultiStringContent)
+      }
+    }
+
+    /* STRINGS double quoted */
+    parseDoubleString () {
+      if (this.char === CHAR_QUOT) {
+        return this.next(this.parseMultiStringMaybe)
+      } else {
+        return this.goto(this.parseBasicString)
+      }
+    }
+    parseBasicString () {
+      do {
+        if (this.char === CHAR_BSOL) {
+          return this.call(this.parseEscape, this.recordEscapeReplacement)
+        } else if (this.char === CHAR_QUOT) {
+          return this.return()
+        } else if (this.atEndOfLine()) {
+          throw this.error(new TomlError('Unterminated string'))
+        } else if (this.char === CHAR_DEL || (this.char <= CTRL_CHAR_BOUNDARY && this.char !== CTRL_I)) {
+          throw this.errorControlCharInString()
+        } else {
+          this.consume()
+        }
+      } while (this.nextChar())
+    }
+    recordEscapeReplacement (replacement) {
+      this.state.buf += replacement
+      return this.goto(this.parseBasicString)
+    }
+    parseMultiStringMaybe () {
+      if (this.char === CHAR_QUOT) {
+        return this.next(this.parseMultiString)
+      } else {
+        return this.returnNow()
+      }
+    }
+    parseMultiString () {
+      if (this.char === CTRL_M) {
+        return null
+      } else if (this.char === CTRL_J) {
+        return this.next(this.parseMultiStringContent)
+      } else {
+        return this.goto(this.parseMultiStringContent)
+      }
+    }
+    parseMultiStringContent () {
+      do {
+        if (this.char === CHAR_BSOL) {
+          return this.call(this.parseMultiEscape, this.recordMultiEscapeReplacement)
+        } else if (this.char === CHAR_QUOT) {
+          return this.next(this.parseMultiEnd)
+        } else if (this.char === Parser.END) {
+          throw this.error(new TomlError('Unterminated multi-line string'))
+        } else if (this.char === CHAR_DEL || (this.char <= CTRL_CHAR_BOUNDARY && this.char !== CTRL_I && this.char !== CTRL_J && this.char !== CTRL_M)) {
+          throw this.errorControlCharInString()
+        } else {
+          this.consume()
+        }
+      } while (this.nextChar())
+    }
+    errorControlCharInString () {
+      let displayCode = '\\u00'
+      if (this.char < 16) {
+        displayCode += '0'
+      }
+      displayCode += this.char.toString(16)
+
+      return this.error(new TomlError(`Control characters (codes < 0x1f and 0x7f) are not allowed in strings, use ${displayCode} instead`))
+    }
+    recordMultiEscapeReplacement (replacement) {
+      this.state.buf += replacement
+      return this.goto(this.parseMultiStringContent)
+    }
+    parseMultiEnd () {
+      if (this.char === CHAR_QUOT) {
+        return this.next(this.parseMultiEnd2)
+      } else {
+        this.state.buf += '"'
+        return this.goto(this.parseMultiStringContent)
+      }
+    }
+    parseMultiEnd2 () {
+      if (this.char === CHAR_QUOT) {
+        return this.return()
+      } else {
+        this.state.buf += '""'
+        return this.goto(this.parseMultiStringContent)
+      }
+    }
+    parseMultiEscape () {
+      if (this.char === CTRL_M || this.char === CTRL_J) {
+        return this.next(this.parseMultiTrim)
+      } else if (this.char === CHAR_SP || this.char === CTRL_I) {
+        return this.next(this.parsePreMultiTrim)
+      } else {
+        return this.goto(this.parseEscape)
+      }
+    }
+    parsePreMultiTrim () {
+      if (this.char === CHAR_SP || this.char === CTRL_I) {
+        return null
+      } else if (this.char === CTRL_M || this.char === CTRL_J) {
+        return this.next(this.parseMultiTrim)
+      } else {
+        throw this.error(new TomlError("Can't escape whitespace"))
+      }
+    }
+    parseMultiTrim () {
+      // explicitly whitespace here, END should follow the same path as chars
+      if (this.char === CTRL_J || this.char === CHAR_SP || this.char === CTRL_I || this.char === CTRL_M) {
+        return null
+      } else {
+        return this.returnNow()
+      }
+    }
+    parseEscape () {
+      if (this.char in escapes) {
+        return this.return(escapes[this.char])
+      } else if (this.char === CHAR_u) {
+        return this.call(this.parseSmallUnicode, this.parseUnicodeReturn)
+      } else if (this.char === CHAR_U) {
+        return this.call(this.parseLargeUnicode, this.parseUnicodeReturn)
+      } else {
+        throw this.error(new TomlError('Unknown escape character: ' + this.char))
+      }
+    }
+    parseUnicodeReturn (char) {
+      try {
+        const codePoint = parseInt(char, 16)
+        if (codePoint >= SURROGATE_FIRST && codePoint <= SURROGATE_LAST) {
+          throw this.error(new TomlError('Invalid unicode, character in range 0xD800 - 0xDFFF is reserved'))
+        }
+        return this.returnNow(String.fromCodePoint(codePoint))
+      } catch (err) {
+        throw this.error(TomlError.wrap(err))
+      }
+    }
+    parseSmallUnicode () {
+      if (!isHexit(this.char)) {
+        throw this.error(new TomlError('Invalid character in unicode sequence, expected hex'))
+      } else {
+        this.consume()
+        if (this.state.buf.length >= 4) return this.return()
+      }
+    }
+    parseLargeUnicode () {
+      if (!isHexit(this.char)) {
+        throw this.error(new TomlError('Invalid character in unicode sequence, expected hex'))
+      } else {
+        this.consume()
+        if (this.state.buf.length >= 8) return this.return()
+      }
+    }
+
+    /* NUMBERS */
+    parseNumberSign () {
+      this.consume()
+      return this.next(this.parseMaybeSignedInfOrNan)
+    }
+    parseMaybeSignedInfOrNan () {
+      if (this.char === CHAR_i) {
+        return this.next(this.parseInf)
+      } else if (this.char === CHAR_n) {
+        return this.next(this.parseNan)
+      } else {
+        return this.callNow(this.parseNoUnder, this.parseNumberIntegerStart)
+      }
+    }
+    parseNumberIntegerStart () {
+      if (this.char === CHAR_0) {
+        this.consume()
+        return this.next(this.parseNumberIntegerExponentOrDecimal)
+      } else {
+        return this.goto(this.parseNumberInteger)
+      }
+    }
+    parseNumberIntegerExponentOrDecimal () {
+      if (this.char === CHAR_PERIOD) {
+        this.consume()
+        return this.call(this.parseNoUnder, this.parseNumberFloat)
+      } else if (this.char === CHAR_E || this.char === CHAR_e) {
+        this.consume()
+        return this.next(this.parseNumberExponentSign)
+      } else {
+        return this.returnNow(Integer(this.state.buf))
+      }
+    }
+    parseNumberInteger () {
+      if (isDigit(this.char)) {
+        this.consume()
+      } else if (this.char === CHAR_LOWBAR) {
+        return this.call(this.parseNoUnder)
+      } else if (this.char === CHAR_E || this.char === CHAR_e) {
+        this.consume()
+        return this.next(this.parseNumberExponentSign)
+      } else if (this.char === CHAR_PERIOD) {
+        this.consume()
+        return this.call(this.parseNoUnder, this.parseNumberFloat)
+      } else {
+        const result = Integer(this.state.buf)
+        /* istanbul ignore if */
+        if (result.isNaN()) {
+          throw this.error(new TomlError('Invalid number'))
+        } else {
+          return this.returnNow(result)
+        }
+      }
+    }
+    parseNoUnder () {
+      if (this.char === CHAR_LOWBAR || this.char === CHAR_PERIOD || this.char === CHAR_E || this.char === CHAR_e) {
+        throw this.error(new TomlError('Unexpected character, expected digit'))
+      } else if (this.atEndOfWord()) {
+        throw this.error(new TomlError('Incomplete number'))
+      }
+      return this.returnNow()
+    }
+    parseNumberFloat () {
+      if (this.char === CHAR_LOWBAR) {
+        return this.call(this.parseNoUnder, this.parseNumberFloat)
+      } else if (isDigit(this.char)) {
+        this.consume()
+      } else if (this.char === CHAR_E || this.char === CHAR_e) {
+        this.consume()
+        return this.next(this.parseNumberExponentSign)
+      } else {
+        return this.returnNow(Float(this.state.buf))
+      }
+    }
+    parseNumberExponentSign () {
+      if (isDigit(this.char)) {
+        return this.goto(this.parseNumberExponent)
+      } else if (this.char === CHAR_HYPHEN || this.char === CHAR_PLUS) {
+        this.consume()
+        this.call(this.parseNoUnder, this.parseNumberExponent)
+      } else {
+        throw this.error(new TomlError('Unexpected character, expected -, + or digit'))
+      }
+    }
+    parseNumberExponent () {
+      if (isDigit(this.char)) {
+        this.consume()
+      } else if (this.char === CHAR_LOWBAR) {
+        return this.call(this.parseNoUnder)
+      } else {
+        return this.returnNow(Float(this.state.buf))
+      }
+    }
+
+    /* NUMBERS or DATETIMES  */
+    parseNumberOrDateTime () {
+      if (this.char === CHAR_0) {
+        this.consume()
+        return this.next(this.parseNumberBaseOrDateTime)
+      } else {
+        return this.goto(this.parseNumberOrDateTimeOnly)
+      }
+    }
+    parseNumberOrDateTimeOnly () {
+      // note, if two zeros are in a row then it MUST be a date
+      if (this.char === CHAR_LOWBAR) {
+        return this.call(this.parseNoUnder, this.parseNumberInteger)
+      } else if (isDigit(this.char)) {
+        this.consume()
+        if (this.state.buf.length > 4) this.next(this.parseNumberInteger)
+      } else if (this.char === CHAR_E || this.char === CHAR_e) {
+        this.consume()
+        return this.next(this.parseNumberExponentSign)
+      } else if (this.char === CHAR_PERIOD) {
+        this.consume()
+        return this.call(this.parseNoUnder, this.parseNumberFloat)
+      } else if (this.char === CHAR_HYPHEN) {
+        return this.goto(this.parseDateTime)
+      } else if (this.char === CHAR_COLON) {
+        return this.goto(this.parseOnlyTimeHour)
+      } else {
+        return this.returnNow(Integer(this.state.buf))
+      }
+    }
+    parseDateTimeOnly () {
+      if (this.state.buf.length < 4) {
+        if (isDigit(this.char)) {
+          return this.consume()
+        } else if (this.char === CHAR_COLON) {
+          return this.goto(this.parseOnlyTimeHour)
+        } else {
+          throw this.error(new TomlError('Expected digit while parsing year part of a date'))
+        }
+      } else {
+        if (this.char === CHAR_HYPHEN) {
+          return this.goto(this.parseDateTime)
+        } else {
+          throw this.error(new TomlError('Expected hyphen (-) while parsing year part of date'))
+        }
+      }
+    }
+    parseNumberBaseOrDateTime () {
+      if (this.char === CHAR_b) {
+        this.consume()
+        return this.call(this.parseNoUnder, this.parseIntegerBin)
+      } else if (this.char === CHAR_o) {
+        this.consume()
+        return this.call(this.parseNoUnder, this.parseIntegerOct)
+      } else if (this.char === CHAR_x) {
+        this.consume()
+        return this.call(this.parseNoUnder, this.parseIntegerHex)
+      } else if (this.char === CHAR_PERIOD) {
+        return this.goto(this.parseNumberInteger)
+      } else if (isDigit(this.char)) {
+        return this.goto(this.parseDateTimeOnly)
+      } else {
+        return this.returnNow(Integer(this.state.buf))
+      }
+    }
+    parseIntegerHex () {
+      if (isHexit(this.char)) {
+        this.consume()
+      } else if (this.char === CHAR_LOWBAR) {
+        return this.call(this.parseNoUnder)
+      } else {
+        const result = Integer(this.state.buf)
+        /* istanbul ignore if */
+        if (result.isNaN()) {
+          throw this.error(new TomlError('Invalid number'))
+        } else {
+          return this.returnNow(result)
+        }
+      }
+    }
+    parseIntegerOct () {
+      if (isOctit(this.char)) {
+        this.consume()
+      } else if (this.char === CHAR_LOWBAR) {
+        return this.call(this.parseNoUnder)
+      } else {
+        const result = Integer(this.state.buf)
+        /* istanbul ignore if */
+        if (result.isNaN()) {
+          throw this.error(new TomlError('Invalid number'))
+        } else {
+          return this.returnNow(result)
+        }
+      }
+    }
+    parseIntegerBin () {
+      if (isBit(this.char)) {
+        this.consume()
+      } else if (this.char === CHAR_LOWBAR) {
+        return this.call(this.parseNoUnder)
+      } else {
+        const result = Integer(this.state.buf)
+        /* istanbul ignore if */
+        if (result.isNaN()) {
+          throw this.error(new TomlError('Invalid number'))
+        } else {
+          return this.returnNow(result)
+        }
+      }
+    }
+
+    /* DATETIME */
+    parseDateTime () {
+      // we enter here having just consumed the year and about to consume the hyphen
+      if (this.state.buf.length < 4) {
+        throw this.error(new TomlError('Years less than 1000 must be zero padded to four characters'))
+      }
+      this.state.result = this.state.buf
+      this.state.buf = ''
+      return this.next(this.parseDateMonth)
+    }
+    parseDateMonth () {
+      if (this.char === CHAR_HYPHEN) {
+        if (this.state.buf.length < 2) {
+          throw this.error(new TomlError('Months less than 10 must be zero padded to two characters'))
+        }
+        this.state.result += '-' + this.state.buf
+        this.state.buf = ''
+        return this.next(this.parseDateDay)
+      } else if (isDigit(this.char)) {
+        this.consume()
+      } else {
+        throw this.error(new TomlError('Incomplete datetime'))
+      }
+    }
+    parseDateDay () {
+      if (this.char === CHAR_T || this.char === CHAR_SP) {
+        if (this.state.buf.length < 2) {
+          throw this.error(new TomlError('Days less than 10 must be zero padded to two characters'))
+        }
+        this.state.result += '-' + this.state.buf
+        this.state.buf = ''
+        return this.next(this.parseStartTimeHour)
+      } else if (this.atEndOfWord()) {
+        return this.return(createDate(this.state.result + '-' + this.state.buf))
+      } else if (isDigit(this.char)) {
+        this.consume()
+      } else {
+        throw this.error(new TomlError('Incomplete datetime'))
+      }
+    }
+    parseStartTimeHour () {
+      if (this.atEndOfWord()) {
+        return this.returnNow(createDate(this.state.result))
+      } else {
+        return this.goto(this.parseTimeHour)
+      }
+    }
+    parseTimeHour () {
+      if (this.char === CHAR_COLON) {
+        if (this.state.buf.length < 2) {
+          throw this.error(new TomlError('Hours less than 10 must be zero padded to two characters'))
+        }
+        this.state.result += 'T' + this.state.buf
+        this.state.buf = ''
+        return this.next(this.parseTimeMin)
+      } else if (isDigit(this.char)) {
+        this.consume()
+      } else {
+        throw this.error(new TomlError('Incomplete datetime'))
+      }
+    }
+    parseTimeMin () {
+      if (this.state.buf.length < 2 && isDigit(this.char)) {
+        this.consume()
+      } else if (this.state.buf.length === 2 && this.char === CHAR_COLON) {
+        this.state.result += ':' + this.state.buf
+        this.state.buf = ''
+        return this.next(this.parseTimeSec)
+      } else {
+        throw this.error(new TomlError('Incomplete datetime'))
+      }
+    }
+    parseTimeSec () {
+      if (isDigit(this.char)) {
+        this.consume()
+        if (this.state.buf.length === 2) {
+          this.state.result += ':' + this.state.buf
+          this.state.buf = ''
+          return this.next(this.parseTimeZoneOrFraction)
+        }
+      } else {
+        throw this.error(new TomlError('Incomplete datetime'))
+      }
+    }
+
+    parseOnlyTimeHour () {
+      /* istanbul ignore else */
+      if (this.char === CHAR_COLON) {
+        if (this.state.buf.length < 2) {
+          throw this.error(new TomlError('Hours less than 10 must be zero padded to two characters'))
+        }
+        this.state.result = this.state.buf
+        this.state.buf = ''
+        return this.next(this.parseOnlyTimeMin)
+      } else {
+        throw this.error(new TomlError('Incomplete time'))
+      }
+    }
+    parseOnlyTimeMin () {
+      if (this.state.buf.length < 2 && isDigit(this.char)) {
+        this.consume()
+      } else if (this.state.buf.length === 2 && this.char === CHAR_COLON) {
+        this.state.result += ':' + this.state.buf
+        this.state.buf = ''
+        return this.next(this.parseOnlyTimeSec)
+      } else {
+        throw this.error(new TomlError('Incomplete time'))
+      }
+    }
+    parseOnlyTimeSec () {
+      if (isDigit(this.char)) {
+        this.consume()
+        if (this.state.buf.length === 2) {
+          return this.next(this.parseOnlyTimeFractionMaybe)
+        }
+      } else {
+        throw this.error(new TomlError('Incomplete time'))
+      }
+    }
+    parseOnlyTimeFractionMaybe () {
+      this.state.result += ':' + this.state.buf
+      if (this.char === CHAR_PERIOD) {
+        this.state.buf = ''
+        this.next(this.parseOnlyTimeFraction)
+      } else {
+        return this.return(createTime(this.state.result))
+      }
+    }
+    parseOnlyTimeFraction () {
+      if (isDigit(this.char)) {
+        this.consume()
+      } else if (this.atEndOfWord()) {
+        if (this.state.buf.length === 0) throw this.error(new TomlError('Expected digit in milliseconds'))
+        return this.returnNow(createTime(this.state.result + '.' + this.state.buf))
+      } else {
+        throw this.error(new TomlError('Unexpected character in datetime, expected period (.), minus (-), plus (+) or Z'))
+      }
+    }
+
+    parseTimeZoneOrFraction () {
+      if (this.char === CHAR_PERIOD) {
+        this.consume()
+        this.next(this.parseDateTimeFraction)
+      } else if (this.char === CHAR_HYPHEN || this.char === CHAR_PLUS) {
+        this.consume()
+        this.next(this.parseTimeZoneHour)
+      } else if (this.char === CHAR_Z) {
+        this.consume()
+        return this.return(createDateTime(this.state.result + this.state.buf))
+      } else if (this.atEndOfWord()) {
+        return this.returnNow(createDateTimeFloat(this.state.result + this.state.buf))
+      } else {
+        throw this.error(new TomlError('Unexpected character in datetime, expected period (.), minus (-), plus (+) or Z'))
+      }
+    }
+    parseDateTimeFraction () {
+      if (isDigit(this.char)) {
+        this.consume()
+      } else if (this.state.buf.length === 1) {
+        throw this.error(new TomlError('Expected digit in milliseconds'))
+      } else if (this.char === CHAR_HYPHEN || this.char === CHAR_PLUS) {
+        this.consume()
+        this.next(this.parseTimeZoneHour)
+      } else if (this.char === CHAR_Z) {
+        this.consume()
+        return this.return(createDateTime(this.state.result + this.state.buf))
+      } else if (this.atEndOfWord()) {
+        return this.returnNow(createDateTimeFloat(this.state.result + this.state.buf))
+      } else {
+        throw this.error(new TomlError('Unexpected character in datetime, expected period (.), minus (-), plus (+) or Z'))
+      }
+    }
+    parseTimeZoneHour () {
+      if (isDigit(this.char)) {
+        this.consume()
+        // FIXME: No more regexps
+        if (/\d\d$/.test(this.state.buf)) return this.next(this.parseTimeZoneSep)
+      } else {
+        throw this.error(new TomlError('Unexpected character in datetime, expected digit'))
+      }
+    }
+    parseTimeZoneSep () {
+      if (this.char === CHAR_COLON) {
+        this.consume()
+        this.next(this.parseTimeZoneMin)
+      } else {
+        throw this.error(new TomlError('Unexpected character in datetime, expected colon'))
+      }
+    }
+    parseTimeZoneMin () {
+      if (isDigit(this.char)) {
+        this.consume()
+        if (/\d\d$/.test(this.state.buf)) return this.return(createDateTime(this.state.result + this.state.buf))
+      } else {
+        throw this.error(new TomlError('Unexpected character in datetime, expected digit'))
+      }
+    }
+
+    /* BOOLEAN */
+    parseBoolean () {
+      /* istanbul ignore else */
+      if (this.char === CHAR_t) {
+        this.consume()
+        return this.next(this.parseTrue_r)
+      } else if (this.char === CHAR_f) {
+        this.consume()
+        return this.next(this.parseFalse_a)
+      }
+    }
+    parseTrue_r () {
+      if (this.char === CHAR_r) {
+        this.consume()
+        return this.next(this.parseTrue_u)
+      } else {
+        throw this.error(new TomlError('Invalid boolean, expected true or false'))
+      }
+    }
+    parseTrue_u () {
+      if (this.char === CHAR_u) {
+        this.consume()
+        return this.next(this.parseTrue_e)
+      } else {
+        throw this.error(new TomlError('Invalid boolean, expected true or false'))
+      }
+    }
+    parseTrue_e () {
+      if (this.char === CHAR_e) {
+        return this.return(true)
+      } else {
+        throw this.error(new TomlError('Invalid boolean, expected true or false'))
+      }
+    }
+
+    parseFalse_a () {
+      if (this.char === CHAR_a) {
+        this.consume()
+        return this.next(this.parseFalse_l)
+      } else {
+        throw this.error(new TomlError('Invalid boolean, expected true or false'))
+      }
+    }
+
+    parseFalse_l () {
+      if (this.char === CHAR_l) {
+        this.consume()
+        return this.next(this.parseFalse_s)
+      } else {
+        throw this.error(new TomlError('Invalid boolean, expected true or false'))
+      }
+    }
+
+    parseFalse_s () {
+      if (this.char === CHAR_s) {
+        this.consume()
+        return this.next(this.parseFalse_e)
+      } else {
+        throw this.error(new TomlError('Invalid boolean, expected true or false'))
+      }
+    }
+
+    parseFalse_e () {
+      if (this.char === CHAR_e) {
+        return this.return(false)
+      } else {
+        throw this.error(new TomlError('Invalid boolean, expected true or false'))
+      }
+    }
+
+    /* INLINE LISTS */
+    parseInlineList () {
+      if (this.char === CHAR_SP || this.char === CTRL_I || this.char === CTRL_M || this.char === CTRL_J) {
+        return null
+      } else if (this.char === Parser.END) {
+        throw this.error(new TomlError('Unterminated inline array'))
+      } else if (this.char === CHAR_NUM) {
+        return this.call(this.parseComment)
+      } else if (this.char === CHAR_RSQB) {
+        return this.return(this.state.resultArr || InlineList())
+      } else {
+        return this.callNow(this.parseValue, this.recordInlineListValue)
+      }
+    }
+    recordInlineListValue (value) {
+      if (this.state.resultArr) {
+        const listType = this.state.resultArr[_contentType]
+        const valueType = tomlType(value)
+        if (listType !== valueType) {
+          throw this.error(new TomlError(`Inline lists must be a single type, not a mix of ${listType} and ${valueType}`))
+        }
+      } else {
+        this.state.resultArr = InlineList(tomlType(value))
+      }
+      if (isFloat(value) || isInteger(value)) {
+        // unbox now that we've verified they're ok
+        this.state.resultArr.push(value.valueOf())
+      } else {
+        this.state.resultArr.push(value)
+      }
+      return this.goto(this.parseInlineListNext)
+    }
+    parseInlineListNext () {
+      if (this.char === CHAR_SP || this.char === CTRL_I || this.char === CTRL_M || this.char === CTRL_J) {
+        return null
+      } else if (this.char === CHAR_NUM) {
+        return this.call(this.parseComment)
+      } else if (this.char === CHAR_COMMA) {
+        return this.next(this.parseInlineList)
+      } else if (this.char === CHAR_RSQB) {
+        return this.goto(this.parseInlineList)
+      } else {
+        throw this.error(new TomlError('Invalid character, expected whitespace, comma (,) or close bracket (])'))
+      }
+    }
+
+    /* INLINE TABLE */
+    parseInlineTable () {
+      if (this.char === CHAR_SP || this.char === CTRL_I) {
+        return null
+      } else if (this.char === Parser.END || this.char === CHAR_NUM || this.char === CTRL_J || this.char === CTRL_M) {
+        throw this.error(new TomlError('Unterminated inline array'))
+      } else if (this.char === CHAR_RCUB) {
+        const returnValue = this.state.resultTable || InlineTable()
+        returnValue.__tomlInline = true
+        return this.return(returnValue)
+      } else {
+        if (!this.state.resultTable) this.state.resultTable = InlineTable()
+        return this.callNow(this.parseAssign, this.recordInlineTableValue)
+      }
+    }
+    recordInlineTableValue (kv) {
+      let target = this.state.resultTable
+      let finalKey = kv.key.pop()
+      for (let kw of kv.key) {
+        if (hasKey(target, kw) && (!isTable(target[kw]) || target[kw][_declared])) {
+          throw this.error(new TomlError("Can't redefine existing key"))
+        }
+        target = target[kw] = target[kw] || Table()
+      }
+      if (hasKey(target, finalKey)) {
+        throw this.error(new TomlError("Can't redefine existing key"))
+      }
+      if (isInteger(kv.value) || isFloat(kv.value)) {
+        target[finalKey] = kv.value.valueOf()
+      } else {
+        target[finalKey] = kv.value
+      }
+      return this.goto(this.parseInlineTableNext)
+    }
+    parseInlineTableNext () {
+      if (this.char === CHAR_SP || this.char === CTRL_I) {
+        return null
+      } else if (this.char === Parser.END || this.char === CHAR_NUM || this.char === CTRL_J || this.char === CTRL_M) {
+        throw this.error(new TomlError('Unterminated inline array'))
+      } else if (this.char === CHAR_COMMA) {
+        return this.next(this.parseInlineTable)
+      } else if (this.char === CHAR_RCUB) {
+        return this.goto(this.parseInlineTable)
+      } else {
+        throw this.error(new TomlError('Invalid character, expected whitespace, comma (,) or close bracket (])'))
+      }
+    }
+  }
+  return TOMLParser
+}
 
 
 /***/ }),
@@ -15113,242 +17849,17 @@ module.exports.env = options => {
 /* 334 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
-const { readPkgFile, writePkgFile } = __webpack_require__(916);
-const { compareBumps } = __webpack_require__(749);
-const semver = __webpack_require__(534);
-const cloneDeep = __webpack_require__(607);
-const path = __webpack_require__(622);
+module.exports = toHexReference
 
-module.exports.apply = function* ({
-  commands,
-  config,
-  cwd = process.cwd(),
-  bump = true,
-}) {
-  const changes = commands.reduce((finalChanges, command) => {
-    finalChanges[command.pkg] = command;
-    return finalChanges;
-  }, {});
-  let allPackages = yield readAll({ changes, config, cwd });
+var fromCharCode = __webpack_require__(362)
 
-  const bumps = bumpAll({ changes, allPackages });
-  if (bump) {
-    yield writeAll({
-      bumps: bumps.reduce(
-        (final, current) => (!current.vfile ? final : final.concat([current])),
-        []
-      ),
-    });
-  } else {
-    bumps.forEach((b) => {
-      if (!!b) console.log(`${b.name} planned to be bumped to ${b.version}`);
-    });
-  }
-  return bumps;
-};
-
-const readAll = async ({ changes, config, cwd = process.cwd() }) => {
-  let files = Object.keys(changes).reduce((fileList, change) => {
-    fileList[change] = {};
-    if (changes[change].parents.length > 0)
-      changes[change].parents.forEach((parent) => (fileList[parent] = {}));
-    return fileList;
-  }, {});
-
-  const pkgs = Object.keys(files);
-  const pkgFiles = await Promise.all(
-    Object.keys(files).map((pkg) =>
-      !config.packages[pkg].path
-        ? { name: pkg }
-        : readPkgFile({
-            file: path.join(
-              cwd,
-              config.packages[pkg].path,
-              !!config.packages[pkg].manager &&
-                config.packages[pkg].manager === "rust"
-                ? "Cargo.toml"
-                : "package.json"
-            ),
-            nickname: pkg,
-          })
-    )
-  );
-
-  return pkgs.reduce((list, pkg, index) => {
-    list[pkg] = pkgFiles[index];
-    return list;
-  }, files);
-};
-
-const writeAll = function* ({ bumps }) {
-  for (let bump of bumps) {
-    yield writePkgFile({ packageFile: bump });
-  }
-};
-
-const resolveParents = ({ config }) => {
-  return Object.keys(config.packages).reduce((parents, pkg) => {
-    parents[pkg] = [];
-    Object.keys(config.packages).forEach((parent) => {
-      if (
-        !!config.packages[parent].dependencies &&
-        config.packages[parent].dependencies.includes(pkg)
-      )
-        parents[pkg].push(parent);
-    });
-    return parents;
-  }, {});
-};
-
-module.exports.changesConsideringParents = ({ assembledChanges, config }) => {
-  const parents = resolveParents({ config });
-
-  let changes = Object.keys(assembledChanges.releases).reduce(
-    (list, change) => {
-      list[change] = assembledChanges.releases[change];
-      list[change].parents = parents[change];
-      return list;
-    },
-    {}
-  );
-
-  Object.keys(changes).forEach((main) => {
-    if (changes[main].parents.length > 0) {
-      changes[main].parents.forEach((pkg) => {
-        if (!!changes[pkg]) {
-          // if a change is planned on the parent
-          // compare and bump the parent if the child is higher
-          changes[pkg].type = compareBumps(
-            changes[main].type,
-            changes[pkg].type
-          );
-        } else {
-          // if the parent doesn't have a release
-          // add one to adopt the next version of it's child
-          changes[pkg] = cloneDeep(changes[main]);
-          if (changes[pkg].changes) {
-            changes[pkg].changes.forEach((parentChange) => {
-              parentChange.meta.dependencies = `Bumped due to a bump in ${main}.`;
-            });
-          }
-          changes[pkg].parents = parents[pkg];
-        }
-      });
-    }
-  });
-
-  return { releases: changes, changes: assembledChanges.changes };
-};
-
-const bumpAll = ({ changes, allPackages }) => {
-  let packageFiles = { ...allPackages };
-  for (let pkg of Object.keys(changes)) {
-    if (!packageFiles[pkg].vfile) continue;
-    console.log(`bumping ${pkg} with ${changes[pkg].type}`);
-    packageFiles[pkg] = bumpMain({
-      packageFile: packageFiles[pkg],
-      bumpType: changes[pkg].type,
-    });
-    if (!!changes[pkg].dependencies) {
-      for (let pkgDep of changes[pkg].dependencies) {
-        if (!!changes[pkgDep]) {
-          packageFiles[pkg] = bumpDeps({
-            packageFile: packageFiles[pkg],
-            dep: pkgDep,
-            bumpType: changes[pkgDep].type,
-          });
-        }
-      }
-    }
-  }
-
-  return Object.keys(packageFiles).map((pkg) => packageFiles[pkg]);
-};
-
-const bumpMain = ({ packageFile, bumpType }) => {
-  let pkg = { ...packageFile };
-  let next = semver.inc(pkg.version, bumpType);
-  pkg.version = next;
-  pkg.versionMajor = semver.major(next);
-  pkg.versionMinor = semver.minor(next);
-  pkg.versionPatch = semver.patch(next);
-  if (pkg.vfile.extname === ".json") {
-    // for javascript
-    pkg.pkg.version = semver.inc(pkg.pkg.version, bumpType);
-  } else if (pkg.vfile.extname === ".toml") {
-    // for rust
-    pkg.pkg.package.version = semver.inc(pkg.pkg.package.version, bumpType);
-  }
-  return pkg;
-};
-
-const bumpDeps = ({ packageFile, dep, bumpType }) => {
-  let pkg = { ...packageFile };
-
-  if (!!pkg.pkg.dependencies)
-    Object.keys(pkg.pkg.dependencies).forEach((existingDep) => {
-      if (existingDep === dep) {
-        if (pkg.vfile.extname === ".json") {
-          // for javascript
-          pkg.pkg.dependencies[dep] = semver.inc(
-            pkg.pkg.dependencies[dep],
-            bumpType
-          );
-        } else if (pkg.vfile.extname === ".toml") {
-          // for rust
-          if (typeof pkg.pkg.dependencies[dep] === "object") {
-            pkg.pkg.dependencies[dep].version = incWithPartials(
-              pkg.pkg.dependencies[dep].version,
-              bumpType
-            );
-          } else {
-            pkg.pkg.dependencies[dep] = incWithPartials(
-              pkg.pkg.dependencies[dep],
-              bumpType
-            );
-          }
-        }
-      }
-    });
-
-  if (!!pkg.pkg.devDependencies)
-    Object.keys(pkg.pkg.devDependencies).forEach((existingDep) => {
-      if (existingDep === dep) {
-        if (pkg.vfile.extname === ".json") {
-          // for javascript
-          pkg.pkg.devDependencies[dep] = semver.inc(
-            pkg.pkg.devDependencies[dep],
-            bumpType
-          );
-        }
-      }
-    });
-
-  return pkg;
-};
-
-const incWithPartials = (version, bumpType) => {
-  if (semver.valid(version)) {
-    return semver.inc(version, bumpType);
-  } else {
-    try {
-      const fullVersion = semver
-        .inc(semver.coerce(version), bumpType)
-        .split(".");
-      if (version.split(".").length === 2) {
-        return [].concat(fullVersion[0], fullVersion[1]).join(".");
-      } else if (version.split(".").length === 1) {
-        return fullVersion[0];
-      } else {
-        // failsafe is better than null
-        return fullVersion.join(".");
-      }
-    } catch {
-      // failsafe is better than null
-      return semver.inc(semver.coerce(version), bumpType);
-    }
-  }
-};
+// Transform `code` into a hexadecimal character reference.
+function toHexReference(code, next, omit) {
+  var value = '&#x' + code.toString(16).toUpperCase()
+  return omit && next && !/[\dA-Fa-f]/.test(fromCharCode(next))
+    ? value
+    : value + ';'
+}
 
 
 /***/ }),
@@ -15376,7 +17887,7 @@ function list(node) {
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
 const debug = __webpack_require__(434)
-const { MAX_LENGTH, MAX_SAFE_INTEGER } = __webpack_require__(511)
+const { MAX_LENGTH, MAX_SAFE_INTEGER } = __webpack_require__(656)
 const { re, t } = __webpack_require__(275)
 
 const { compareIdentifiers } = __webpack_require__(758)
@@ -15668,7 +18179,83 @@ module.exports = SemVer
 
 
 /***/ }),
-/* 342 */,
+/* 342 */
+/***/ (function(module) {
+
+"use strict";
+/*!
+ * repeat-string <https://github.com/jonschlinkert/repeat-string>
+ *
+ * Copyright (c) 2014-2015, Jon Schlinkert.
+ * Licensed under the MIT License.
+ */
+
+
+
+/**
+ * Results cache
+ */
+
+var res = '';
+var cache;
+
+/**
+ * Expose `repeat`
+ */
+
+module.exports = repeat;
+
+/**
+ * Repeat the given `string` the specified `number`
+ * of times.
+ *
+ * **Example:**
+ *
+ * ```js
+ * var repeat = require('repeat-string');
+ * repeat('A', 5);
+ * //=> AAAAA
+ * ```
+ *
+ * @param {String} `string` The string to repeat
+ * @param {Number} `number` The number of times to repeat the string
+ * @return {String} Repeated string
+ * @api public
+ */
+
+function repeat(str, num) {
+  if (typeof str !== 'string') {
+    throw new TypeError('expected a string');
+  }
+
+  // cover common, quick use cases
+  if (num === 1) return str;
+  if (num === 2) return str + str;
+
+  var max = str.length * num;
+  if (cache !== str || typeof cache === 'undefined') {
+    cache = str;
+    res = '';
+  } else if (res.length >= max) {
+    return res.substr(0, max);
+  }
+
+  while (max > res.length && num > 1) {
+    if (num & 1) {
+      res += str;
+    }
+
+    num >>= 1;
+    str += str;
+  }
+
+  res += str;
+  res = res.substr(0, max);
+  return res;
+}
+
+
+/***/ }),
 /* 343 */,
 /* 344 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
@@ -15861,61 +18448,52 @@ module.exports.defaults = defaultOptions;
 /* 350 */,
 /* 351 */,
 /* 352 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
+/***/ (function(module) {
 
 "use strict";
 
-const {PassThrough: PassThroughStream} = __webpack_require__(413);
 
-module.exports = options => {
-	options = {...options};
+module.exports = orderedItems
 
-	const {array} = options;
-	let {encoding} = options;
-	const isBuffer = encoding === 'buffer';
-	let objectMode = false;
+var lineFeed = '\n'
+var dot = '.'
 
-	if (array) {
-		objectMode = !(encoding || isBuffer);
-	} else {
-		encoding = encoding || 'utf8';
-	}
+var blank = lineFeed + lineFeed
 
-	if (isBuffer) {
-		encoding = null;
-	}
+// Visit ordered list items.
+//
+// Starts the list with
+// `node.start` and increments each following list item
+// bullet by one:
+//
+//     2. foo
+//     3. bar
+//
+// In `incrementListMarker: false` mode, does not increment
+// each marker and stays on `node.start`:
+//
+//     1. foo
+//     1. bar
+function orderedItems(node) {
+  var self = this
+  var fn = self.visitors.listItem
+  var increment = self.options.incrementListMarker
+  var values = []
+  var start = node.start
+  var children = node.children
+  var length = children.length
+  var index = -1
+  var bullet
 
-	const stream = new PassThroughStream({objectMode});
+  start = start == null ? 1 : start
 
-	if (encoding) {
-		stream.setEncoding(encoding);
-	}
+  while (++index < length) {
+    bullet = (increment ? start + index : start) + dot
+    values[index] = fn.call(self, children[index], node, index, bullet)
+  }
 
-	let length = 0;
-	const chunks = [];
-
-	stream.on('data', chunk => {
-		chunks.push(chunk);
-
-		if (objectMode) {
-			length = chunks.length;
-		} else {
-			length += chunk.length;
-		}
-	});
-
-	stream.getBufferedValue = () => {
-		if (array) {
-			return chunks;
-		}
-
-		return isBuffer ? Buffer.concat(chunks, length) : chunks.join('');
-	};
-
-	stream.getBufferedLength = () => length;
-
-	return stream;
-};
+  return values.join(node.spread ? blank : lineFeed)
+}
 
 
 /***/ }),
@@ -15999,7 +18577,7 @@ module.exports = require("assert");
 
 
 const stringify = __webpack_require__(450);
-const compile = __webpack_require__(656);
+const compile = __webpack_require__(76);
 const expand = __webpack_require__(61);
 const parse = __webpack_require__(627);
 
@@ -16182,7 +18760,7 @@ const middleware_1 = __webpack_require__(233);
 const parse_command_1 = __webpack_require__(398);
 const path = __webpack_require__(622);
 const util_1 = __webpack_require__(669);
-const yargs_1 = __webpack_require__(834);
+const yargs_1 = __webpack_require__(74);
 const requireDirectory = __webpack_require__(348);
 const whichModule = __webpack_require__(867);
 const Parser = __webpack_require__(453);
@@ -16596,81 +19174,74 @@ function isCommandBuilderOptionDefinitions(builder) {
 /***/ (function(module) {
 
 "use strict";
-/*!
- * repeat-string <https://github.com/jonschlinkert/repeat-string>
- *
- * Copyright (c) 2014-2015, Jon Schlinkert.
- * Licensed under the MIT License.
- */
 
 
+module.exports = {
+  MAX_LENGTH: 1024 * 64,
 
-/**
- * Results cache
- */
+  // Digits
+  CHAR_0: '0', /* 0 */
+  CHAR_9: '9', /* 9 */
 
-var res = '';
-var cache;
+  // Alphabet chars.
+  CHAR_UPPERCASE_A: 'A', /* A */
+  CHAR_LOWERCASE_A: 'a', /* a */
+  CHAR_UPPERCASE_Z: 'Z', /* Z */
+  CHAR_LOWERCASE_Z: 'z', /* z */
 
-/**
- * Expose `repeat`
- */
+  CHAR_LEFT_PARENTHESES: '(', /* ( */
+  CHAR_RIGHT_PARENTHESES: ')', /* ) */
 
-module.exports = repeat;
+  CHAR_ASTERISK: '*', /* * */
 
-/**
- * Repeat the given `string` the specified `number`
- * of times.
- *
- * **Example:**
- *
- * ```js
- * var repeat = require('repeat-string');
- * repeat('A', 5);
- * //=> AAAAA
- * ```
- *
- * @param {String} `string` The string to repeat
- * @param {Number} `number` The number of times to repeat the string
- * @return {String} Repeated string
- * @api public
- */
-
-function repeat(str, num) {
-  if (typeof str !== 'string') {
-    throw new TypeError('expected a string');
-  }
-
-  // cover common, quick use cases
-  if (num === 1) return str;
-  if (num === 2) return str + str;
-
-  var max = str.length * num;
-  if (cache !== str || typeof cache === 'undefined') {
-    cache = str;
-    res = '';
-  } else if (res.length >= max) {
-    return res.substr(0, max);
-  }
-
-  while (max > res.length && num > 1) {
-    if (num & 1) {
-      res += str;
-    }
-
-    num >>= 1;
-    str += str;
-  }
-
-  res += str;
-  res = res.substr(0, max);
-  return res;
-}
+  // Non-alphabetic chars.
+  CHAR_AMPERSAND: '&', /* & */
+  CHAR_AT: '@', /* @ */
+  CHAR_BACKSLASH: '\\', /* \ */
+  CHAR_BACKTICK: '`', /* ` */
+  CHAR_CARRIAGE_RETURN: '\r', /* \r */
+  CHAR_CIRCUMFLEX_ACCENT: '^', /* ^ */
+  CHAR_COLON: ':', /* : */
+  CHAR_COMMA: ',', /* , */
+  CHAR_DOLLAR: '$', /* . */
+  CHAR_DOT: '.', /* . */
+  CHAR_DOUBLE_QUOTE: '"', /* " */
+  CHAR_EQUAL: '=', /* = */
+  CHAR_EXCLAMATION_MARK: '!', /* ! */
+  CHAR_FORM_FEED: '\f', /* \f */
+  CHAR_FORWARD_SLASH: '/', /* / */
+  CHAR_HASH: '#', /* # */
+  CHAR_HYPHEN_MINUS: '-', /* - */
+  CHAR_LEFT_ANGLE_BRACKET: '<', /* < */
+  CHAR_LEFT_CURLY_BRACE: '{', /* { */
+  CHAR_LEFT_SQUARE_BRACKET: '[', /* [ */
+  CHAR_LINE_FEED: '\n', /* \n */
+  CHAR_NO_BREAK_SPACE: '\u00A0', /* \u00A0 */
+  CHAR_PERCENT: '%', /* % */
+  CHAR_PLUS: '+', /* + */
+  CHAR_QUESTION_MARK: '?', /* ? */
+  CHAR_RIGHT_ANGLE_BRACKET: '>', /* > */
+  CHAR_RIGHT_CURLY_BRACE: '}', /* } */
+  CHAR_RIGHT_SQUARE_BRACKET: ']', /* ] */
+  CHAR_SEMICOLON: ';', /* ; */
+  CHAR_SINGLE_QUOTE: '\'', /* ' */
+  CHAR_SPACE: ' ', /*   */
+  CHAR_TAB: '\t', /* \t */
+  CHAR_UNDERSCORE: '_', /* _ */
+  CHAR_VERTICAL_LINE: '|', /* | */
+  CHAR_ZERO_WIDTH_NOBREAK_SPACE: '\uFEFF' /* \uFEFF */
+};
 
 
 /***/ }),
 /* 361 */,
-/* 362 */,
+/* 362 */
+/***/ (function(module) {
+
+module.exports = String.fromCharCode
+
+
+/***/ }),
 /* 363 */,
 /* 364 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
@@ -16734,362 +19305,14 @@ exports.default = Matcher;
 /* 367 */,
 /* 368 */,
 /* 369 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
+/***/ (function(module) {
 
-"use strict";
-
-
-const stringWidth = __webpack_require__(624)
-const stripAnsi = __webpack_require__(598)
-const wrap = __webpack_require__(58)
-
-const align = {
-  right: alignRight,
-  center: alignCenter
-}
-const top = 0
-const right = 1
-const bottom = 2
-const left = 3
-
-class UI {
-  constructor (opts) {
-    this.width = opts.width
-    this.wrap = opts.wrap
-    this.rows = []
+module.exports = {
+  ctrlc() {
+    let error = new Error('tried to invoke windows-specific ctrlc on a non-windows platform');
+    error.name = 'PlatformError';
+    throw error;
   }
-
-  span (...args) {
-    const cols = this.div(...args)
-    cols.span = true
-  }
-
-  resetOutput () {
-    this.rows = []
-  }
-
-  div (...args) {
-    if (args.length === 0) {
-      this.div('')
-    }
-
-    if (this.wrap && this._shouldApplyLayoutDSL(...args)) {
-      return this._applyLayoutDSL(args[0])
-    }
-
-    const cols = args.map(arg => {
-      if (typeof arg === 'string') {
-        return this._colFromString(arg)
-      }
-
-      return arg
-    })
-
-    this.rows.push(cols)
-    return cols
-  }
-
-  _shouldApplyLayoutDSL (...args) {
-    return args.length === 1 && typeof args[0] === 'string' &&
-      /[\t\n]/.test(args[0])
-  }
-
-  _applyLayoutDSL (str) {
-    const rows = str.split('\n').map(row => row.split('\t'))
-    let leftColumnWidth = 0
-
-    // simple heuristic for layout, make sure the
-    // second column lines up along the left-hand.
-    // don't allow the first column to take up more
-    // than 50% of the screen.
-    rows.forEach(columns => {
-      if (columns.length > 1 && stringWidth(columns[0]) > leftColumnWidth) {
-        leftColumnWidth = Math.min(
-          Math.floor(this.width * 0.5),
-          stringWidth(columns[0])
-        )
-      }
-    })
-
-    // generate a table:
-    //  replacing ' ' with padding calculations.
-    //  using the algorithmically generated width.
-    rows.forEach(columns => {
-      this.div(...columns.map((r, i) => {
-        return {
-          text: r.trim(),
-          padding: this._measurePadding(r),
-          width: (i === 0 && columns.length > 1) ? leftColumnWidth : undefined
-        }
-      }))
-    })
-
-    return this.rows[this.rows.length - 1]
-  }
-
-  _colFromString (text) {
-    return {
-      text,
-      padding: this._measurePadding(text)
-    }
-  }
-
-  _measurePadding (str) {
-    // measure padding without ansi escape codes
-    const noAnsi = stripAnsi(str)
-    return [0, noAnsi.match(/\s*$/)[0].length, 0, noAnsi.match(/^\s*/)[0].length]
-  }
-
-  toString () {
-    const lines = []
-
-    this.rows.forEach(row => {
-      this.rowToString(row, lines)
-    })
-
-    // don't display any lines with the
-    // hidden flag set.
-    return lines
-      .filter(line => !line.hidden)
-      .map(line => line.text)
-      .join('\n')
-  }
-
-  rowToString (row, lines) {
-    this._rasterize(row).forEach((rrow, r) => {
-      let str = ''
-      rrow.forEach((col, c) => {
-        const { width } = row[c] // the width with padding.
-        const wrapWidth = this._negatePadding(row[c]) // the width without padding.
-
-        let ts = col // temporary string used during alignment/padding.
-
-        if (wrapWidth > stringWidth(col)) {
-          ts += ' '.repeat(wrapWidth - stringWidth(col))
-        }
-
-        // align the string within its column.
-        if (row[c].align && row[c].align !== 'left' && this.wrap) {
-          ts = align[row[c].align](ts, wrapWidth)
-          if (stringWidth(ts) < wrapWidth) {
-            ts += ' '.repeat(width - stringWidth(ts) - 1)
-          }
-        }
-
-        // apply border and padding to string.
-        const padding = row[c].padding || [0, 0, 0, 0]
-        if (padding[left]) {
-          str += ' '.repeat(padding[left])
-        }
-
-        str += addBorder(row[c], ts, '| ')
-        str += ts
-        str += addBorder(row[c], ts, ' |')
-        if (padding[right]) {
-          str += ' '.repeat(padding[right])
-        }
-
-        // if prior row is span, try to render the
-        // current row on the prior line.
-        if (r === 0 && lines.length > 0) {
-          str = this._renderInline(str, lines[lines.length - 1])
-        }
-      })
-
-      // remove trailing whitespace.
-      lines.push({
-        text: str.replace(/ +$/, ''),
-        span: row.span
-      })
-    })
-
-    return lines
-  }
-
-  // if the full 'source' can render in
-  // the target line, do so.
-  _renderInline (source, previousLine) {
-    const leadingWhitespace = source.match(/^ */)[0].length
-    const target = previousLine.text
-    const targetTextWidth = stringWidth(target.trimRight())
-
-    if (!previousLine.span) {
-      return source
-    }
-
-    // if we're not applying wrapping logic,
-    // just always append to the span.
-    if (!this.wrap) {
-      previousLine.hidden = true
-      return target + source
-    }
-
-    if (leadingWhitespace < targetTextWidth) {
-      return source
-    }
-
-    previousLine.hidden = true
-
-    return target.trimRight() + ' '.repeat(leadingWhitespace - targetTextWidth) + source.trimLeft()
-  }
-
-  _rasterize (row) {
-    const rrows = []
-    const widths = this._columnWidths(row)
-    let wrapped
-
-    // word wrap all columns, and create
-    // a data-structure that is easy to rasterize.
-    row.forEach((col, c) => {
-      // leave room for left and right padding.
-      col.width = widths[c]
-      if (this.wrap) {
-        wrapped = wrap(col.text, this._negatePadding(col), { hard: true }).split('\n')
-      } else {
-        wrapped = col.text.split('\n')
-      }
-
-      if (col.border) {
-        wrapped.unshift('.' + '-'.repeat(this._negatePadding(col) + 2) + '.')
-        wrapped.push("'" + '-'.repeat(this._negatePadding(col) + 2) + "'")
-      }
-
-      // add top and bottom padding.
-      if (col.padding) {
-        wrapped.unshift(...new Array(col.padding[top] || 0).fill(''))
-        wrapped.push(...new Array(col.padding[bottom] || 0).fill(''))
-      }
-
-      wrapped.forEach((str, r) => {
-        if (!rrows[r]) {
-          rrows.push([])
-        }
-
-        const rrow = rrows[r]
-
-        for (let i = 0; i < c; i++) {
-          if (rrow[i] === undefined) {
-            rrow.push('')
-          }
-        }
-
-        rrow.push(str)
-      })
-    })
-
-    return rrows
-  }
-
-  _negatePadding (col) {
-    let wrapWidth = col.width
-    if (col.padding) {
-      wrapWidth -= (col.padding[left] || 0) + (col.padding[right] || 0)
-    }
-
-    if (col.border) {
-      wrapWidth -= 4
-    }
-
-    return wrapWidth
-  }
-
-  _columnWidths (row) {
-    if (!this.wrap) {
-      return row.map(col => {
-        return col.width || stringWidth(col.text)
-      })
-    }
-
-    let unset = row.length
-    let remainingWidth = this.width
-
-    // column widths can be set in config.
-    const widths = row.map(col => {
-      if (col.width) {
-        unset--
-        remainingWidth -= col.width
-        return col.width
-      }
-
-      return undefined
-    })
-
-    // any unset widths should be calculated.
-    const unsetWidth = unset ? Math.floor(remainingWidth / unset) : 0
-
-    return widths.map((w, i) => {
-      if (w === undefined) {
-        return Math.max(unsetWidth, _minWidth(row[i]))
-      }
-
-      return w
-    })
-  }
-}
-
-function addBorder (col, ts, style) {
-  if (col.border) {
-    if (/[.']-+[.']/.test(ts)) {
-      return ''
-    }
-
-    if (ts.trim().length !== 0) {
-      return style
-    }
-
-    return '  '
-  }
-
-  return ''
-}
-
-// calculates the minimum width of
-// a column, based on padding preferences.
-function _minWidth (col) {
-  const padding = col.padding || []
-  const minWidth = 1 + (padding[left] || 0) + (padding[right] || 0)
-  if (col.border) {
-    return minWidth + 4
-  }
-
-  return minWidth
-}
-
-function getWindowWidth () {
-  /* istanbul ignore next: depends on terminal */
-  if (typeof process === 'object' && process.stdout && process.stdout.columns) {
-    return process.stdout.columns
-  }
-}
-
-function alignRight (str, width) {
-  str = str.trim()
-  const strWidth = stringWidth(str)
-
-  if (strWidth < width) {
-    return ' '.repeat(width - strWidth) + str
-  }
-
-  return str
-}
-
-function alignCenter (str, width) {
-  str = str.trim()
-  const strWidth = stringWidth(str)
-
-  /* istanbul ignore next */
-  if (strWidth >= width) {
-    return str
-  }
-
-  return ' '.repeat((width - strWidth) >> 1) + str
-}
-
-module.exports = function (opts = {}) {
-  return new UI({
-    width: opts.width || getWindowWidth() || /* istanbul ignore next */ 80,
-    wrap: opts.wrap !== false
-  })
 }
 
 
@@ -17291,15 +19514,37 @@ function paragraph(eat, value, silent) {
 
 
 /***/ }),
-/* 375 */,
+/* 375 */
+/***/ (function(module) {
+
+"use strict";
+
+
+const pathKey = (options = {}) => {
+	const environment = options.env || process.env;
+	const platform = options.platform || process.platform;
+
+	if (platform !== 'win32') {
+		return 'PATH';
+	}
+
+	return Object.keys(environment).reverse().find(key => key.toUpperCase() === 'PATH') || 'Path';
+};
+
+module.exports = pathKey;
+// TODO: Remove this for the next major release
+module.exports.default = pathKey;
+
+
+/***/ }),
 /* 376 */,
 /* 377 */,
 /* 378 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
 const { spawn, timeout } = __webpack_require__(700);
-const { once, on } = __webpack_require__(910);
-const execa = __webpack_require__(962);
+const { exec } = __webpack_require__(142);
+const stripAnsi = __webpack_require__(598);
 const path = __webpack_require__(622);
 
 const attemptCommands = function* ({
@@ -17411,33 +19656,50 @@ const runCommand = function* ({
   command,
   cwd,
   pkgPath,
-  stdio = "pipe",
   log = `running command for ${pkg}`,
 }) {
-  let child;
-  try {
-    return yield function* () {
-      if (log !== false) console.log(log);
-      child = yield execa.command(command, {
-        cwd: path.join(cwd, pkgPath),
-        shell: process.env.shell || true,
-        windowsHide: true,
-        all: true,
-        env: { FORCE_COLOR: 0 },
-      });
+  if (log !== false) console.log(log);
+  raceTime();
 
-      if (log !== false) console.log(child.all);
-      return child.all;
-    };
-  } catch (error) {
-    throw error;
+  let child = yield sh(
+    command,
+    {
+      cwd: path.join(cwd, pkgPath),
+      encoding: "utf8",
+    },
+    log
+  );
+
+  return child;
+};
+
+const sh = function* (command, options, log) {
+  let child = yield exec(command, options);
+
+  if (log !== false) {
+    yield spawn(
+      child.stdout.subscribe().forEach(function* (datum) {
+        const out = stripAnsi(datum.toString().trim());
+        if (out !== "") console.log(out);
+      })
+    );
+
+    yield spawn(
+      child.stderr.subscribe().forEach(function* (datum) {
+        const out = stripAnsi(datum.toString().trim());
+        if (out !== "") console.error(out);
+      })
+    );
   }
+
+  const out = yield child.expect();
+  return stripAnsi(Buffer.concat(out.tail).toString().trim());
 };
 
 const raceTime = function ({
   t = 1200000,
   msg = `timeout out waiting ${t / 1000}s for command`,
-}) {
+} = {}) {
   return spawn(function* () {
     yield timeout(t);
     throw new Error(msg);
@@ -17463,16 +19725,16 @@ module.exports = {
 module.exports = convert
 
 function convert(test) {
+  if (test == null) {
+    return ok
+  }
+
   if (typeof test === 'string') {
     return typeFactory(test)
   }
 
-  if (test === null || test === undefined) {
-    return ok
-  }
-
   if (typeof test === 'object') {
-    return ('length' in test ? anyFactory : matchesFactory)(test)
+    return 'length' in test ? anyFactory(test) : allFactory(test)
   }
 
   if (typeof test === 'function') {
@@ -17482,30 +19744,16 @@ function convert(test) {
   throw new Error('Expected function, string, or object as test')
 }
 
-function convertAll(tests) {
-  var results = []
-  var length = tests.length
-  var index = -1
-
-  while (++index < length) {
-    results[index] = convert(tests[index])
-  }
-
-  return results
-}
-
 // Utility assert each property in `test` is represented in `node`, and each
 // values are strictly equal.
-function matchesFactory(test) {
-  return matches
+function allFactory(test) {
+  return all
 
-  function matches(node) {
+  function all(node) {
     var key
 
     for (key in test) {
-      if (node[key] !== test[key]) {
-        return false
-      }
+      if (node[key] !== test[key]) return
     }
 
     return true
@@ -17513,21 +19761,23 @@ function matchesFactory(test) {
 }
 
 function anyFactory(tests) {
-  var checks = convertAll(tests)
-  var length = checks.length
+  var checks = []
+  var index = -1
 
-  return matches
+  while (++index < tests.length) {
+    checks[index] = convert(tests[index])
+  }
 
-  function matches() {
+  return any
+
+  function any() {
     var index = -1
 
-    while (++index < length) {
+    while (++index < checks.length) {
       if (checks[index].apply(this, arguments)) {
         return true
       }
     }
-
-    return false
   }
 }
 
@@ -17537,7 +19787,7 @@ function typeFactory(test) {
   return type
 
   function type(node) {
-    return Boolean(node && node.type === test)
+    return node && node.type === test
   }
 }
 
@@ -17615,58 +19865,7 @@ function one(node, parent) {
 /***/ }),
 /* 383 */,
 /* 384 */,
-/* 385 */
-/***/ (function(module) {
-
-"use strict";
-
-
-// See http://www.robvanderwoude.com/escapechars.php
-const metaCharsRegExp = /([()\][%!^"`<>&|;, *?])/g;
-
-function escapeCommand(arg) {
-    // Escape meta chars
-    arg = arg.replace(metaCharsRegExp, '^$1');
-
-    return arg;
-}
-
-function escapeArgument(arg, doubleEscapeMetaChars) {
-    // Convert to string
-    arg = `${arg}`;
-
-    // Algorithm below is based on https://qntm.org/cmd
-
-    // Sequence of backslashes followed by a double quote:
-    // double up all the backslashes and escape the double quote
-    arg = arg.replace(/(\\*)"/g, '$1$1\\"');
-
-    // Sequence of backslashes followed by the end of the string
-    // (which will become a double quote later):
-    // double up all the backslashes
-    arg = arg.replace(/(\\*)$/, '$1$1');
-
-    // All other backslashes occur literally
-
-    // Quote the whole thing:
-    arg = `"${arg}"`;
-
-    // Escape meta chars
-    arg = arg.replace(metaCharsRegExp, '^$1');
-
-    // Double escape meta chars if necessary
-    if (doubleEscapeMetaChars) {
-        arg = arg.replace(metaCharsRegExp, '^$1');
-    }
-
-    return arg;
-}
-
-module.exports.command = escapeCommand;
-module.exports.argument = escapeArgument;
-
-
-/***/ }),
+/* 385 */,
 /* 386 */,
 /* 387 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
@@ -18684,7 +20883,7 @@ exports.parseCommand = parseCommand;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const stream_1 = __webpack_require__(413);
-const fsStat = __webpack_require__(892);
+const fsStat = __webpack_require__(573);
 const fsWalk = __webpack_require__(227);
 const reader_1 = __webpack_require__(245);
 class ReaderStream extends reader_1.default {
@@ -19130,67 +21329,67 @@ module.exports = templateSettings;
 /* 402 */,
 /* 403 */,
 /* 404 */
-/***/ (function(__unusedmodule, exports) {
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
-/*
-Copyright (c) 2011 Andrei Mackenzie
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
+var subscription = __webpack_require__(568);
+var events = __webpack_require__(910);
+var events$1 = __webpack_require__(614);
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+var Channel = /*#__PURE__*/function () {
+  function Channel() {
+    this.bus = new events$1.EventEmitter();
+  }
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.levenshtein = void 0;
-// levenshtein distance algorithm, pulled from Andrei Mackenzie's MIT licensed.
-// gist, which can be found here: https://gist.github.com/andrei-m/982927
-// Compute the edit distance between the two given strings
-function levenshtein(a, b) {
-    if (a.length === 0)
-        return b.length;
-    if (b.length === 0)
-        return a.length;
-    const matrix = [];
-    // increment along the first column of each row
-    let i;
-    for (i = 0; i <= b.length; i++) {
-        matrix[i] = [i];
-    }
-    // increment each column in the first row
-    let j;
-    for (j = 0; j <= a.length; j++) {
-        matrix[0][j] = j;
-    }
-    // Fill in the rest of the matrix
-    for (i = 1; i <= b.length; i++) {
-        for (j = 1; j <= a.length; j++) {
-            if (b.charAt(i - 1) === a.charAt(j - 1)) {
-                matrix[i][j] = matrix[i - 1][j - 1];
-            }
-            else {
-                matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, // substitution
-                Math.min(matrix[i][j - 1] + 1, // insertion
-                matrix[i - 1][j] + 1)); // deletion
-            }
+  var _proto = Channel.prototype;
+
+  _proto[subscription.SymbolSubscribable] = function* () {
+    return yield this.subscribe();
+  };
+
+  _proto.setMaxListeners = function setMaxListeners(value) {
+    this.bus.setMaxListeners(value);
+  };
+
+  _proto.send = function send(message) {
+    this.bus.emit('event', {
+      done: false,
+      value: message
+    });
+  };
+
+  _proto.subscribe = function subscribe() {
+    var bus = this.bus;
+    return subscription.createSubscription(function* (publish) {
+      var subscription = yield events.on(bus, 'event');
+
+      while (true) {
+        var _yield$subscription$e = yield subscription.expect(),
+            event = _yield$subscription$e[0];
+
+        if (event.done) {
+          return event.value;
+        } else {
+          publish(event.value);
         }
-    }
-    return matrix[b.length][a.length];
-}
-exports.levenshtein = levenshtein;
+      }
+    });
+  };
+
+  _proto.close = function close() {
+    this.bus.emit('event', {
+      done: true,
+      value: arguments.length <= 0 ? undefined : arguments[0]
+    });
+  };
+
+  return Channel;
+}();
+
+exports.Channel = Channel;
+//# sourceMappingURL=channel.cjs.development.js.map
 
 
 /***/ }),
@@ -19611,31 +21810,7 @@ module.exports = minor
 /***/ }),
 /* 418 */,
 /* 419 */,
-/* 420 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-"use strict";
-// Standard YAML's Core schema.
-// http://www.yaml.org/spec/1.2/spec.html#id2804923
-//
-// NOTE: JS-YAML does not support schema-specific tag resolution restrictions.
-// So, Core schema has no distinctions from JSON schema is JS-YAML.
-
-
-
-
-
-var Schema = __webpack_require__(717);
-
-
-module.exports = new Schema({
-  include: [
-    __webpack_require__(937)
-  ]
-});
-
-
-/***/ }),
+/* 420 */,
 /* 421 */,
 /* 422 */
 /***/ (function(module) {
@@ -19707,7 +21882,36 @@ module.exports.extend         = extend;
 /* 424 */,
 /* 425 */,
 /* 426 */,
-/* 427 */,
+/* 427 */
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+
+const fs = __webpack_require__(747);
+const shebangCommand = __webpack_require__(37);
+
+function readShebang(command) {
+    // Read the first 150 bytes from the file
+    const size = 150;
+    const buffer = Buffer.alloc(size);
+
+    let fd;
+
+    try {
+        fd = fs.openSync(command, 'r');
+        fs.readSync(fd, buffer, 0, size, 0);
+        fs.closeSync(fd);
+    } catch (e) { /* Empty */ }
+
+    // Attempt to extract shebang (null is returned if not a shebang)
+    return shebangCommand(buffer.toString());
+}
+
+module.exports = readShebang;
+
+
+/***/ }),
 /* 428 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
@@ -19724,9 +21928,489 @@ module.exports = ltr
 "use strict";
 
 
+var trim = __webpack_require__(235)
+var repeat = __webpack_require__(342)
+var decimal = __webpack_require__(858)
+var getIndent = __webpack_require__(313)
+var removeIndent = __webpack_require__(891)
+var interrupt = __webpack_require__(658)
+
+module.exports = list
+
+var asterisk = '*'
+var underscore = '_'
+var plusSign = '+'
+var dash = '-'
+var dot = '.'
+var space = ' '
+var lineFeed = '\n'
+var tab = '\t'
+var rightParenthesis = ')'
+var lowercaseX = 'x'
+
+var tabSize = 4
+var looseListItemExpression = /\n\n(?!\s*$)/
+var taskItemExpression = /^\[([ X\tx])][ \t]/
+var bulletExpression = /^([ \t]*)([*+-]|\d+[.)])( {1,4}(?! )| |\t|$|(?=\n))([^\n]*)/
+var pedanticBulletExpression = /^([ \t]*)([*+-]|\d+[.)])([ \t]+)/
+var initialIndentExpression = /^( {1,4}|\t)?/gm
+
+function list(eat, value, silent) {
+  var self = this
+  var commonmark = self.options.commonmark
+  var pedantic = self.options.pedantic
+  var tokenizers = self.blockTokenizers
+  var interuptors = self.interruptList
+  var index = 0
+  var length = value.length
+  var start = null
+  var size
+  var queue
+  var ordered
+  var character
+  var marker
+  var nextIndex
+  var startIndex
+  var prefixed
+  var currentMarker
+  var content
+  var line
+  var previousEmpty
+  var empty
+  var items
+  var allLines
+  var emptyLines
+  var item
+  var enterTop
+  var exitBlockquote
+  var spread = false
+  var node
+  var now
+  var end
+  var indented
+
+  while (index < length) {
+    character = value.charAt(index)
+
+    if (character !== tab && character !== space) {
+      break
+    }
+
+    index++
+  }
+
+  character = value.charAt(index)
+
+  if (character === asterisk || character === plusSign || character === dash) {
+    marker = character
+    ordered = false
+  } else {
+    ordered = true
+    queue = ''
+
+    while (index < length) {
+      character = value.charAt(index)
+
+      if (!decimal(character)) {
+        break
+      }
+
+      queue += character
+      index++
+    }
+
+    character = value.charAt(index)
+
+    if (
+      !queue ||
+      !(character === dot || (commonmark && character === rightParenthesis))
+    ) {
+      return
+    }
+
+    /* Slightly abusing `silent` mode, whose goal is to make interrupting
+     * paragraphs work.
+     * Well, that’s exactly what we want to do here: don’t interrupt:
+     * 2. here, because the “list” doesn’t start with `1`. */
+    if (silent && queue !== '1') {
+      return
+    }
+
+    start = parseInt(queue, 10)
+    marker = character
+  }
+
+  character = value.charAt(++index)
+
+  if (
+    character !== space &&
+    character !== tab &&
+    (pedantic || (character !== lineFeed && character !== ''))
+  ) {
+    return
+  }
+
+  if (silent) {
+    return true
+  }
+
+  index = 0
+  items = []
+  allLines = []
+  emptyLines = []
+
+  while (index < length) {
+    nextIndex = value.indexOf(lineFeed, index)
+    startIndex = index
+    prefixed = false
+    indented = false
+
+    if (nextIndex === -1) {
+      nextIndex = length
+    }
+
+    size = 0
+
+    while (index < length) {
+      character = value.charAt(index)
+
+      if (character === tab) {
+        size += tabSize - (size % tabSize)
+      } else if (character === space) {
+        size++
+      } else {
+        break
+      }
+
+      index++
+    }
+
+    if (item && size >= item.indent) {
+      indented = true
+    }
+
+    character = value.charAt(index)
+    currentMarker = null
+
+    if (!indented) {
+      if (
+        character === asterisk ||
+        character === plusSign ||
+        character === dash
+      ) {
+        currentMarker = character
+        index++
+        size++
+      } else {
+        queue = ''
+
+        while (index < length) {
+          character = value.charAt(index)
+
+          if (!decimal(character)) {
+            break
+          }
+
+          queue += character
+          index++
+        }
+
+        character = value.charAt(index)
+        index++
+
+        if (
+          queue &&
+          (character === dot || (commonmark && character === rightParenthesis))
+        ) {
+          currentMarker = character
+          size += queue.length + 1
+        }
+      }
+
+      if (currentMarker) {
+        character = value.charAt(index)
+
+        if (character === tab) {
+          size += tabSize - (size % tabSize)
+          index++
+        } else if (character === space) {
+          end = index + tabSize
+
+          while (index < end) {
+            if (value.charAt(index) !== space) {
+              break
+            }
+
+            index++
+            size++
+          }
+
+          if (index === end && value.charAt(index) === space) {
+            index -= tabSize - 1
+            size -= tabSize - 1
+          }
+        } else if (character !== lineFeed && character !== '') {
+          currentMarker = null
+        }
+      }
+    }
+
+    if (currentMarker) {
+      if (!pedantic && marker !== currentMarker) {
+        break
+      }
+
+      prefixed = true
+    } else {
+      if (!commonmark && !indented && value.charAt(startIndex) === space) {
+        indented = true
+      } else if (commonmark && item) {
+        indented = size >= item.indent || size > tabSize
+      }
+
+      prefixed = false
+      index = startIndex
+    }
+
+    line = value.slice(startIndex, nextIndex)
+    content = startIndex === index ? line : value.slice(index, nextIndex)
+
+    if (
+      currentMarker === asterisk ||
+      currentMarker === underscore ||
+      currentMarker === dash
+    ) {
+      if (tokenizers.thematicBreak.call(self, eat, line, true)) {
+        break
+      }
+    }
+
+    previousEmpty = empty
+    empty = !prefixed && !trim(content).length
+
+    if (indented && item) {
+      item.value = item.value.concat(emptyLines, line)
+      allLines = allLines.concat(emptyLines, line)
+      emptyLines = []
+    } else if (prefixed) {
+      if (emptyLines.length !== 0) {
+        spread = true
+        item.value.push('')
+        item.trail = emptyLines.concat()
+      }
+
+      item = {
+        value: [line],
+        indent: size,
+        trail: []
+      }
+
+      items.push(item)
+      allLines = allLines.concat(emptyLines, line)
+      emptyLines = []
+    } else if (empty) {
+      if (previousEmpty && !commonmark) {
+        break
+      }
+
+      emptyLines.push(line)
+    } else {
+      if (previousEmpty) {
+        break
+      }
+
+      if (interrupt(interuptors, tokenizers, self, [eat, line, true])) {
+        break
+      }
+
+      item.value = item.value.concat(emptyLines, line)
+      allLines = allLines.concat(emptyLines, line)
+      emptyLines = []
+    }
+
+    index = nextIndex + 1
+  }
+
+  node = eat(allLines.join(lineFeed)).reset({
+    type: 'list',
+    ordered: ordered,
+    start: start,
+    spread: spread,
+    children: []
+  })
+
+  enterTop = self.enterList()
+  exitBlockquote = self.enterBlock()
+  index = -1
+  length = items.length
+
+  while (++index < length) {
+    item = items[index].value.join(lineFeed)
+    now = eat.now()
+
+    eat(item)(listItem(self, item, now), node)
+
+    item = items[index].trail.join(lineFeed)
+
+    if (index !== length - 1) {
+      item += lineFeed
+    }
+
+    eat(item)
+  }
+
+  enterTop()
+  exitBlockquote()
+
+  return node
+}
+
+function listItem(ctx, value, position) {
+  var offsets = ctx.offset
+  var fn = ctx.options.pedantic ? pedanticListItem : normalListItem
+  var checked = null
+  var task
+  var indent
+
+  value = fn.apply(null, arguments)
+
+  if (ctx.options.gfm) {
+    task = value.match(taskItemExpression)
+
+    if (task) {
+      indent = task[0].length
+      checked = task[1].toLowerCase() === lowercaseX
+      offsets[position.line] += indent
+      value = value.slice(indent)
+    }
+  }
+
+  return {
+    type: 'listItem',
+    spread: looseListItemExpression.test(value),
+    checked: checked,
+    children: ctx.tokenizeBlock(value, position)
+  }
+}
+
+// Create a list-item using overly simple mechanics.
+function pedanticListItem(ctx, value, position) {
+  var offsets = ctx.offset
+  var line = position.line
+
+  // Remove the list-item’s bullet.
+  value = value.replace(pedanticBulletExpression, replacer)
+
+  // The initial line was also matched by the below, so we reset the `line`.
+  line = position.line
+
+  return value.replace(initialIndentExpression, replacer)
+
+  // A simple replacer which removed all matches, and adds their length to
+  // `offset`.
+  function replacer($0) {
+    offsets[line] = (offsets[line] || 0) + $0.length
+    line++
+
+    return ''
+  }
+}
+
+// Create a list-item using sane mechanics.
+function normalListItem(ctx, value, position) {
+  var offsets = ctx.offset
+  var line = position.line
+  var max
+  var bullet
+  var rest
+  var lines
+  var trimmedLines
+  var index
+  var length
+
+  // Remove the list-item’s bullet.
+  value = value.replace(bulletExpression, replacer)
+
+  lines = value.split(lineFeed)
+
+  trimmedLines = removeIndent(value, getIndent(max).indent).split(lineFeed)
+
+  // We replaced the initial bullet with something else above, which was used
+  // to trick `removeIndentation` into removing some more characters when
+  // possible.  However, that could result in the initial line to be stripped
+  // more than it should be.
+  trimmedLines[0] = rest
+
+  offsets[line] = (offsets[line] || 0) + bullet.length
+  line++
+
+  index = 0
+  length = lines.length
+
+  while (++index < length) {
+    offsets[line] =
+      (offsets[line] || 0) + lines[index].length - trimmedLines[index].length
+    line++
+  }
+
+  return trimmedLines.join(lineFeed)
+
+  /* eslint-disable-next-line max-params */
+  function replacer($0, $1, $2, $3, $4) {
+    bullet = $1 + $2 + $3
+    rest = $4
+
+    // Make sure that the first nine numbered list items can indent with an
+    // extra space.  That is, when the bullet did not receive an extra final
+    // space.
+    if (Number($2) < 10 && bullet.length % 2 === 1) {
+      $2 = space + $2
+    }
+
+    max = $1 + repeat(space, $2.length) + $3
+
+    return max + rest
+  }
+}
+
+
+/***/ }),
+/* 430 */
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+const compare = __webpack_require__(22)
+const lte = (a, b, loose) => compare(a, b, loose) <= 0
+module.exports = lte
+
+
+/***/ }),
+/* 431 */,
+/* 432 */,
+/* 433 */,
+/* 434 */
+/***/ (function(module) {
+
+const debug = (
+  typeof process === 'object' &&
+  process.env &&
+  process.env.NODE_DEBUG &&
+  /\bsemver\b/i.test(process.env.NODE_DEBUG)
+) ? (...args) => console.error('SEMVER', ...args)
+  : () => {}
+
+module.exports = debug
+
+
+/***/ }),
+/* 435 */
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+
 const cp = __webpack_require__(129);
-const parse = __webpack_require__(952);
-const enoent = __webpack_require__(242);
+const parse = __webpack_require__(232);
+const enoent = __webpack_require__(785);
 
 function spawn(command, args, options) {
     // Parse the arguments
@@ -19764,34 +22448,6 @@ module.exports._enoent = enoent;
 
 
 /***/ }),
-/* 430 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-const compare = __webpack_require__(22)
-const lte = (a, b, loose) => compare(a, b, loose) <= 0
-module.exports = lte
-
-
-/***/ }),
-/* 431 */,
-/* 432 */,
-/* 433 */,
-/* 434 */
-/***/ (function(module) {
-
-const debug = (
-  typeof process === 'object' &&
-  process.env &&
-  process.env.NODE_DEBUG &&
-  /\bsemver\b/i.test(process.env.NODE_DEBUG)
-) ? (...args) => console.error('SEMVER', ...args)
-  : () => {}
-
-module.exports = debug
-
-
-/***/ }),
-/* 435 */,
 /* 436 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
@@ -20063,7 +22719,7 @@ function sync (path, options) {
 "use strict";
 
 
-var repeat = __webpack_require__(360)
+var repeat = __webpack_require__(342)
 
 module.exports = markdownTable
 
@@ -20375,102 +23031,38 @@ module.exports = (ast, options = {}) => {
 
 "use strict";
 
-const isStream = __webpack_require__(124);
-const getStream = __webpack_require__(209);
-const mergeStream = __webpack_require__(74);
 
-// `input` option
-const handleInput = (spawned, input) => {
-	// Checking for stdin is workaround for https://github.com/nodejs/node/issues/26852
-	// TODO: Remove `|| spawned.stdin === undefined` once we drop support for Node.js <=12.2.0
-	if (input === undefined || spawned.stdin === undefined) {
-		return;
-	}
+var count = __webpack_require__(808)
 
-	if (isStream(input)) {
-		input.pipe(spawned.stdin);
-	} else {
-		spawned.stdin.end(input);
-	}
-};
+module.exports = enclose
 
-// `all` interleaves `stdout` and `stderr`
-const makeAllStream = (spawned, {all}) => {
-	if (!all || (!spawned.stdout && !spawned.stderr)) {
-		return;
-	}
+var leftParenthesis = '('
+var rightParenthesis = ')'
+var lessThan = '<'
+var greaterThan = '>'
 
-	const mixed = mergeStream();
+var expression = /\s/
 
-	if (spawned.stdout) {
-		mixed.add(spawned.stdout);
-	}
+// Wrap `url` in angle brackets when needed, or when
+// forced.
+// In links, images, and definitions, the URL part needs
+// to be enclosed when it:
+//
+// - has a length of `0`
+// - contains white-space
+// - has more or less opening than closing parentheses
+function enclose(uri, always) {
+  if (
+    always ||
+    uri.length === 0 ||
+    expression.test(uri) ||
+    count(uri, leftParenthesis) !== count(uri, rightParenthesis)
+  ) {
+    return lessThan + uri + greaterThan
+  }
 
-	if (spawned.stderr) {
-		mixed.add(spawned.stderr);
-	}
-
-	return mixed;
-};
-
-// On failure, `result.stdout|stderr|all` should contain the currently buffered stream
-const getBufferedData = async (stream, streamPromise) => {
-	if (!stream) {
-		return;
-	}
-
-	stream.destroy();
-
-	try {
-		return await streamPromise;
-	} catch (error) {
-		return error.bufferedData;
-	}
-};
-
-const getStreamPromise = (stream, {encoding, buffer, maxBuffer}) => {
-	if (!stream || !buffer) {
-		return;
-	}
-
-	if (encoding) {
-		return getStream(stream, {encoding, maxBuffer});
-	}
-
-	return getStream.buffer(stream, {maxBuffer});
-};
-
-// Retrieve result of child process: exit code, signal, error, streams (stdout/stderr/all)
-const getSpawnedResult = async ({stdout, stderr, all}, {encoding, buffer, maxBuffer}, processDone) => {
-	const stdoutPromise = getStreamPromise(stdout, {encoding, buffer, maxBuffer});
-	const stderrPromise = getStreamPromise(stderr, {encoding, buffer, maxBuffer});
-	const allPromise = getStreamPromise(all, {encoding, buffer, maxBuffer: maxBuffer * 2});
-
-	try {
-		return await Promise.all([processDone, stdoutPromise, stderrPromise, allPromise]);
-	} catch (error) {
-		return Promise.all([
-			{error, signal: error.signal, timedOut: error.timedOut},
-			getBufferedData(stdout, stdoutPromise),
-			getBufferedData(stderr, stderrPromise),
-			getBufferedData(all, allPromise)
-		]);
-	}
-};
-
-const validateInputSync = ({input}) => {
-	if (isStream(input)) {
-		throw new TypeError('The `input` option cannot be a stream in sync mode');
-	}
-};
-
-module.exports = {
-	handleInput,
-	makeAllStream,
-	getSpawnedResult,
-	validateInputSync
-};
-
+  return uri
+}
 
 
 /***/ }),
@@ -21519,7 +24111,7 @@ module.exports = Parser
 "use strict";
 
 
-var repeat = __webpack_require__(360)
+var repeat = __webpack_require__(342)
 
 module.exports = pad
 
@@ -21690,7 +24282,71 @@ function inlineHTML(eat, value, silent) {
 /* 462 */,
 /* 463 */,
 /* 464 */,
-/* 465 */,
+/* 465 */
+/***/ (function(module) {
+
+"use strict";
+
+
+module.exports = encode
+
+// Encode special characters in `value`.
+function encode(value, options) {
+  value = value.replace(
+    options.subset ? charactersToExpression(options.subset) : /["&'<>`]/g,
+    basic
+  )
+
+  if (options.subset || options.escapeOnly) {
+    return value
+  }
+
+  return (
+    value
+      // Surrogate pairs.
+      .replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, surrogate)
+      // BMP control characters (C0 except for LF, CR, SP; DEL; and some more
+      // non-ASCII ones).
+      .replace(
+        // eslint-disable-next-line no-control-regex, unicorn/no-hex-escape
+        /[\x01-\t\v\f\x0E-\x1F\x7F\x81\x8D\x8F\x90\x9D\xA0-\uFFFF]/g,
+        basic
+      )
+  )
+
+  function surrogate(pair, index, all) {
+    return options.format(
+      (pair.charCodeAt(0) - 0xd800) * 0x400 +
+        pair.charCodeAt(1) -
+        0xdc00 +
+        0x10000,
+      all.charCodeAt(index + 2),
+      options
+    )
+  }
+
+  function basic(character, index, all) {
+    return options.format(
+      character.charCodeAt(0),
+      all.charCodeAt(index + 1),
+      options
+    )
+  }
+}
+
+function charactersToExpression(subset) {
+  var groups = []
+  var index = -1
+
+  while (++index < subset.length) {
+    groups.push(subset[index].replace(/[|\\{}()[\]^$+*?.]/g, '\\$&'))
+  }
+
+  return new RegExp('(?:' + groups.join('|') + ')', 'g')
+}
+
+
+/***/ }),
 /* 466 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -22126,7 +24782,7 @@ module.exports = neq
 
 
 var streak = __webpack_require__(934)
-var repeat = __webpack_require__(360)
+var repeat = __webpack_require__(342)
 
 module.exports = inlineCode
 
@@ -22417,16 +25073,11 @@ module.exports = {
 /* 489 */,
 /* 490 */,
 /* 491 */
-/***/ (function(module) {
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
-
-
-module.exports = identity
-
-function identity(value) {
-  return value
-}
+var e=__webpack_require__(568),t=__webpack_require__(910),n=__webpack_require__(614);exports.Channel=function(){function i(){this.bus=new n.EventEmitter}var r=i.prototype;return r[e.SymbolSubscribable]=function*(){return yield this.subscribe()},r.setMaxListeners=function(e){this.bus.setMaxListeners(e)},r.send=function(e){this.bus.emit("event",{done:!1,value:e})},r.subscribe=function(){var n=this.bus;return e.createSubscription((function*(e){for(var i=yield t.on(n,"event");;){var r=(yield i.expect())[0];if(r.done)return r.value;e(r.value)}}))},r.close=function(){this.bus.emit("event",{done:!0,value:arguments.length<=0?void 0:arguments[0]})},i}();
+//# sourceMappingURL=channel.cjs.production.min.js.map
 
 
 /***/ }),
@@ -22783,7 +25434,7 @@ module.exports = picomatch;
 
 "use strict";
 
-const pTry = __webpack_require__(250);
+const pTry = __webpack_require__(834);
 
 const pLimit = concurrency => {
 	if (!((Number.isInteger(concurrency) || concurrency === Infinity) && concurrency > 0)) {
@@ -22885,7 +25536,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const events_1 = __webpack_require__(614);
 const fsScandir = __webpack_require__(592);
 const fastq = __webpack_require__(192);
-const common = __webpack_require__(720);
+const common = __webpack_require__(907);
 const reader_1 = __webpack_require__(139);
 class AsyncReader extends reader_1.default {
     constructor(_root, _settings) {
@@ -23305,479 +25956,18 @@ module.exports = lte
 /* 510 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
-"use strict";
+const Range = __webpack_require__(46)
 
+// Mostly just for testing and legacy API reasons
+const toComparators = (range, options) =>
+  new Range(range, options).set
+    .map(comp => comp.map(c => c.value).join(' ').trim().split(' '))
 
-var trim = __webpack_require__(235)
-var repeat = __webpack_require__(360)
-var decimal = __webpack_require__(858)
-var getIndent = __webpack_require__(313)
-var removeIndent = __webpack_require__(891)
-var interrupt = __webpack_require__(658)
-
-module.exports = list
-
-var asterisk = '*'
-var underscore = '_'
-var plusSign = '+'
-var dash = '-'
-var dot = '.'
-var space = ' '
-var lineFeed = '\n'
-var tab = '\t'
-var rightParenthesis = ')'
-var lowercaseX = 'x'
-
-var tabSize = 4
-var looseListItemExpression = /\n\n(?!\s*$)/
-var taskItemExpression = /^\[([ X\tx])][ \t]/
-var bulletExpression = /^([ \t]*)([*+-]|\d+[.)])( {1,4}(?! )| |\t|$|(?=\n))([^\n]*)/
-var pedanticBulletExpression = /^([ \t]*)([*+-]|\d+[.)])([ \t]+)/
-var initialIndentExpression = /^( {1,4}|\t)?/gm
-
-function list(eat, value, silent) {
-  var self = this
-  var commonmark = self.options.commonmark
-  var pedantic = self.options.pedantic
-  var tokenizers = self.blockTokenizers
-  var interuptors = self.interruptList
-  var index = 0
-  var length = value.length
-  var start = null
-  var size
-  var queue
-  var ordered
-  var character
-  var marker
-  var nextIndex
-  var startIndex
-  var prefixed
-  var currentMarker
-  var content
-  var line
-  var previousEmpty
-  var empty
-  var items
-  var allLines
-  var emptyLines
-  var item
-  var enterTop
-  var exitBlockquote
-  var spread = false
-  var node
-  var now
-  var end
-  var indented
-
-  while (index < length) {
-    character = value.charAt(index)
-
-    if (character !== tab && character !== space) {
-      break
-    }
-
-    index++
-  }
-
-  character = value.charAt(index)
-
-  if (character === asterisk || character === plusSign || character === dash) {
-    marker = character
-    ordered = false
-  } else {
-    ordered = true
-    queue = ''
-
-    while (index < length) {
-      character = value.charAt(index)
-
-      if (!decimal(character)) {
-        break
-      }
-
-      queue += character
-      index++
-    }
-
-    character = value.charAt(index)
-
-    if (
-      !queue ||
-      !(character === dot || (commonmark && character === rightParenthesis))
-    ) {
-      return
-    }
-
-    /* Slightly abusing `silent` mode, whose goal is to make interrupting
-     * paragraphs work.
-     * Well, that’s exactly what we want to do here: don’t interrupt:
-     * 2. here, because the “list” doesn’t start with `1`. */
-    if (silent && queue !== '1') {
-      return
-    }
-
-    start = parseInt(queue, 10)
-    marker = character
-  }
-
-  character = value.charAt(++index)
-
-  if (
-    character !== space &&
-    character !== tab &&
-    (pedantic || (character !== lineFeed && character !== ''))
-  ) {
-    return
-  }
-
-  if (silent) {
-    return true
-  }
-
-  index = 0
-  items = []
-  allLines = []
-  emptyLines = []
-
-  while (index < length) {
-    nextIndex = value.indexOf(lineFeed, index)
-    startIndex = index
-    prefixed = false
-    indented = false
-
-    if (nextIndex === -1) {
-      nextIndex = length
-    }
-
-    size = 0
-
-    while (index < length) {
-      character = value.charAt(index)
-
-      if (character === tab) {
-        size += tabSize - (size % tabSize)
-      } else if (character === space) {
-        size++
-      } else {
-        break
-      }
-
-      index++
-    }
-
-    if (item && size >= item.indent) {
-      indented = true
-    }
-
-    character = value.charAt(index)
-    currentMarker = null
-
-    if (!indented) {
-      if (
-        character === asterisk ||
-        character === plusSign ||
-        character === dash
-      ) {
-        currentMarker = character
-        index++
-        size++
-      } else {
-        queue = ''
-
-        while (index < length) {
-          character = value.charAt(index)
-
-          if (!decimal(character)) {
-            break
-          }
-
-          queue += character
-          index++
-        }
-
-        character = value.charAt(index)
-        index++
-
-        if (
-          queue &&
-          (character === dot || (commonmark && character === rightParenthesis))
-        ) {
-          currentMarker = character
-          size += queue.length + 1
-        }
-      }
-
-      if (currentMarker) {
-        character = value.charAt(index)
-
-        if (character === tab) {
-          size += tabSize - (size % tabSize)
-          index++
-        } else if (character === space) {
-          end = index + tabSize
-
-          while (index < end) {
-            if (value.charAt(index) !== space) {
-              break
-            }
-
-            index++
-            size++
-          }
-
-          if (index === end && value.charAt(index) === space) {
-            index -= tabSize - 1
-            size -= tabSize - 1
-          }
-        } else if (character !== lineFeed && character !== '') {
-          currentMarker = null
-        }
-      }
-    }
-
-    if (currentMarker) {
-      if (!pedantic && marker !== currentMarker) {
-        break
-      }
-
-      prefixed = true
-    } else {
-      if (!commonmark && !indented && value.charAt(startIndex) === space) {
-        indented = true
-      } else if (commonmark && item) {
-        indented = size >= item.indent || size > tabSize
-      }
-
-      prefixed = false
-      index = startIndex
-    }
-
-    line = value.slice(startIndex, nextIndex)
-    content = startIndex === index ? line : value.slice(index, nextIndex)
-
-    if (
-      currentMarker === asterisk ||
-      currentMarker === underscore ||
-      currentMarker === dash
-    ) {
-      if (tokenizers.thematicBreak.call(self, eat, line, true)) {
-        break
-      }
-    }
-
-    previousEmpty = empty
-    empty = !prefixed && !trim(content).length
-
-    if (indented && item) {
-      item.value = item.value.concat(emptyLines, line)
-      allLines = allLines.concat(emptyLines, line)
-      emptyLines = []
-    } else if (prefixed) {
-      if (emptyLines.length !== 0) {
-        spread = true
-        item.value.push('')
-        item.trail = emptyLines.concat()
-      }
-
-      item = {
-        value: [line],
-        indent: size,
-        trail: []
-      }
-
-      items.push(item)
-      allLines = allLines.concat(emptyLines, line)
-      emptyLines = []
-    } else if (empty) {
-      if (previousEmpty && !commonmark) {
-        break
-      }
-
-      emptyLines.push(line)
-    } else {
-      if (previousEmpty) {
-        break
-      }
-
-      if (interrupt(interuptors, tokenizers, self, [eat, line, true])) {
-        break
-      }
-
-      item.value = item.value.concat(emptyLines, line)
-      allLines = allLines.concat(emptyLines, line)
-      emptyLines = []
-    }
-
-    index = nextIndex + 1
-  }
-
-  node = eat(allLines.join(lineFeed)).reset({
-    type: 'list',
-    ordered: ordered,
-    start: start,
-    spread: spread,
-    children: []
-  })
-
-  enterTop = self.enterList()
-  exitBlockquote = self.enterBlock()
-  index = -1
-  length = items.length
-
-  while (++index < length) {
-    item = items[index].value.join(lineFeed)
-    now = eat.now()
-
-    eat(item)(listItem(self, item, now), node)
-
-    item = items[index].trail.join(lineFeed)
-
-    if (index !== length - 1) {
-      item += lineFeed
-    }
-
-    eat(item)
-  }
-
-  enterTop()
-  exitBlockquote()
-
-  return node
-}
-
-function listItem(ctx, value, position) {
-  var offsets = ctx.offset
-  var fn = ctx.options.pedantic ? pedanticListItem : normalListItem
-  var checked = null
-  var task
-  var indent
-
-  value = fn.apply(null, arguments)
-
-  if (ctx.options.gfm) {
-    task = value.match(taskItemExpression)
-
-    if (task) {
-      indent = task[0].length
-      checked = task[1].toLowerCase() === lowercaseX
-      offsets[position.line] += indent
-      value = value.slice(indent)
-    }
-  }
-
-  return {
-    type: 'listItem',
-    spread: looseListItemExpression.test(value),
-    checked: checked,
-    children: ctx.tokenizeBlock(value, position)
-  }
-}
-
-// Create a list-item using overly simple mechanics.
-function pedanticListItem(ctx, value, position) {
-  var offsets = ctx.offset
-  var line = position.line
-
-  // Remove the list-item’s bullet.
-  value = value.replace(pedanticBulletExpression, replacer)
-
-  // The initial line was also matched by the below, so we reset the `line`.
-  line = position.line
-
-  return value.replace(initialIndentExpression, replacer)
-
-  // A simple replacer which removed all matches, and adds their length to
-  // `offset`.
-  function replacer($0) {
-    offsets[line] = (offsets[line] || 0) + $0.length
-    line++
-
-    return ''
-  }
-}
-
-// Create a list-item using sane mechanics.
-function normalListItem(ctx, value, position) {
-  var offsets = ctx.offset
-  var line = position.line
-  var max
-  var bullet
-  var rest
-  var lines
-  var trimmedLines
-  var index
-  var length
-
-  // Remove the list-item’s bullet.
-  value = value.replace(bulletExpression, replacer)
-
-  lines = value.split(lineFeed)
-
-  trimmedLines = removeIndent(value, getIndent(max).indent).split(lineFeed)
-
-  // We replaced the initial bullet with something else above, which was used
-  // to trick `removeIndentation` into removing some more characters when
-  // possible.  However, that could result in the initial line to be stripped
-  // more than it should be.
-  trimmedLines[0] = rest
-
-  offsets[line] = (offsets[line] || 0) + bullet.length
-  line++
-
-  index = 0
-  length = lines.length
-
-  while (++index < length) {
-    offsets[line] =
-      (offsets[line] || 0) + lines[index].length - trimmedLines[index].length
-    line++
-  }
-
-  return trimmedLines.join(lineFeed)
-
-  /* eslint-disable-next-line max-params */
-  function replacer($0, $1, $2, $3, $4) {
-    bullet = $1 + $2 + $3
-    rest = $4
-
-    // Make sure that the first nine numbered list items can indent with an
-    // extra space.  That is, when the bullet did not receive an extra final
-    // space.
-    if (Number($2) < 10 && bullet.length % 2 === 1) {
-      $2 = space + $2
-    }
-
-    max = $1 + repeat(space, $2.length) + $3
-
-    return max + rest
-  }
-}
+module.exports = toComparators
 
 
 /***/ }),
-/* 511 */
-/***/ (function(module) {
-
-// Note: this is the semver.org version of the spec that it implements
-// Not necessarily the package version of this code.
-const SEMVER_SPEC_VERSION = '2.0.0'
-
-const MAX_LENGTH = 256
-const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER ||
-  /* istanbul ignore next */ 9007199254740991
-
-// Max safe segment length for coercion.
-const MAX_SAFE_COMPONENT_LENGTH = 16
-
-module.exports = {
-  SEMVER_SPEC_VERSION,
-  MAX_LENGTH,
-  MAX_SAFE_INTEGER,
-  MAX_SAFE_COMPONENT_LENGTH
-}
-
-
-/***/ }),
+/* 511 */,
 /* 512 */,
 /* 513 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
@@ -23787,8 +25977,8 @@ module.exports = {
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = __webpack_require__(622);
 const deep_1 = __webpack_require__(565);
-const entry_1 = __webpack_require__(148);
-const error_1 = __webpack_require__(228);
+const entry_1 = __webpack_require__(843);
+const error_1 = __webpack_require__(952);
 const entry_2 = __webpack_require__(272);
 class Provider {
     constructor(_settings) {
@@ -24141,63 +26331,7 @@ module.exports = new Type('tag:yaml.org,2002:float', {
 /***/ }),
 /* 528 */,
 /* 529 */,
-/* 530 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-"use strict";
-
-const mimicFn = __webpack_require__(296);
-
-const calledFunctions = new WeakMap();
-
-const oneTime = (fn, options = {}) => {
-	if (typeof fn !== 'function') {
-		throw new TypeError('Expected a function');
-	}
-
-	let ret;
-	let isCalled = false;
-	let callCount = 0;
-	const functionName = fn.displayName || fn.name || '<anonymous>';
-
-	const onetime = function (...args) {
-		calledFunctions.set(onetime, ++callCount);
-
-		if (isCalled) {
-			if (options.throw === true) {
-				throw new Error(`Function \`${functionName}\` can only be called once`);
-			}
-
-			return ret;
-		}
-
-		isCalled = true;
-		ret = fn.apply(this, args);
-		fn = null;
-
-		return ret;
-	};
-
-	mimicFn(onetime, fn);
-	calledFunctions.set(onetime, callCount);
-
-	return onetime;
-};
-
-module.exports = oneTime;
-// TODO: Remove this for the next major release
-module.exports.default = oneTime;
-
-module.exports.callCount = fn => {
-	if (!calledFunctions.has(fn)) {
-		throw new Error(`The given function \`${fn.name}\` is not wrapped by the \`onetime\` package`);
-	}
-
-	return calledFunctions.get(fn);
-};
-
-
-/***/ }),
+/* 530 */,
 /* 531 */,
 /* 532 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
@@ -24319,7 +26453,7 @@ module.exports = {
   sort: __webpack_require__(270),
   rsort: __webpack_require__(873),
   gt: __webpack_require__(855),
-  lt: __webpack_require__(921),
+  lt: __webpack_require__(296),
   eq: __webpack_require__(901),
   neq: __webpack_require__(132),
   gte: __webpack_require__(989),
@@ -24328,16 +26462,16 @@ module.exports = {
   coerce: __webpack_require__(408),
   Comparator: __webpack_require__(9),
   Range: __webpack_require__(46),
-  satisfies: __webpack_require__(845),
-  toComparators: __webpack_require__(714),
-  maxSatisfying: __webpack_require__(266),
+  satisfies: __webpack_require__(60),
+  toComparators: __webpack_require__(510),
+  maxSatisfying: __webpack_require__(213),
   minSatisfying: __webpack_require__(38),
   minVersion: __webpack_require__(502),
   validRange: __webpack_require__(319),
   outside: __webpack_require__(783),
   gtr: __webpack_require__(557),
   ltr: __webpack_require__(522),
-  intersects: __webpack_require__(620),
+  intersects: __webpack_require__(307),
   simplifyRange: __webpack_require__(909),
   subset: __webpack_require__(293),
 }
@@ -24645,7 +26779,7 @@ module.exports = {
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-const VERSION = "2.2.3";
+const VERSION = "2.6.0";
 
 /**
  * Some “list” response that can be paginated have a different response structure
@@ -24698,26 +26832,23 @@ function iterator(octokit, route, parameters) {
   let url = options.url;
   return {
     [Symbol.asyncIterator]: () => ({
-      next() {
-        if (!url) {
-          return Promise.resolve({
-            done: true
-          });
-        }
-
-        return requestMethod({
+      async next() {
+        if (!url) return {
+          done: true
+        };
+        const response = await requestMethod({
           method,
           url,
           headers
-        }).then(normalizePaginatedListResponse).then(response => {
-          // `response.headers.link` format:
-          // '<https://api.github.com/users/aseemk/followers?page=2>; rel="next", <https://api.github.com/users/aseemk/followers?page=2>; rel="last"'
-          // sets `url` to undefined if "next" URL is not present or `link` header is not set
-          url = ((response.headers.link || "").match(/<([^>]+)>;\s*rel="next"/) || [])[1];
-          return {
-            value: response
-          };
         });
+        const normalizedResponse = normalizePaginatedListResponse(response); // `response.headers.link` format:
+        // '<https://api.github.com/users/aseemk/followers?page=2>; rel="next", <https://api.github.com/users/aseemk/followers?page=2>; rel="last"'
+        // sets `url` to undefined if "next" URL is not present or `link` header is not set
+
+        url = ((normalizedResponse.headers.link || "").match(/<([^>]+)>;\s*rel="next"/) || [])[1];
+        return {
+          value: normalizedResponse
+        };
       }
 
     })
@@ -24755,6 +26886,10 @@ function gather(octokit, results, iterator, mapFn) {
   });
 }
 
+const composePaginateRest = Object.assign(paginate, {
+  iterator
+});
+
 /**
  * @param octokit Octokit instance
  * @param options Options passed to Octokit constructor
@@ -24769,6 +26904,7 @@ function paginateRest(octokit) {
 }
 paginateRest.VERSION = VERSION;
 
+exports.composePaginateRest = composePaginateRest;
 exports.paginateRest = paginateRest;
 //# sourceMappingURL=index.js.map
 
@@ -24782,6 +26918,7 @@ const core = __webpack_require__(852);
 const github = __webpack_require__(983);
 const { main } = __webpack_require__(142);
 const { covector } = __webpack_require__(584);
+const { commandText, packageListToArray } = __webpack_require__(770);
 const fs = __webpack_require__(747);
 
 main(function* run() {
@@ -24791,6 +26928,7 @@ main(function* run() {
         ? process.env.GITHUB_TOKEN
         : core.getInput("token");
     const inputCommand = core.getInput("command");
+    const filterPackages = packageListToArray(core.getInput("filterPackages"));
     let command = inputCommand;
     if (inputCommand === "version-or-publish") {
       if ((yield covector({ command: "status" })) === "No changes.") {
@@ -24800,7 +26938,7 @@ main(function* run() {
         command = "version";
       }
     }
-    const covectored = yield covector({ command });
+    const covectored = yield covector({ command, filterPackages });
 
     core.setOutput("commandRan", command);
     let successfulPublish = false;
@@ -24832,6 +26970,7 @@ main(function* run() {
       const { owner, repo } = github.context.repo;
 
       let releases = {};
+      let packagesPublished = "";
       for (let pkg of Object.keys(covectored)) {
         if (covectored[pkg].command !== false) {
           console.log(
@@ -24846,6 +26985,12 @@ main(function* run() {
             draft: core.getInput("draftRelease") === "true" ? true : false,
           });
           const { data } = createReleaseResponse;
+          core.setOutput(`${pkg}-published`, "true");
+          if (packagesPublished === "") {
+            packagesPublished = pkg;
+          } else {
+            packagesPublished = `${packagesPublished},${pkg}`;
+          }
           console.log("release created: ", data);
           releases[pkg] = data; // { id: releaseId, html_url: htmlUrl, upload_url: uploadUrl }
 
@@ -24871,63 +27016,17 @@ main(function* run() {
           }
         }
       }
+
+      core.setOutput("packagesPublished", packagesPublished);
     }
   } catch (error) {
     core.setFailed(error.message);
   }
 });
 
-const commandText = (pkg) => {
-  const { precommand, command, postcommand } = pkg;
-  let text = "";
-
-  if (typeof precommand !== "boolean") {
-    text = `${text}${precommand}\n`;
-  }
-
-  if (typeof command !== "boolean") {
-    text = `${text}${command}\n`;
-  }
-
-  if (typeof postcommand !== "boolean") {
-    text = `${text}${postcommand}\n`;
-  }
-
-  return text === "" ? "Publish complete." : text;
-};
-
 
 /***/ }),
-/* 546 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-"use strict";
-
-
-const fs = __webpack_require__(747);
-const shebangCommand = __webpack_require__(786);
-
-function readShebang(command) {
-    // Read the first 150 bytes from the file
-    const size = 150;
-    const buffer = Buffer.alloc(size);
-
-    let fd;
-
-    try {
-        fd = fs.openSync(command, 'r');
-        fs.readSync(fd, buffer, 0, size, 0);
-        fs.closeSync(fd);
-    } catch (e) { /* Empty */ }
-
-    // Attempt to extract shebang (null is returned if not a shebang)
-    return shebangCommand(buffer.toString());
-}
-
-module.exports = readShebang;
-
-
-/***/ }),
+/* 546 */,
 /* 547 */,
 /* 548 */,
 /* 549 */
@@ -24980,65 +27079,7 @@ module.exports = (versions, range, options) => {
 
 
 /***/ }),
-/* 550 */
-/***/ (function(module) {
-
-"use strict";
-
-const aliases = ['stdin', 'stdout', 'stderr'];
-
-const hasAlias = opts => aliases.some(alias => opts[alias] !== undefined);
-
-const normalizeStdio = opts => {
-	if (!opts) {
-		return;
-	}
-
-	const {stdio} = opts;
-
-	if (stdio === undefined) {
-		return aliases.map(alias => opts[alias]);
-	}
-
-	if (hasAlias(opts)) {
-		throw new Error(`It's not possible to provide \`stdio\` in combination with one of ${aliases.map(alias => `\`${alias}\``).join(', ')}`);
-	}
-
-	if (typeof stdio === 'string') {
-		return stdio;
-	}
-
-	if (!Array.isArray(stdio)) {
-		throw new TypeError(`Expected \`stdio\` to be of type \`string\` or \`Array\`, got \`${typeof stdio}\``);
-	}
-
-	const length = Math.max(stdio.length, aliases.length);
-	return Array.from({length}, (value, index) => stdio[index]);
-};
-
-module.exports = normalizeStdio;
-
-// `ipc` is pushed unless it is already present
-module.exports.node = opts => {
-	const stdio = normalizeStdio(opts);
-
-	if (stdio === 'ipc') {
-		return 'ipc';
-	}
-
-	if (stdio === undefined || typeof stdio === 'string') {
-		return [stdio, stdio, stdio, 'ipc'];
-	}
-
-	if (stdio.includes('ipc')) {
-		return stdio;
-	}
-
-	return [...stdio, 'ipc'];
-};
-
-
-/***/ }),
+/* 550 */,
 /* 551 */,
 /* 552 */,
 /* 553 */
@@ -25113,6 +27154,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const os = __importStar(__webpack_require__(87));
+const utils_1 = __webpack_require__(589);
 /**
  * Commands
  *
@@ -25166,28 +27208,14 @@ class Command {
         return cmdStr;
     }
 }
-/**
- * Sanitizes an input into a string so it can be passed into issueCommand safely
- * @param input input to sanitize into a string
- */
-function toCommandValue(input) {
-    if (input === null || input === undefined) {
-        return '';
-    }
-    else if (typeof input === 'string' || input instanceof String) {
-        return input;
-    }
-    return JSON.stringify(input);
-}
-exports.toCommandValue = toCommandValue;
 function escapeData(s) {
-    return toCommandValue(s)
+    return utils_1.toCommandValue(s)
         .replace(/%/g, '%25')
         .replace(/\r/g, '%0D')
         .replace(/\n/g, '%0A');
 }
 function escapeProperty(s) {
-    return toCommandValue(s)
+    return utils_1.toCommandValue(s)
         .replace(/%/g, '%25')
         .replace(/\r/g, '%0D')
         .replace(/\n/g, '%0A')
@@ -25779,60 +27807,32 @@ function factory(ctx) {
 
 /***/ }),
 /* 573 */
-/***/ (function(module) {
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
-// This is not the set of all possible signals.
-//
-// It IS, however, the set of all signals that trigger
-// an exit on either Linux or BSD systems.  Linux is a
-// superset of the signal names supported on BSD, and
-// the unknown signals just fail to register, so we can
-// catch that easily enough.
-//
-// Don't bother with SIGKILL.  It's uncatchable, which
-// means that we can't fire any callbacks anyway.
-//
-// If a user does happen to register a handler on a non-
-// fatal signal like SIGWINCH or something, and then
-// exit, it'll end up firing `process.emit('exit')`, so
-// the handler will be fired anyway.
-//
-// SIGBUS, SIGFPE, SIGSEGV and SIGILL, when not raised
-// artificially, inherently leave the process in a
-// state from which it is not safe to try and enter JS
-// listeners.
-module.exports = [
-  'SIGABRT',
-  'SIGALRM',
-  'SIGHUP',
-  'SIGINT',
-  'SIGTERM'
-]
+"use strict";
 
-if (process.platform !== 'win32') {
-  module.exports.push(
-    'SIGVTALRM',
-    'SIGXCPU',
-    'SIGXFSZ',
-    'SIGUSR2',
-    'SIGTRAP',
-    'SIGSYS',
-    'SIGQUIT',
-    'SIGIOT'
-    // should detect profiler and enable/disable accordingly.
-    // see #21
-    // 'SIGPROF'
-  )
+Object.defineProperty(exports, "__esModule", { value: true });
+const async = __webpack_require__(120);
+const sync = __webpack_require__(719);
+const settings_1 = __webpack_require__(300);
+exports.Settings = settings_1.default;
+function stat(path, optionsOrSettingsOrCallback, callback) {
+    if (typeof optionsOrSettingsOrCallback === 'function') {
+        return async.read(path, getSettings(), optionsOrSettingsOrCallback);
+    }
+    async.read(path, getSettings(optionsOrSettingsOrCallback), callback);
 }
-
-if (process.platform === 'linux') {
-  module.exports.push(
-    'SIGIO',
-    'SIGPOLL',
-    'SIGPWR',
-    'SIGSTKFLT',
-    'SIGUNUSED'
-  )
+exports.stat = stat;
+function statSync(path, optionsOrSettings) {
+    const settings = getSettings(optionsOrSettings);
+    return sync.read(path, settings);
+}
+exports.statSync = statSync;
+function getSettings(settingsOrOptions = {}) {
+    if (settingsOrOptions instanceof settings_1.default) {
+        return settingsOrOptions;
+    }
+    return new settings_1.default(settingsOrOptions);
 }
 
 
@@ -27702,55 +29702,7 @@ module.exports.cli = cli;
 
 
 /***/ }),
-/* 585 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-"use strict";
-
-
-var locate = __webpack_require__(82)
-
-module.exports = hardBreak
-hardBreak.locator = locate
-
-var space = ' '
-var lineFeed = '\n'
-var minBreakLength = 2
-
-function hardBreak(eat, value, silent) {
-  var length = value.length
-  var index = -1
-  var queue = ''
-  var character
-
-  while (++index < length) {
-    character = value.charAt(index)
-
-    if (character === lineFeed) {
-      if (index < minBreakLength) {
-        return
-      }
-
-      /* istanbul ignore if - never used (yet) */
-      if (silent) {
-        return true
-      }
-
-      queue += character
-
-      return eat(queue)({type: 'break'})
-    }
-
-    if (character !== space) {
-      return
-    }
-
-    queue += character
-  }
-}
-
-
-/***/ }),
+/* 585 */,
 /* 586 */,
 /* 587 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
@@ -27765,7 +29717,7 @@ module.exports = __webpack_require__(849);
 "use strict";
 
 
-var uri = __webpack_require__(764)
+var uri = __webpack_require__(452)
 var title = __webpack_require__(919)
 
 module.exports = link
@@ -27831,7 +29783,31 @@ function link(node) {
 
 
 /***/ }),
-/* 589 */,
+/* 589 */
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+// We use any as a valid input type
+/* eslint-disable @typescript-eslint/no-explicit-any */
+Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * Sanitizes an input into a string so it can be passed into issueCommand safely
+ * @param input input to sanitize into a string
+ */
+function toCommandValue(input) {
+    if (input === null || input === undefined) {
+        return '';
+    }
+    else if (typeof input === 'string' || input instanceof String) {
+        return input;
+    }
+    return JSON.stringify(input);
+}
+exports.toCommandValue = toCommandValue;
+//# sourceMappingURL=utils.js.map
+
+/***/ }),
 /* 590 */,
 /* 591 */,
 /* 592 */
@@ -27972,7 +29948,7 @@ function register (state, name, method, options) {
 "use strict";
 
 
-var repeat = __webpack_require__(360)
+var repeat = __webpack_require__(342)
 
 module.exports = thematic
 
@@ -29897,20 +31873,21 @@ function strikethrough(node) {
 
 
 /***/ }),
-/* 620 */
+/* 620 */,
+/* 621 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
-const Range = __webpack_require__(46)
-const intersects = (r1, r2, options) => {
-  r1 = new Range(r1, options)
-  r2 = new Range(r2, options)
-  return r1.intersects(r2)
-}
-module.exports = intersects
+"use strict";
+
+
+var encode = __webpack_require__(760)
+var escape = __webpack_require__(786)
+
+module.exports = encode
+encode.escape = escape
 
 
 /***/ }),
-/* 621 */,
 /* 622 */
 /***/ (function(module) {
 
@@ -29919,52 +31896,65 @@ module.exports = require("path");
 /***/ }),
 /* 623 */,
 /* 624 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
+/***/ (function(__unusedmodule, exports) {
 
-"use strict";
+// Generated by CoffeeScript 1.3.3
+(function() {
+  var scan;
 
-const stripAnsi = __webpack_require__(598);
-const isFullwidthCodePoint = __webpack_require__(759);
-const emojiRegex = __webpack_require__(439);
+  scan = function(string, pattern, callback) {
+    var match, result;
+    result = "";
+    while (string.length > 0) {
+      match = string.match(pattern);
+      if (match) {
+        result += string.slice(0, match.index);
+        result += callback(match);
+        string = string.slice(match.index + match[0].length);
+      } else {
+        result += string;
+        string = "";
+      }
+    }
+    return result;
+  };
 
-const stringWidth = string => {
-	string = string.replace(emojiRegex(), '  ');
+  exports.split = function(line) {
+    var field, words;
+    if (line == null) {
+      line = "";
+    }
+    words = [];
+    field = "";
+    scan(line, /\s*(?:([^\s\\\'\"]+)|'((?:[^\'\\]|\\.)*)'|"((?:[^\"\\]|\\.)*)"|(\\.?)|(\S))(\s|$)?/, function(match) {
+      var dq, escape, garbage, raw, seperator, sq, word;
+      raw = match[0], word = match[1], sq = match[2], dq = match[3], escape = match[4], garbage = match[5], seperator = match[6];
+      if (garbage != null) {
+        throw new Error("Unmatched quote");
+      }
+      field += word || (sq || dq || escape).replace(/\\(?=.)/, "");
+      if (seperator != null) {
+        words.push(field);
+        return field = "";
+      }
+    });
+    if (field) {
+      words.push(field);
+    }
+    return words;
+  };
 
-	if (typeof string !== 'string' || string.length === 0) {
-		return 0;
-	}
+  exports.escape = function(str) {
+    if (str == null) {
+      str = "";
+    }
+    if (str == null) {
+      return "''";
+    }
+    return str.replace(/([^A-Za-z0-9_\-.,:\/@\n])/g, "\\$1").replace(/\n/g, "'\n'");
+  };
 
-	string = stripAnsi(string);
-
-	let width = 0;
-
-	for (let i = 0; i < string.length; i++) {
-		const code = string.codePointAt(i);
-
-		// Ignore control characters
-		if (code <= 0x1F || (code >= 0x7F && code <= 0x9F)) {
-			continue;
-		}
-
-		// Ignore combining characters
-		if (code >= 0x300 && code <= 0x36F) {
-			continue;
-		}
-
-		// Surrogates
-		if (code > 0xFFFF) {
-			i++;
-		}
-
-		width += isFullwidthCodePoint(code) ? 2 : 1;
-	}
-
-	return width;
-};
-
-module.exports = stringWidth;
-// TODO: remove this in the next major version
-module.exports.default = stringWidth;
+}).call(this);
 
 
 /***/ }),
@@ -30102,7 +32092,7 @@ const {
   CHAR_SINGLE_QUOTE, /* ' */
   CHAR_NO_BREAK_SPACE,
   CHAR_ZERO_WIDTH_NOBREAK_SPACE
-} = __webpack_require__(936);
+} = __webpack_require__(360);
 
 /**
  * parse
@@ -30419,7 +32409,7 @@ module.exports = parse;
 /***/ (function(module, exports, __webpack_require__) {
 
 const { MAX_SAFE_COMPONENT_LENGTH } = __webpack_require__(94)
-const debug = __webpack_require__(940)
+const debug = __webpack_require__(957)
 exports = module.exports = {}
 
 // The actual regexps go on exports.re
@@ -30672,7 +32662,12 @@ if (typeof Object.create === 'function') {
 
 /***/ }),
 /* 638 */,
-/* 639 */,
+/* 639 */
+/***/ (function(module) {
+
+module.exports = ["cent","copy","divide","gt","lt","not","para","times"];
+
+/***/ }),
 /* 640 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
@@ -30718,7 +32713,7 @@ exports.createDirentFromStats = createDirentFromStats;
 "use strict";
 
 
-var repeat = __webpack_require__(360)
+var repeat = __webpack_require__(342)
 var pad = __webpack_require__(455)
 
 module.exports = listItem
@@ -31017,7 +33012,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.validation = void 0;
 const argsert_1 = __webpack_require__(997);
 const common_types_1 = __webpack_require__(45);
-const levenshtein_1 = __webpack_require__(404);
+const levenshtein_1 = __webpack_require__(266);
 const obj_filter_1 = __webpack_require__(816);
 const specialKeys = ['$0', '--', '_'];
 // validation-type-stuff, missing params,
@@ -31346,66 +33341,25 @@ exports.validation = validation;
 
 /***/ }),
 /* 656 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
+/***/ (function(module) {
 
-"use strict";
+// Note: this is the semver.org version of the spec that it implements
+// Not necessarily the package version of this code.
+const SEMVER_SPEC_VERSION = '2.0.0'
 
+const MAX_LENGTH = 256
+const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER ||
+  /* istanbul ignore next */ 9007199254740991
 
-const fill = __webpack_require__(939);
-const utils = __webpack_require__(49);
+// Max safe segment length for coercion.
+const MAX_SAFE_COMPONENT_LENGTH = 16
 
-const compile = (ast, options = {}) => {
-  let walk = (node, parent = {}) => {
-    let invalidBlock = utils.isInvalidBrace(parent);
-    let invalidNode = node.invalid === true && options.escapeInvalid === true;
-    let invalid = invalidBlock === true || invalidNode === true;
-    let prefix = options.escapeInvalid === true ? '\\' : '';
-    let output = '';
-
-    if (node.isOpen === true) {
-      return prefix + node.value;
-    }
-    if (node.isClose === true) {
-      return prefix + node.value;
-    }
-
-    if (node.type === 'open') {
-      return invalid ? (prefix + node.value) : '(';
-    }
-
-    if (node.type === 'close') {
-      return invalid ? (prefix + node.value) : ')';
-    }
-
-    if (node.type === 'comma') {
-      return node.prev.type === 'comma' ? '' : (invalid ? node.value : '|');
-    }
-
-    if (node.value) {
-      return node.value;
-    }
-
-    if (node.nodes && node.ranges > 0) {
-      let args = utils.reduce(node.nodes);
-      let range = fill(...args, { ...options, wrap: false, toRegex: true });
-
-      if (range.length !== 0) {
-        return args.length > 1 && range.length > 1 ? `(${range})` : range;
-      }
-    }
-
-    if (node.nodes) {
-      for (let child of node.nodes) {
-        output += walk(child, node);
-      }
-    }
-    return output;
-  };
-
-  return walk(ast);
-};
-
-module.exports = compile;
+module.exports = {
+  SEMVER_SPEC_VERSION,
+  MAX_LENGTH,
+  MAX_SAFE_INTEGER,
+  MAX_SAFE_COMPONENT_LENGTH
+}
 
 
 /***/ }),
@@ -31529,9 +33483,7 @@ function interrupt(interruptors, tokenizers, ctx, parameters) {
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
-
-var isPlainObject = _interopDefault(__webpack_require__(214));
+var isPlainObject = __webpack_require__(888);
 var universalUserAgent = __webpack_require__(523);
 
 function lowercaseKeys(object) {
@@ -31548,7 +33500,7 @@ function lowercaseKeys(object) {
 function mergeDeep(defaults, options) {
   const result = Object.assign({}, defaults);
   Object.keys(options).forEach(key => {
-    if (isPlainObject(options[key])) {
+    if (isPlainObject.isPlainObject(options[key])) {
       if (!(key in defaults)) Object.assign(result, {
         [key]: options[key]
       });else result[key] = mergeDeep(defaults[key], options[key]);
@@ -31559,6 +33511,16 @@ function mergeDeep(defaults, options) {
     }
   });
   return result;
+}
+
+function removeUndefinedProperties(obj) {
+  for (const key in obj) {
+    if (obj[key] === undefined) {
+      delete obj[key];
+    }
+  }
+
+  return obj;
 }
 
 function merge(defaults, route, options) {
@@ -31575,7 +33537,10 @@ function merge(defaults, route, options) {
   } // lowercase header names before merging with defaults to avoid duplicates
 
 
-  options.headers = lowercaseKeys(options.headers);
+  options.headers = lowercaseKeys(options.headers); // remove properties with undefined values before merging
+
+  removeUndefinedProperties(options);
+  removeUndefinedProperties(options.headers);
   const mergedOptions = mergeDeep(defaults || {}, options); // mediaType.previews arrays are merged, instead of overwritten
 
   if (defaults && defaults.mediaType.previews.length) {
@@ -31797,7 +33762,7 @@ function parse(options) {
   // https://fetch.spec.whatwg.org/#methods
   let method = options.method.toUpperCase(); // replace :varname with {varname} to make it RFC 6570 compatible
 
-  let url = (options.url || "/").replace(/:([a-z]\w+)/g, "{+$1}");
+  let url = (options.url || "/").replace(/:([a-z]\w+)/g, "{$1}");
   let headers = Object.assign({}, options.headers);
   let body;
   let parameters = omit(options, ["method", "baseUrl", "url", "headers", "request", "mediaType"]); // extract variable names from URL to calculate remaining variables later
@@ -31811,9 +33776,9 @@ function parse(options) {
 
   const omittedParameters = Object.keys(options).filter(option => urlVariableNames.includes(option)).concat("baseUrl");
   const remainingParameters = omit(parameters, omittedParameters);
-  const isBinaryRequset = /application\/octet-stream/i.test(headers.accept);
+  const isBinaryRequest = /application\/octet-stream/i.test(headers.accept);
 
-  if (!isBinaryRequset) {
+  if (!isBinaryRequest) {
     if (options.mediaType.format) {
       // e.g. application/vnd.github.v3+json => application/vnd.github.v3.raw
       headers.accept = headers.accept.split(/,/).map(preview => preview.replace(/application\/vnd(\.\w+)(\.v3)?(\.\w+)?(\+json)?$/, `application/vnd$1$2.${options.mediaType.format}`)).join(",");
@@ -31882,7 +33847,7 @@ function withDefaults(oldDefaults, newDefaults) {
   });
 }
 
-const VERSION = "6.0.4";
+const VERSION = "6.0.9";
 
 const userAgent = `octokit-endpoint.js/${VERSION} ${universalUserAgent.getUserAgent()}`; // DEFAULTS has all properties set that EndpointOptions has, except url.
 // So we use RequestParameters and add method as additional required property.
@@ -31973,7 +33938,7 @@ compdef _{{app_name}}_yargs_completions {{app_name}}
 "use strict";
 
 
-var locate = __webpack_require__(307)
+var locate = __webpack_require__(839)
 
 module.exports = inlineCode
 inlineCode.locator = locate
@@ -32116,7 +34081,7 @@ module.exports = require("util");
 module.exports = parseStream
 
 const stream = __webpack_require__(413)
-const TOMLParser = __webpack_require__(725)
+const TOMLParser = __webpack_require__(329)
 
 function parseStream (stm) {
   if (stm) {
@@ -33985,7 +35950,7 @@ module.exports.safeLoad    = safeLoad;
 /* 679 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
-const yargs = __webpack_require__(907);
+const yargs = __webpack_require__(829);
 
 module.exports.cli = function* (argv, covector) {
   const options = parseOptions(argv);
@@ -34358,7 +36323,13 @@ function emphasis(eat, value, silent) {
 
 
 /***/ }),
-/* 694 */,
+/* 694 */
+/***/ (function(module) {
+
+module.exports = {}.hasOwnProperty
+
+
+/***/ }),
 /* 695 */,
 /* 696 */,
 /* 697 */,
@@ -34431,7 +36402,7 @@ module.exports = prerelease
 async function requiresNode8OrGreater () {}
 requiresNode8OrGreater()
 
-const { Yargs, rebase } = __webpack_require__(834)
+const { Yargs, rebase } = __webpack_require__(74)
 const Parser = __webpack_require__(453)
 
 exports = module.exports = Yargs
@@ -34458,56 +36429,43 @@ var request = __webpack_require__(59);
 var graphql = __webpack_require__(977);
 var authToken = __webpack_require__(229);
 
-function _defineProperty(obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
+function _objectWithoutPropertiesLoose(source, excluded) {
+  if (source == null) return {};
+  var target = {};
+  var sourceKeys = Object.keys(source);
+  var key, i;
+
+  for (i = 0; i < sourceKeys.length; i++) {
+    key = sourceKeys[i];
+    if (excluded.indexOf(key) >= 0) continue;
+    target[key] = source[key];
   }
 
-  return obj;
+  return target;
 }
 
-function ownKeys(object, enumerableOnly) {
-  var keys = Object.keys(object);
+function _objectWithoutProperties(source, excluded) {
+  if (source == null) return {};
+
+  var target = _objectWithoutPropertiesLoose(source, excluded);
+
+  var key, i;
 
   if (Object.getOwnPropertySymbols) {
-    var symbols = Object.getOwnPropertySymbols(object);
-    if (enumerableOnly) symbols = symbols.filter(function (sym) {
-      return Object.getOwnPropertyDescriptor(object, sym).enumerable;
-    });
-    keys.push.apply(keys, symbols);
-  }
+    var sourceSymbolKeys = Object.getOwnPropertySymbols(source);
 
-  return keys;
-}
-
-function _objectSpread2(target) {
-  for (var i = 1; i < arguments.length; i++) {
-    var source = arguments[i] != null ? arguments[i] : {};
-
-    if (i % 2) {
-      ownKeys(Object(source), true).forEach(function (key) {
-        _defineProperty(target, key, source[key]);
-      });
-    } else if (Object.getOwnPropertyDescriptors) {
-      Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
-    } else {
-      ownKeys(Object(source)).forEach(function (key) {
-        Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
-      });
+    for (i = 0; i < sourceSymbolKeys.length; i++) {
+      key = sourceSymbolKeys[i];
+      if (excluded.indexOf(key) >= 0) continue;
+      if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue;
+      target[key] = source[key];
     }
   }
 
   return target;
 }
 
-const VERSION = "3.1.1";
+const VERSION = "3.2.1";
 
 class Octokit {
   constructor(options = {}) {
@@ -34539,9 +36497,7 @@ class Octokit {
     }
 
     this.request = request.request.defaults(requestDefaults);
-    this.graphql = graphql.withCustomRequest(this.request).defaults(_objectSpread2(_objectSpread2({}, requestDefaults), {}, {
-      baseUrl: requestDefaults.baseUrl.replace(/\/api\/v3$/, "/api")
-    }));
+    this.graphql = graphql.withCustomRequest(this.request).defaults(requestDefaults);
     this.log = Object.assign({
       debug: () => {},
       info: () => {},
@@ -34549,7 +36505,7 @@ class Octokit {
       error: console.error.bind(console)
     }, options.log);
     this.hook = hook; // (1) If neither `options.authStrategy` nor `options.auth` are set, the `octokit` instance
-    //     is unauthenticated. The `this.auth()` method is a no-op and no request hook is registred.
+    //     is unauthenticated. The `this.auth()` method is a no-op and no request hook is registered.
     // (2) If only `options.auth` is set, use the default token authentication strategy.
     // (3) If `options.authStrategy` is set then use it and pass in `options.auth`. Always pass own request as many strategies accept a custom request instance.
     // TODO: type `options.auth` based on `options.authStrategy`.
@@ -34568,8 +36524,21 @@ class Octokit {
         this.auth = auth;
       }
     } else {
-      const auth = options.authStrategy(Object.assign({
-        request: this.request
+      const {
+        authStrategy
+      } = options,
+            otherOptions = _objectWithoutProperties(options, ["authStrategy"]);
+
+      const auth = authStrategy(Object.assign({
+        request: this.request,
+        log: this.log,
+        // we pass the current octokit instance as well as its constructor options
+        // to allow for authentication strategies that return a new octokit instance
+        // that shares the same internal state as the current one. The original
+        // requirement for this was the "event-octokit" authentication strategy
+        // of https://github.com/probot/octokit-auth-probot.
+        octokit: this,
+        octokitOptions: otherOptions
       }, options.auth)); // @ts-ignore  ¯\_(ツ)_/¯
 
       hook.wrap("request", auth.hook);
@@ -35167,20 +37136,7 @@ exports.Context = Context;
 /* 711 */,
 /* 712 */,
 /* 713 */,
-/* 714 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-const Range = __webpack_require__(46)
-
-// Mostly just for testing and legacy API reasons
-const toComparators = (range, options) =>
-  new Range(range, options).set
-    .map(comp => comp.map(c => c.value).join(' ').trim().split(' '))
-
-module.exports = toComparators
-
-
-/***/ }),
+/* 714 */,
 /* 715 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
@@ -35282,13 +37238,13 @@ proto.interruptBlockquote = [
 
 // Handlers.
 proto.blockTokenizers = {
-  blankLine: __webpack_require__(144),
+  blankLine: __webpack_require__(124),
   indentedCode: __webpack_require__(949),
   fencedCode: __webpack_require__(966),
   blockquote: __webpack_require__(912),
   atxHeading: __webpack_require__(648),
   thematicBreak: __webpack_require__(389),
-  list: __webpack_require__(510),
+  list: __webpack_require__(429),
   setextHeading: __webpack_require__(238),
   html: __webpack_require__(10),
   definition: __webpack_require__(93),
@@ -35308,7 +37264,7 @@ proto.inlineTokenizers = {
   emphasis: __webpack_require__(693),
   deletion: __webpack_require__(945),
   code: __webpack_require__(667),
-  break: __webpack_require__(585),
+  break: __webpack_require__(145),
   text: __webpack_require__(684)
 }
 
@@ -35343,18 +37299,9 @@ function keys(value) {
 
 module.exports = trimTrailingLines
 
-var line = '\n'
-
 // Remove final newline characters from `value`.
 function trimTrailingLines(value) {
-  var val = String(value)
-  var index = val.length
-
-  while (val.charAt(--index) === line) {
-    // Empty
-  }
-
-  return val.slice(0, index + 1)
+  return String(value).replace(/\n+$/, '')
 }
 
 
@@ -35505,33 +37452,11 @@ exports.read = read;
 
 /***/ }),
 /* 720 */
-/***/ (function(__unusedmodule, exports) {
+/***/ (function(module) {
 
 "use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
-function isFatalError(settings, error) {
-    if (settings.errorFilter === null) {
-        return true;
-    }
-    return !settings.errorFilter(error);
-}
-exports.isFatalError = isFatalError;
-function isAppliedFilter(filter, value) {
-    return filter === null || filter(value);
-}
-exports.isAppliedFilter = isAppliedFilter;
-function replacePathSegmentSeparator(filepath, separator) {
-    return filepath.split(/[\\/]/).join(separator);
-}
-exports.replacePathSegmentSeparator = replacePathSegmentSeparator;
-function joinPathSegments(a, b, separator) {
-    if (a === '') {
-        return b;
-    }
-    return a + separator + b;
-}
-exports.joinPathSegments = joinPathSegments;
+module.exports = /^#!(.*)/;
 
 
 /***/ }),
@@ -35555,1386 +37480,7 @@ module.exports = value => {
 /* 722 */,
 /* 723 */,
 /* 724 */,
-/* 725 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-"use strict";
-
-/* eslint-disable no-new-wrappers, no-eval, camelcase, operator-linebreak */
-module.exports = makeParserClass(__webpack_require__(929))
-module.exports.makeParserClass = makeParserClass
-
-class TomlError extends Error {
-  constructor (msg) {
-    super(msg)
-    this.name = 'TomlError'
-    /* istanbul ignore next */
-    if (Error.captureStackTrace) Error.captureStackTrace(this, TomlError)
-    this.fromTOML = true
-    this.wrapped = null
-  }
-}
-TomlError.wrap = err => {
-  const terr = new TomlError(err.message)
-  terr.code = err.code
-  terr.wrapped = err
-  return terr
-}
-module.exports.TomlError = TomlError
-
-const createDateTime = __webpack_require__(721)
-const createDateTimeFloat = __webpack_require__(499)
-const createDate = __webpack_require__(67)
-const createTime = __webpack_require__(680)
-
-const CTRL_I = 0x09
-const CTRL_J = 0x0A
-const CTRL_M = 0x0D
-const CTRL_CHAR_BOUNDARY = 0x1F // the last non-character in the latin1 region of unicode, except DEL
-const CHAR_SP = 0x20
-const CHAR_QUOT = 0x22
-const CHAR_NUM = 0x23
-const CHAR_APOS = 0x27
-const CHAR_PLUS = 0x2B
-const CHAR_COMMA = 0x2C
-const CHAR_HYPHEN = 0x2D
-const CHAR_PERIOD = 0x2E
-const CHAR_0 = 0x30
-const CHAR_1 = 0x31
-const CHAR_7 = 0x37
-const CHAR_9 = 0x39
-const CHAR_COLON = 0x3A
-const CHAR_EQUALS = 0x3D
-const CHAR_A = 0x41
-const CHAR_E = 0x45
-const CHAR_F = 0x46
-const CHAR_T = 0x54
-const CHAR_U = 0x55
-const CHAR_Z = 0x5A
-const CHAR_LOWBAR = 0x5F
-const CHAR_a = 0x61
-const CHAR_b = 0x62
-const CHAR_e = 0x65
-const CHAR_f = 0x66
-const CHAR_i = 0x69
-const CHAR_l = 0x6C
-const CHAR_n = 0x6E
-const CHAR_o = 0x6F
-const CHAR_r = 0x72
-const CHAR_s = 0x73
-const CHAR_t = 0x74
-const CHAR_u = 0x75
-const CHAR_x = 0x78
-const CHAR_z = 0x7A
-const CHAR_LCUB = 0x7B
-const CHAR_RCUB = 0x7D
-const CHAR_LSQB = 0x5B
-const CHAR_BSOL = 0x5C
-const CHAR_RSQB = 0x5D
-const CHAR_DEL = 0x7F
-const SURROGATE_FIRST = 0xD800
-const SURROGATE_LAST = 0xDFFF
-
-const escapes = {
-  [CHAR_b]: '\u0008',
-  [CHAR_t]: '\u0009',
-  [CHAR_n]: '\u000A',
-  [CHAR_f]: '\u000C',
-  [CHAR_r]: '\u000D',
-  [CHAR_QUOT]: '\u0022',
-  [CHAR_BSOL]: '\u005C'
-}
-
-function isDigit (cp) {
-  return cp >= CHAR_0 && cp <= CHAR_9
-}
-function isHexit (cp) {
-  return (cp >= CHAR_A && cp <= CHAR_F) || (cp >= CHAR_a && cp <= CHAR_f) || (cp >= CHAR_0 && cp <= CHAR_9)
-}
-function isBit (cp) {
-  return cp === CHAR_1 || cp === CHAR_0
-}
-function isOctit (cp) {
-  return (cp >= CHAR_0 && cp <= CHAR_7)
-}
-function isAlphaNumQuoteHyphen (cp) {
-  return (cp >= CHAR_A && cp <= CHAR_Z)
-      || (cp >= CHAR_a && cp <= CHAR_z)
-      || (cp >= CHAR_0 && cp <= CHAR_9)
-      || cp === CHAR_APOS
-      || cp === CHAR_QUOT
-      || cp === CHAR_LOWBAR
-      || cp === CHAR_HYPHEN
-}
-function isAlphaNumHyphen (cp) {
-  return (cp >= CHAR_A && cp <= CHAR_Z)
-      || (cp >= CHAR_a && cp <= CHAR_z)
-      || (cp >= CHAR_0 && cp <= CHAR_9)
-      || cp === CHAR_LOWBAR
-      || cp === CHAR_HYPHEN
-}
-const _type = Symbol('type')
-const _declared = Symbol('declared')
-
-const hasOwnProperty = Object.prototype.hasOwnProperty
-const defineProperty = Object.defineProperty
-const descriptor = {configurable: true, enumerable: true, writable: true, value: undefined}
-
-function hasKey (obj, key) {
-  if (hasOwnProperty.call(obj, key)) return true
-  if (key === '__proto__') defineProperty(obj, '__proto__', descriptor)
-  return false
-}
-
-const INLINE_TABLE = Symbol('inline-table')
-function InlineTable () {
-  return Object.defineProperties({}, {
-    [_type]: {value: INLINE_TABLE}
-  })
-}
-function isInlineTable (obj) {
-  if (obj === null || typeof (obj) !== 'object') return false
-  return obj[_type] === INLINE_TABLE
-}
-
-const TABLE = Symbol('table')
-function Table () {
-  return Object.defineProperties({}, {
-    [_type]: {value: TABLE},
-    [_declared]: {value: false, writable: true}
-  })
-}
-function isTable (obj) {
-  if (obj === null || typeof (obj) !== 'object') return false
-  return obj[_type] === TABLE
-}
-
-const _contentType = Symbol('content-type')
-const INLINE_LIST = Symbol('inline-list')
-function InlineList (type) {
-  return Object.defineProperties([], {
-    [_type]: {value: INLINE_LIST},
-    [_contentType]: {value: type}
-  })
-}
-function isInlineList (obj) {
-  if (obj === null || typeof (obj) !== 'object') return false
-  return obj[_type] === INLINE_LIST
-}
-
-const LIST = Symbol('list')
-function List () {
-  return Object.defineProperties([], {
-    [_type]: {value: LIST}
-  })
-}
-function isList (obj) {
-  if (obj === null || typeof (obj) !== 'object') return false
-  return obj[_type] === LIST
-}
-
-// in an eval, to let bundlers not slurp in a util proxy
-let _custom
-try {
-  const utilInspect = eval("require('util').inspect")
-  _custom = utilInspect.custom
-} catch (_) {
-  /* eval require not available in transpiled bundle */
-}
-/* istanbul ignore next */
-const _inspect = _custom || 'inspect'
-
-class BoxedBigInt {
-  constructor (value) {
-    try {
-      this.value = global.BigInt.asIntN(64, value)
-    } catch (_) {
-      /* istanbul ignore next */
-      this.value = null
-    }
-    Object.defineProperty(this, _type, {value: INTEGER})
-  }
-  isNaN () {
-    return this.value === null
-  }
-  /* istanbul ignore next */
-  toString () {
-    return String(this.value)
-  }
-  /* istanbul ignore next */
-  [_inspect] () {
-    return `[BigInt: ${this.toString()}]}`
-  }
-  valueOf () {
-    return this.value
-  }
-}
-
-const INTEGER = Symbol('integer')
-function Integer (value) {
-  let num = Number(value)
-  // -0 is a float thing, not an int thing
-  if (Object.is(num, -0)) num = 0
-  /* istanbul ignore else */
-  if (global.BigInt && !Number.isSafeInteger(num)) {
-    return new BoxedBigInt(value)
-  } else {
-    /* istanbul ignore next */
-    return Object.defineProperties(new Number(num), {
-      isNaN: {value: function () { return isNaN(this) }},
-      [_type]: {value: INTEGER},
-      [_inspect]: {value: () => `[Integer: ${value}]`}
-    })
-  }
-}
-function isInteger (obj) {
-  if (obj === null || typeof (obj) !== 'object') return false
-  return obj[_type] === INTEGER
-}
-
-const FLOAT = Symbol('float')
-function Float (value) {
-  /* istanbul ignore next */
-  return Object.defineProperties(new Number(value), {
-    [_type]: {value: FLOAT},
-    [_inspect]: {value: () => `[Float: ${value}]`}
-  })
-}
-function isFloat (obj) {
-  if (obj === null || typeof (obj) !== 'object') return false
-  return obj[_type] === FLOAT
-}
-
-function tomlType (value) {
-  const type = typeof value
-  if (type === 'object') {
-    /* istanbul ignore if */
-    if (value === null) return 'null'
-    if (value instanceof Date) return 'datetime'
-    /* istanbul ignore else */
-    if (_type in value) {
-      switch (value[_type]) {
-        case INLINE_TABLE: return 'inline-table'
-        case INLINE_LIST: return 'inline-list'
-        /* istanbul ignore next */
-        case TABLE: return 'table'
-        /* istanbul ignore next */
-        case LIST: return 'list'
-        case FLOAT: return 'float'
-        case INTEGER: return 'integer'
-      }
-    }
-  }
-  return type
-}
-
-function makeParserClass (Parser) {
-  class TOMLParser extends Parser {
-    constructor () {
-      super()
-      this.ctx = this.obj = Table()
-    }
-
-    /* MATCH HELPER */
-    atEndOfWord () {
-      return this.char === CHAR_NUM || this.char === CTRL_I || this.char === CHAR_SP || this.atEndOfLine()
-    }
-    atEndOfLine () {
-      return this.char === Parser.END || this.char === CTRL_J || this.char === CTRL_M
-    }
-
-    parseStart () {
-      if (this.char === Parser.END) {
-        return null
-      } else if (this.char === CHAR_LSQB) {
-        return this.call(this.parseTableOrList)
-      } else if (this.char === CHAR_NUM) {
-        return this.call(this.parseComment)
-      } else if (this.char === CTRL_J || this.char === CHAR_SP || this.char === CTRL_I || this.char === CTRL_M) {
-        return null
-      } else if (isAlphaNumQuoteHyphen(this.char)) {
-        return this.callNow(this.parseAssignStatement)
-      } else {
-        throw this.error(new TomlError(`Unknown character "${this.char}"`))
-      }
-    }
-
-    // HELPER, this strips any whitespace and comments to the end of the line
-    // then RETURNS. Last state in a production.
-    parseWhitespaceToEOL () {
-      if (this.char === CHAR_SP || this.char === CTRL_I || this.char === CTRL_M) {
-        return null
-      } else if (this.char === CHAR_NUM) {
-        return this.goto(this.parseComment)
-      } else if (this.char === Parser.END || this.char === CTRL_J) {
-        return this.return()
-      } else {
-        throw this.error(new TomlError('Unexpected character, expected only whitespace or comments till end of line'))
-      }
-    }
-
-    /* ASSIGNMENT: key = value */
-    parseAssignStatement () {
-      return this.callNow(this.parseAssign, this.recordAssignStatement)
-    }
-    recordAssignStatement (kv) {
-      let target = this.ctx
-      let finalKey = kv.key.pop()
-      for (let kw of kv.key) {
-        if (hasKey(target, kw) && (!isTable(target[kw]) || target[kw][_declared])) {
-          throw this.error(new TomlError("Can't redefine existing key"))
-        }
-        target = target[kw] = target[kw] || Table()
-      }
-      if (hasKey(target, finalKey)) {
-        throw this.error(new TomlError("Can't redefine existing key"))
-      }
-      // unbox our numbers
-      if (isInteger(kv.value) || isFloat(kv.value)) {
-        target[finalKey] = kv.value.valueOf()
-      } else {
-        target[finalKey] = kv.value
-      }
-      return this.goto(this.parseWhitespaceToEOL)
-    }
-
-    /* ASSSIGNMENT expression, key = value possibly inside an inline table */
-    parseAssign () {
-      return this.callNow(this.parseKeyword, this.recordAssignKeyword)
-    }
-    recordAssignKeyword (key) {
-      if (this.state.resultTable) {
-        this.state.resultTable.push(key)
-      } else {
-        this.state.resultTable = [key]
-      }
-      return this.goto(this.parseAssignKeywordPreDot)
-    }
-    parseAssignKeywordPreDot () {
-      if (this.char === CHAR_PERIOD) {
-        return this.next(this.parseAssignKeywordPostDot)
-      } else if (this.char !== CHAR_SP && this.char !== CTRL_I) {
-        return this.goto(this.parseAssignEqual)
-      }
-    }
-    parseAssignKeywordPostDot () {
-      if (this.char !== CHAR_SP && this.char !== CTRL_I) {
-        return this.callNow(this.parseKeyword, this.recordAssignKeyword)
-      }
-    }
-
-    parseAssignEqual () {
-      if (this.char === CHAR_EQUALS) {
-        return this.next(this.parseAssignPreValue)
-      } else {
-        throw this.error(new TomlError('Invalid character, expected "="'))
-      }
-    }
-    parseAssignPreValue () {
-      if (this.char === CHAR_SP || this.char === CTRL_I) {
-        return null
-      } else {
-        return this.callNow(this.parseValue, this.recordAssignValue)
-      }
-    }
-    recordAssignValue (value) {
-      return this.returnNow({key: this.state.resultTable, value: value})
-    }
-
-    /* COMMENTS: #...eol */
-    parseComment () {
-      do {
-        if (this.char === Parser.END || this.char === CTRL_J) {
-          return this.return()
-        }
-      } while (this.nextChar())
-    }
-
-    /* TABLES AND LISTS, [foo] and [[foo]] */
-    parseTableOrList () {
-      if (this.char === CHAR_LSQB) {
-        this.next(this.parseList)
-      } else {
-        return this.goto(this.parseTable)
-      }
-    }
-
-    /* TABLE [foo.bar.baz] */
-    parseTable () {
-      this.ctx = this.obj
-      return this.goto(this.parseTableNext)
-    }
-    parseTableNext () {
-      if (this.char === CHAR_SP || this.char === CTRL_I) {
-        return null
-      } else {
-        return this.callNow(this.parseKeyword, this.parseTableMore)
-      }
-    }
-    parseTableMore (keyword) {
-      if (this.char === CHAR_SP || this.char === CTRL_I) {
-        return null
-      } else if (this.char === CHAR_RSQB) {
-        if (hasKey(this.ctx, keyword) && (!isTable(this.ctx[keyword]) || this.ctx[keyword][_declared])) {
-          throw this.error(new TomlError("Can't redefine existing key"))
-        } else {
-          this.ctx = this.ctx[keyword] = this.ctx[keyword] || Table()
-          this.ctx[_declared] = true
-        }
-        return this.next(this.parseWhitespaceToEOL)
-      } else if (this.char === CHAR_PERIOD) {
-        if (!hasKey(this.ctx, keyword)) {
-          this.ctx = this.ctx[keyword] = Table()
-        } else if (isTable(this.ctx[keyword])) {
-          this.ctx = this.ctx[keyword]
-        } else if (isList(this.ctx[keyword])) {
-          this.ctx = this.ctx[keyword][this.ctx[keyword].length - 1]
-        } else {
-          throw this.error(new TomlError("Can't redefine existing key"))
-        }
-        return this.next(this.parseTableNext)
-      } else {
-        throw this.error(new TomlError('Unexpected character, expected whitespace, . or ]'))
-      }
-    }
-
-    /* LIST [[a.b.c]] */
-    parseList () {
-      this.ctx = this.obj
-      return this.goto(this.parseListNext)
-    }
-    parseListNext () {
-      if (this.char === CHAR_SP || this.char === CTRL_I) {
-        return null
-      } else {
-        return this.callNow(this.parseKeyword, this.parseListMore)
-      }
-    }
-    parseListMore (keyword) {
-      if (this.char === CHAR_SP || this.char === CTRL_I) {
-        return null
-      } else if (this.char === CHAR_RSQB) {
-        if (!hasKey(this.ctx, keyword)) {
-          this.ctx[keyword] = List()
-        }
-        if (isInlineList(this.ctx[keyword])) {
-          throw this.error(new TomlError("Can't extend an inline array"))
-        } else if (isList(this.ctx[keyword])) {
-          const next = Table()
-          this.ctx[keyword].push(next)
-          this.ctx = next
-        } else {
-          throw this.error(new TomlError("Can't redefine an existing key"))
-        }
-        return this.next(this.parseListEnd)
-      } else if (this.char === CHAR_PERIOD) {
-        if (!hasKey(this.ctx, keyword)) {
-          this.ctx = this.ctx[keyword] = Table()
-        } else if (isInlineList(this.ctx[keyword])) {
-          throw this.error(new TomlError("Can't extend an inline array"))
-        } else if (isInlineTable(this.ctx[keyword])) {
-          throw this.error(new TomlError("Can't extend an inline table"))
-        } else if (isList(this.ctx[keyword])) {
-          this.ctx = this.ctx[keyword][this.ctx[keyword].length - 1]
-        } else if (isTable(this.ctx[keyword])) {
-          this.ctx = this.ctx[keyword]
-        } else {
-          throw this.error(new TomlError("Can't redefine an existing key"))
-        }
-        return this.next(this.parseListNext)
-      } else {
-        throw this.error(new TomlError('Unexpected character, expected whitespace, . or ]'))
-      }
-    }
-    parseListEnd (keyword) {
-      if (this.char === CHAR_RSQB) {
-        return this.next(this.parseWhitespaceToEOL)
-      } else {
-        throw this.error(new TomlError('Unexpected character, expected whitespace, . or ]'))
-      }
-    }
-
-    /* VALUE string, number, boolean, inline list, inline object */
-    parseValue () {
-      if (this.char === Parser.END) {
-        throw this.error(new TomlError('Key without value'))
-      } else if (this.char === CHAR_QUOT) {
-        return this.next(this.parseDoubleString)
-      } if (this.char === CHAR_APOS) {
-        return this.next(this.parseSingleString)
-      } else if (this.char === CHAR_HYPHEN || this.char === CHAR_PLUS) {
-        return this.goto(this.parseNumberSign)
-      } else if (this.char === CHAR_i) {
-        return this.next(this.parseInf)
-      } else if (this.char === CHAR_n) {
-        return this.next(this.parseNan)
-      } else if (isDigit(this.char)) {
-        return this.goto(this.parseNumberOrDateTime)
-      } else if (this.char === CHAR_t || this.char === CHAR_f) {
-        return this.goto(this.parseBoolean)
-      } else if (this.char === CHAR_LSQB) {
-        return this.call(this.parseInlineList, this.recordValue)
-      } else if (this.char === CHAR_LCUB) {
-        return this.call(this.parseInlineTable, this.recordValue)
-      } else {
-        throw this.error(new TomlError('Unexpected character, expecting string, number, datetime, boolean, inline array or inline table'))
-      }
-    }
-    recordValue (value) {
-      return this.returnNow(value)
-    }
-
-    parseInf () {
-      if (this.char === CHAR_n) {
-        return this.next(this.parseInf2)
-      } else {
-        throw this.error(new TomlError('Unexpected character, expected "inf", "+inf" or "-inf"'))
-      }
-    }
-    parseInf2 () {
-      if (this.char === CHAR_f) {
-        if (this.state.buf === '-') {
-          return this.return(-Infinity)
-        } else {
-          return this.return(Infinity)
-        }
-      } else {
-        throw this.error(new TomlError('Unexpected character, expected "inf", "+inf" or "-inf"'))
-      }
-    }
-
-    parseNan () {
-      if (this.char === CHAR_a) {
-        return this.next(this.parseNan2)
-      } else {
-        throw this.error(new TomlError('Unexpected character, expected "nan"'))
-      }
-    }
-    parseNan2 () {
-      if (this.char === CHAR_n) {
-        return this.return(NaN)
-      } else {
-        throw this.error(new TomlError('Unexpected character, expected "nan"'))
-      }
-    }
-
-    /* KEYS, barewords or basic, literal, or dotted */
-    parseKeyword () {
-      if (this.char === CHAR_QUOT) {
-        return this.next(this.parseBasicString)
-      } else if (this.char === CHAR_APOS) {
-        return this.next(this.parseLiteralString)
-      } else {
-        return this.goto(this.parseBareKey)
-      }
-    }
-
-    /* KEYS: barewords */
-    parseBareKey () {
-      do {
-        if (this.char === Parser.END) {
-          throw this.error(new TomlError('Key ended without value'))
-        } else if (isAlphaNumHyphen(this.char)) {
-          this.consume()
-        } else if (this.state.buf.length === 0) {
-          throw this.error(new TomlError('Empty bare keys are not allowed'))
-        } else {
-          return this.returnNow()
-        }
-      } while (this.nextChar())
-    }
-
-    /* STRINGS, single quoted (literal) */
-    parseSingleString () {
-      if (this.char === CHAR_APOS) {
-        return this.next(this.parseLiteralMultiStringMaybe)
-      } else {
-        return this.goto(this.parseLiteralString)
-      }
-    }
-    parseLiteralString () {
-      do {
-        if (this.char === CHAR_APOS) {
-          return this.return()
-        } else if (this.atEndOfLine()) {
-          throw this.error(new TomlError('Unterminated string'))
-        } else if (this.char === CHAR_DEL || (this.char <= CTRL_CHAR_BOUNDARY && this.char !== CTRL_I)) {
-          throw this.errorControlCharInString()
-        } else {
-          this.consume()
-        }
-      } while (this.nextChar())
-    }
-    parseLiteralMultiStringMaybe () {
-      if (this.char === CHAR_APOS) {
-        return this.next(this.parseLiteralMultiString)
-      } else {
-        return this.returnNow()
-      }
-    }
-    parseLiteralMultiString () {
-      if (this.char === CTRL_M) {
-        return null
-      } else if (this.char === CTRL_J) {
-        return this.next(this.parseLiteralMultiStringContent)
-      } else {
-        return this.goto(this.parseLiteralMultiStringContent)
-      }
-    }
-    parseLiteralMultiStringContent () {
-      do {
-        if (this.char === CHAR_APOS) {
-          return this.next(this.parseLiteralMultiEnd)
-        } else if (this.char === Parser.END) {
-          throw this.error(new TomlError('Unterminated multi-line string'))
-        } else if (this.char === CHAR_DEL || (this.char <= CTRL_CHAR_BOUNDARY && this.char !== CTRL_I && this.char !== CTRL_J && this.char !== CTRL_M)) {
-          throw this.errorControlCharInString()
-        } else {
-          this.consume()
-        }
-      } while (this.nextChar())
-    }
-    parseLiteralMultiEnd () {
-      if (this.char === CHAR_APOS) {
-        return this.next(this.parseLiteralMultiEnd2)
-      } else {
-        this.state.buf += "'"
-        return this.goto(this.parseLiteralMultiStringContent)
-      }
-    }
-    parseLiteralMultiEnd2 () {
-      if (this.char === CHAR_APOS) {
-        return this.return()
-      } else {
-        this.state.buf += "''"
-        return this.goto(this.parseLiteralMultiStringContent)
-      }
-    }
-
-    /* STRINGS double quoted */
-    parseDoubleString () {
-      if (this.char === CHAR_QUOT) {
-        return this.next(this.parseMultiStringMaybe)
-      } else {
-        return this.goto(this.parseBasicString)
-      }
-    }
-    parseBasicString () {
-      do {
-        if (this.char === CHAR_BSOL) {
-          return this.call(this.parseEscape, this.recordEscapeReplacement)
-        } else if (this.char === CHAR_QUOT) {
-          return this.return()
-        } else if (this.atEndOfLine()) {
-          throw this.error(new TomlError('Unterminated string'))
-        } else if (this.char === CHAR_DEL || (this.char <= CTRL_CHAR_BOUNDARY && this.char !== CTRL_I)) {
-          throw this.errorControlCharInString()
-        } else {
-          this.consume()
-        }
-      } while (this.nextChar())
-    }
-    recordEscapeReplacement (replacement) {
-      this.state.buf += replacement
-      return this.goto(this.parseBasicString)
-    }
-    parseMultiStringMaybe () {
-      if (this.char === CHAR_QUOT) {
-        return this.next(this.parseMultiString)
-      } else {
-        return this.returnNow()
-      }
-    }
-    parseMultiString () {
-      if (this.char === CTRL_M) {
-        return null
-      } else if (this.char === CTRL_J) {
-        return this.next(this.parseMultiStringContent)
-      } else {
-        return this.goto(this.parseMultiStringContent)
-      }
-    }
-    parseMultiStringContent () {
-      do {
-        if (this.char === CHAR_BSOL) {
-          return this.call(this.parseMultiEscape, this.recordMultiEscapeReplacement)
-        } else if (this.char === CHAR_QUOT) {
-          return this.next(this.parseMultiEnd)
-        } else if (this.char === Parser.END) {
-          throw this.error(new TomlError('Unterminated multi-line string'))
-        } else if (this.char === CHAR_DEL || (this.char <= CTRL_CHAR_BOUNDARY && this.char !== CTRL_I && this.char !== CTRL_J && this.char !== CTRL_M)) {
-          throw this.errorControlCharInString()
-        } else {
-          this.consume()
-        }
-      } while (this.nextChar())
-    }
-    errorControlCharInString () {
-      let displayCode = '\\u00'
-      if (this.char < 16) {
-        displayCode += '0'
-      }
-      displayCode += this.char.toString(16)
-
-      return this.error(new TomlError(`Control characters (codes < 0x1f and 0x7f) are not allowed in strings, use ${displayCode} instead`))
-    }
-    recordMultiEscapeReplacement (replacement) {
-      this.state.buf += replacement
-      return this.goto(this.parseMultiStringContent)
-    }
-    parseMultiEnd () {
-      if (this.char === CHAR_QUOT) {
-        return this.next(this.parseMultiEnd2)
-      } else {
-        this.state.buf += '"'
-        return this.goto(this.parseMultiStringContent)
-      }
-    }
-    parseMultiEnd2 () {
-      if (this.char === CHAR_QUOT) {
-        return this.return()
-      } else {
-        this.state.buf += '""'
-        return this.goto(this.parseMultiStringContent)
-      }
-    }
-    parseMultiEscape () {
-      if (this.char === CTRL_M || this.char === CTRL_J) {
-        return this.next(this.parseMultiTrim)
-      } else if (this.char === CHAR_SP || this.char === CTRL_I) {
-        return this.next(this.parsePreMultiTrim)
-      } else {
-        return this.goto(this.parseEscape)
-      }
-    }
-    parsePreMultiTrim () {
-      if (this.char === CHAR_SP || this.char === CTRL_I) {
-        return null
-      } else if (this.char === CTRL_M || this.char === CTRL_J) {
-        return this.next(this.parseMultiTrim)
-      } else {
-        throw this.error(new TomlError("Can't escape whitespace"))
-      }
-    }
-    parseMultiTrim () {
-      // explicitly whitespace here, END should follow the same path as chars
-      if (this.char === CTRL_J || this.char === CHAR_SP || this.char === CTRL_I || this.char === CTRL_M) {
-        return null
-      } else {
-        return this.returnNow()
-      }
-    }
-    parseEscape () {
-      if (this.char in escapes) {
-        return this.return(escapes[this.char])
-      } else if (this.char === CHAR_u) {
-        return this.call(this.parseSmallUnicode, this.parseUnicodeReturn)
-      } else if (this.char === CHAR_U) {
-        return this.call(this.parseLargeUnicode, this.parseUnicodeReturn)
-      } else {
-        throw this.error(new TomlError('Unknown escape character: ' + this.char))
-      }
-    }
-    parseUnicodeReturn (char) {
-      try {
-        const codePoint = parseInt(char, 16)
-        if (codePoint >= SURROGATE_FIRST && codePoint <= SURROGATE_LAST) {
-          throw this.error(new TomlError('Invalid unicode, character in range 0xD800 - 0xDFFF is reserved'))
-        }
-        return this.returnNow(String.fromCodePoint(codePoint))
-      } catch (err) {
-        throw this.error(TomlError.wrap(err))
-      }
-    }
-    parseSmallUnicode () {
-      if (!isHexit(this.char)) {
-        throw this.error(new TomlError('Invalid character in unicode sequence, expected hex'))
-      } else {
-        this.consume()
-        if (this.state.buf.length >= 4) return this.return()
-      }
-    }
-    parseLargeUnicode () {
-      if (!isHexit(this.char)) {
-        throw this.error(new TomlError('Invalid character in unicode sequence, expected hex'))
-      } else {
-        this.consume()
-        if (this.state.buf.length >= 8) return this.return()
-      }
-    }
-
-    /* NUMBERS */
-    parseNumberSign () {
-      this.consume()
-      return this.next(this.parseMaybeSignedInfOrNan)
-    }
-    parseMaybeSignedInfOrNan () {
-      if (this.char === CHAR_i) {
-        return this.next(this.parseInf)
-      } else if (this.char === CHAR_n) {
-        return this.next(this.parseNan)
-      } else {
-        return this.callNow(this.parseNoUnder, this.parseNumberIntegerStart)
-      }
-    }
-    parseNumberIntegerStart () {
-      if (this.char === CHAR_0) {
-        this.consume()
-        return this.next(this.parseNumberIntegerExponentOrDecimal)
-      } else {
-        return this.goto(this.parseNumberInteger)
-      }
-    }
-    parseNumberIntegerExponentOrDecimal () {
-      if (this.char === CHAR_PERIOD) {
-        this.consume()
-        return this.call(this.parseNoUnder, this.parseNumberFloat)
-      } else if (this.char === CHAR_E || this.char === CHAR_e) {
-        this.consume()
-        return this.next(this.parseNumberExponentSign)
-      } else {
-        return this.returnNow(Integer(this.state.buf))
-      }
-    }
-    parseNumberInteger () {
-      if (isDigit(this.char)) {
-        this.consume()
-      } else if (this.char === CHAR_LOWBAR) {
-        return this.call(this.parseNoUnder)
-      } else if (this.char === CHAR_E || this.char === CHAR_e) {
-        this.consume()
-        return this.next(this.parseNumberExponentSign)
-      } else if (this.char === CHAR_PERIOD) {
-        this.consume()
-        return this.call(this.parseNoUnder, this.parseNumberFloat)
-      } else {
-        const result = Integer(this.state.buf)
-        /* istanbul ignore if */
-        if (result.isNaN()) {
-          throw this.error(new TomlError('Invalid number'))
-        } else {
-          return this.returnNow(result)
-        }
-      }
-    }
-    parseNoUnder () {
-      if (this.char === CHAR_LOWBAR || this.char === CHAR_PERIOD || this.char === CHAR_E || this.char === CHAR_e) {
-        throw this.error(new TomlError('Unexpected character, expected digit'))
-      } else if (this.atEndOfWord()) {
-        throw this.error(new TomlError('Incomplete number'))
-      }
-      return this.returnNow()
-    }
-    parseNumberFloat () {
-      if (this.char === CHAR_LOWBAR) {
-        return this.call(this.parseNoUnder, this.parseNumberFloat)
-      } else if (isDigit(this.char)) {
-        this.consume()
-      } else if (this.char === CHAR_E || this.char === CHAR_e) {
-        this.consume()
-        return this.next(this.parseNumberExponentSign)
-      } else {
-        return this.returnNow(Float(this.state.buf))
-      }
-    }
-    parseNumberExponentSign () {
-      if (isDigit(this.char)) {
-        return this.goto(this.parseNumberExponent)
-      } else if (this.char === CHAR_HYPHEN || this.char === CHAR_PLUS) {
-        this.consume()
-        this.call(this.parseNoUnder, this.parseNumberExponent)
-      } else {
-        throw this.error(new TomlError('Unexpected character, expected -, + or digit'))
-      }
-    }
-    parseNumberExponent () {
-      if (isDigit(this.char)) {
-        this.consume()
-      } else if (this.char === CHAR_LOWBAR) {
-        return this.call(this.parseNoUnder)
-      } else {
-        return this.returnNow(Float(this.state.buf))
-      }
-    }
-
-    /* NUMBERS or DATETIMES  */
-    parseNumberOrDateTime () {
-      if (this.char === CHAR_0) {
-        this.consume()
-        return this.next(this.parseNumberBaseOrDateTime)
-      } else {
-        return this.goto(this.parseNumberOrDateTimeOnly)
-      }
-    }
-    parseNumberOrDateTimeOnly () {
-      // note, if two zeros are in a row then it MUST be a date
-      if (this.char === CHAR_LOWBAR) {
-        return this.call(this.parseNoUnder, this.parseNumberInteger)
-      } else if (isDigit(this.char)) {
-        this.consume()
-        if (this.state.buf.length > 4) this.next(this.parseNumberInteger)
-      } else if (this.char === CHAR_E || this.char === CHAR_e) {
-        this.consume()
-        return this.next(this.parseNumberExponentSign)
-      } else if (this.char === CHAR_PERIOD) {
-        this.consume()
-        return this.call(this.parseNoUnder, this.parseNumberFloat)
-      } else if (this.char === CHAR_HYPHEN) {
-        return this.goto(this.parseDateTime)
-      } else if (this.char === CHAR_COLON) {
-        return this.goto(this.parseOnlyTimeHour)
-      } else {
-        return this.returnNow(Integer(this.state.buf))
-      }
-    }
-    parseDateTimeOnly () {
-      if (this.state.buf.length < 4) {
-        if (isDigit(this.char)) {
-          return this.consume()
-        } else if (this.char === CHAR_COLON) {
-          return this.goto(this.parseOnlyTimeHour)
-        } else {
-          throw this.error(new TomlError('Expected digit while parsing year part of a date'))
-        }
-      } else {
-        if (this.char === CHAR_HYPHEN) {
-          return this.goto(this.parseDateTime)
-        } else {
-          throw this.error(new TomlError('Expected hyphen (-) while parsing year part of date'))
-        }
-      }
-    }
-    parseNumberBaseOrDateTime () {
-      if (this.char === CHAR_b) {
-        this.consume()
-        return this.call(this.parseNoUnder, this.parseIntegerBin)
-      } else if (this.char === CHAR_o) {
-        this.consume()
-        return this.call(this.parseNoUnder, this.parseIntegerOct)
-      } else if (this.char === CHAR_x) {
-        this.consume()
-        return this.call(this.parseNoUnder, this.parseIntegerHex)
-      } else if (this.char === CHAR_PERIOD) {
-        return this.goto(this.parseNumberInteger)
-      } else if (isDigit(this.char)) {
-        return this.goto(this.parseDateTimeOnly)
-      } else {
-        return this.returnNow(Integer(this.state.buf))
-      }
-    }
-    parseIntegerHex () {
-      if (isHexit(this.char)) {
-        this.consume()
-      } else if (this.char === CHAR_LOWBAR) {
-        return this.call(this.parseNoUnder)
-      } else {
-        const result = Integer(this.state.buf)
-        /* istanbul ignore if */
-        if (result.isNaN()) {
-          throw this.error(new TomlError('Invalid number'))
-        } else {
-          return this.returnNow(result)
-        }
-      }
-    }
-    parseIntegerOct () {
-      if (isOctit(this.char)) {
-        this.consume()
-      } else if (this.char === CHAR_LOWBAR) {
-        return this.call(this.parseNoUnder)
-      } else {
-        const result = Integer(this.state.buf)
-        /* istanbul ignore if */
-        if (result.isNaN()) {
-          throw this.error(new TomlError('Invalid number'))
-        } else {
-          return this.returnNow(result)
-        }
-      }
-    }
-    parseIntegerBin () {
-      if (isBit(this.char)) {
-        this.consume()
-      } else if (this.char === CHAR_LOWBAR) {
-        return this.call(this.parseNoUnder)
-      } else {
-        const result = Integer(this.state.buf)
-        /* istanbul ignore if */
-        if (result.isNaN()) {
-          throw this.error(new TomlError('Invalid number'))
-        } else {
-          return this.returnNow(result)
-        }
-      }
-    }
-
-    /* DATETIME */
-    parseDateTime () {
-      // we enter here having just consumed the year and about to consume the hyphen
-      if (this.state.buf.length < 4) {
-        throw this.error(new TomlError('Years less than 1000 must be zero padded to four characters'))
-      }
-      this.state.result = this.state.buf
-      this.state.buf = ''
-      return this.next(this.parseDateMonth)
-    }
-    parseDateMonth () {
-      if (this.char === CHAR_HYPHEN) {
-        if (this.state.buf.length < 2) {
-          throw this.error(new TomlError('Months less than 10 must be zero padded to two characters'))
-        }
-        this.state.result += '-' + this.state.buf
-        this.state.buf = ''
-        return this.next(this.parseDateDay)
-      } else if (isDigit(this.char)) {
-        this.consume()
-      } else {
-        throw this.error(new TomlError('Incomplete datetime'))
-      }
-    }
-    parseDateDay () {
-      if (this.char === CHAR_T || this.char === CHAR_SP) {
-        if (this.state.buf.length < 2) {
-          throw this.error(new TomlError('Days less than 10 must be zero padded to two characters'))
-        }
-        this.state.result += '-' + this.state.buf
-        this.state.buf = ''
-        return this.next(this.parseStartTimeHour)
-      } else if (this.atEndOfWord()) {
-        return this.return(createDate(this.state.result + '-' + this.state.buf))
-      } else if (isDigit(this.char)) {
-        this.consume()
-      } else {
-        throw this.error(new TomlError('Incomplete datetime'))
-      }
-    }
-    parseStartTimeHour () {
-      if (this.atEndOfWord()) {
-        return this.returnNow(createDate(this.state.result))
-      } else {
-        return this.goto(this.parseTimeHour)
-      }
-    }
-    parseTimeHour () {
-      if (this.char === CHAR_COLON) {
-        if (this.state.buf.length < 2) {
-          throw this.error(new TomlError('Hours less than 10 must be zero padded to two characters'))
-        }
-        this.state.result += 'T' + this.state.buf
-        this.state.buf = ''
-        return this.next(this.parseTimeMin)
-      } else if (isDigit(this.char)) {
-        this.consume()
-      } else {
-        throw this.error(new TomlError('Incomplete datetime'))
-      }
-    }
-    parseTimeMin () {
-      if (this.state.buf.length < 2 && isDigit(this.char)) {
-        this.consume()
-      } else if (this.state.buf.length === 2 && this.char === CHAR_COLON) {
-        this.state.result += ':' + this.state.buf
-        this.state.buf = ''
-        return this.next(this.parseTimeSec)
-      } else {
-        throw this.error(new TomlError('Incomplete datetime'))
-      }
-    }
-    parseTimeSec () {
-      if (isDigit(this.char)) {
-        this.consume()
-        if (this.state.buf.length === 2) {
-          this.state.result += ':' + this.state.buf
-          this.state.buf = ''
-          return this.next(this.parseTimeZoneOrFraction)
-        }
-      } else {
-        throw this.error(new TomlError('Incomplete datetime'))
-      }
-    }
-
-    parseOnlyTimeHour () {
-      /* istanbul ignore else */
-      if (this.char === CHAR_COLON) {
-        if (this.state.buf.length < 2) {
-          throw this.error(new TomlError('Hours less than 10 must be zero padded to two characters'))
-        }
-        this.state.result = this.state.buf
-        this.state.buf = ''
-        return this.next(this.parseOnlyTimeMin)
-      } else {
-        throw this.error(new TomlError('Incomplete time'))
-      }
-    }
-    parseOnlyTimeMin () {
-      if (this.state.buf.length < 2 && isDigit(this.char)) {
-        this.consume()
-      } else if (this.state.buf.length === 2 && this.char === CHAR_COLON) {
-        this.state.result += ':' + this.state.buf
-        this.state.buf = ''
-        return this.next(this.parseOnlyTimeSec)
-      } else {
-        throw this.error(new TomlError('Incomplete time'))
-      }
-    }
-    parseOnlyTimeSec () {
-      if (isDigit(this.char)) {
-        this.consume()
-        if (this.state.buf.length === 2) {
-          return this.next(this.parseOnlyTimeFractionMaybe)
-        }
-      } else {
-        throw this.error(new TomlError('Incomplete time'))
-      }
-    }
-    parseOnlyTimeFractionMaybe () {
-      this.state.result += ':' + this.state.buf
-      if (this.char === CHAR_PERIOD) {
-        this.state.buf = ''
-        this.next(this.parseOnlyTimeFraction)
-      } else {
-        return this.return(createTime(this.state.result))
-      }
-    }
-    parseOnlyTimeFraction () {
-      if (isDigit(this.char)) {
-        this.consume()
-      } else if (this.atEndOfWord()) {
-        if (this.state.buf.length === 0) throw this.error(new TomlError('Expected digit in milliseconds'))
-        return this.returnNow(createTime(this.state.result + '.' + this.state.buf))
-      } else {
-        throw this.error(new TomlError('Unexpected character in datetime, expected period (.), minus (-), plus (+) or Z'))
-      }
-    }
-
-    parseTimeZoneOrFraction () {
-      if (this.char === CHAR_PERIOD) {
-        this.consume()
-        this.next(this.parseDateTimeFraction)
-      } else if (this.char === CHAR_HYPHEN || this.char === CHAR_PLUS) {
-        this.consume()
-        this.next(this.parseTimeZoneHour)
-      } else if (this.char === CHAR_Z) {
-        this.consume()
-        return this.return(createDateTime(this.state.result + this.state.buf))
-      } else if (this.atEndOfWord()) {
-        return this.returnNow(createDateTimeFloat(this.state.result + this.state.buf))
-      } else {
-        throw this.error(new TomlError('Unexpected character in datetime, expected period (.), minus (-), plus (+) or Z'))
-      }
-    }
-    parseDateTimeFraction () {
-      if (isDigit(this.char)) {
-        this.consume()
-      } else if (this.state.buf.length === 1) {
-        throw this.error(new TomlError('Expected digit in milliseconds'))
-      } else if (this.char === CHAR_HYPHEN || this.char === CHAR_PLUS) {
-        this.consume()
-        this.next(this.parseTimeZoneHour)
-      } else if (this.char === CHAR_Z) {
-        this.consume()
-        return this.return(createDateTime(this.state.result + this.state.buf))
-      } else if (this.atEndOfWord()) {
-        return this.returnNow(createDateTimeFloat(this.state.result + this.state.buf))
-      } else {
-        throw this.error(new TomlError('Unexpected character in datetime, expected period (.), minus (-), plus (+) or Z'))
-      }
-    }
-    parseTimeZoneHour () {
-      if (isDigit(this.char)) {
-        this.consume()
-        // FIXME: No more regexps
-        if (/\d\d$/.test(this.state.buf)) return this.next(this.parseTimeZoneSep)
-      } else {
-        throw this.error(new TomlError('Unexpected character in datetime, expected digit'))
-      }
-    }
-    parseTimeZoneSep () {
-      if (this.char === CHAR_COLON) {
-        this.consume()
-        this.next(this.parseTimeZoneMin)
-      } else {
-        throw this.error(new TomlError('Unexpected character in datetime, expected colon'))
-      }
-    }
-    parseTimeZoneMin () {
-      if (isDigit(this.char)) {
-        this.consume()
-        if (/\d\d$/.test(this.state.buf)) return this.return(createDateTime(this.state.result + this.state.buf))
-      } else {
-        throw this.error(new TomlError('Unexpected character in datetime, expected digit'))
-      }
-    }
-
-    /* BOOLEAN */
-    parseBoolean () {
-      /* istanbul ignore else */
-      if (this.char === CHAR_t) {
-        this.consume()
-        return this.next(this.parseTrue_r)
-      } else if (this.char === CHAR_f) {
-        this.consume()
-        return this.next(this.parseFalse_a)
-      }
-    }
-    parseTrue_r () {
-      if (this.char === CHAR_r) {
-        this.consume()
-        return this.next(this.parseTrue_u)
-      } else {
-        throw this.error(new TomlError('Invalid boolean, expected true or false'))
-      }
-    }
-    parseTrue_u () {
-      if (this.char === CHAR_u) {
-        this.consume()
-        return this.next(this.parseTrue_e)
-      } else {
-        throw this.error(new TomlError('Invalid boolean, expected true or false'))
-      }
-    }
-    parseTrue_e () {
-      if (this.char === CHAR_e) {
-        return this.return(true)
-      } else {
-        throw this.error(new TomlError('Invalid boolean, expected true or false'))
-      }
-    }
-
-    parseFalse_a () {
-      if (this.char === CHAR_a) {
-        this.consume()
-        return this.next(this.parseFalse_l)
-      } else {
-        throw this.error(new TomlError('Invalid boolean, expected true or false'))
-      }
-    }
-
-    parseFalse_l () {
-      if (this.char === CHAR_l) {
-        this.consume()
-        return this.next(this.parseFalse_s)
-      } else {
-        throw this.error(new TomlError('Invalid boolean, expected true or false'))
-      }
-    }
-
-    parseFalse_s () {
-      if (this.char === CHAR_s) {
-        this.consume()
-        return this.next(this.parseFalse_e)
-      } else {
-        throw this.error(new TomlError('Invalid boolean, expected true or false'))
-      }
-    }
-
-    parseFalse_e () {
-      if (this.char === CHAR_e) {
-        return this.return(false)
-      } else {
-        throw this.error(new TomlError('Invalid boolean, expected true or false'))
-      }
-    }
-
-    /* INLINE LISTS */
-    parseInlineList () {
-      if (this.char === CHAR_SP || this.char === CTRL_I || this.char === CTRL_M || this.char === CTRL_J) {
-        return null
-      } else if (this.char === Parser.END) {
-        throw this.error(new TomlError('Unterminated inline array'))
-      } else if (this.char === CHAR_NUM) {
-        return this.call(this.parseComment)
-      } else if (this.char === CHAR_RSQB) {
-        return this.return(this.state.resultArr || InlineList())
-      } else {
-        return this.callNow(this.parseValue, this.recordInlineListValue)
-      }
-    }
-    recordInlineListValue (value) {
-      if (this.state.resultArr) {
-        const listType = this.state.resultArr[_contentType]
-        const valueType = tomlType(value)
-        if (listType !== valueType) {
-          throw this.error(new TomlError(`Inline lists must be a single type, not a mix of ${listType} and ${valueType}`))
-        }
-      } else {
-        this.state.resultArr = InlineList(tomlType(value))
-      }
-      if (isFloat(value) || isInteger(value)) {
-        // unbox now that we've verified they're ok
-        this.state.resultArr.push(value.valueOf())
-      } else {
-        this.state.resultArr.push(value)
-      }
-      return this.goto(this.parseInlineListNext)
-    }
-    parseInlineListNext () {
-      if (this.char === CHAR_SP || this.char === CTRL_I || this.char === CTRL_M || this.char === CTRL_J) {
-        return null
-      } else if (this.char === CHAR_NUM) {
-        return this.call(this.parseComment)
-      } else if (this.char === CHAR_COMMA) {
-        return this.next(this.parseInlineList)
-      } else if (this.char === CHAR_RSQB) {
-        return this.goto(this.parseInlineList)
-      } else {
-        throw this.error(new TomlError('Invalid character, expected whitespace, comma (,) or close bracket (])'))
-      }
-    }
-
-    /* INLINE TABLE */
-    parseInlineTable () {
-      if (this.char === CHAR_SP || this.char === CTRL_I) {
-        return null
-      } else if (this.char === Parser.END || this.char === CHAR_NUM || this.char === CTRL_J || this.char === CTRL_M) {
-        throw this.error(new TomlError('Unterminated inline array'))
-      } else if (this.char === CHAR_RCUB) {
-        const returnValue = this.state.resultTable || InlineTable()
-        returnValue.__tomlInline = true
-        return this.return(returnValue)
-      } else {
-        if (!this.state.resultTable) this.state.resultTable = InlineTable()
-        return this.callNow(this.parseAssign, this.recordInlineTableValue)
-      }
-    }
-    recordInlineTableValue (kv) {
-      let target = this.state.resultTable
-      let finalKey = kv.key.pop()
-      for (let kw of kv.key) {
-        if (hasKey(target, kw) && (!isTable(target[kw]) || target[kw][_declared])) {
-          throw this.error(new TomlError("Can't redefine existing key"))
-        }
-        target = target[kw] = target[kw] || Table()
-      }
-      if (hasKey(target, finalKey)) {
-        throw this.error(new TomlError("Can't redefine existing key"))
-      }
-      if (isInteger(kv.value) || isFloat(kv.value)) {
-        target[finalKey] = kv.value.valueOf()
-      } else {
-        target[finalKey] = kv.value
-      }
-      return this.goto(this.parseInlineTableNext)
-    }
-    parseInlineTableNext () {
-      if (this.char === CHAR_SP || this.char === CTRL_I) {
-        return null
-      } else if (this.char === Parser.END || this.char === CHAR_NUM || this.char === CTRL_J || this.char === CTRL_M) {
-        throw this.error(new TomlError('Unterminated inline array'))
-      } else if (this.char === CHAR_COMMA) {
-        return this.next(this.parseInlineTable)
-      } else if (this.char === CHAR_RCUB) {
-        return this.goto(this.parseInlineTable)
-      } else {
-        throw this.error(new TomlError('Invalid character, expected whitespace, comma (,) or close bracket (])'))
-      }
-    }
-  }
-  return TOMLParser
-}
-
-
-/***/ }),
+/* 725 */,
 /* 726 */,
 /* 727 */
 /***/ (function(module) {
@@ -37050,7 +37596,7 @@ module.exports = function getCallerFile(position) {
 "use strict";
 
 
-var repeat = __webpack_require__(360)
+var repeat = __webpack_require__(342)
 
 module.exports = heading
 
@@ -37167,7 +37713,51 @@ exports.default = Settings;
 /* 743 */,
 /* 744 */,
 /* 745 */,
-/* 746 */,
+/* 746 */
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
+/*!
+ * is-plain-object <https://github.com/jonschlinkert/is-plain-object>
+ *
+ * Copyright (c) 2014-2017, Jon Schlinkert.
+ * Released under the MIT License.
+ */
+
+function isObject(o) {
+  return Object.prototype.toString.call(o) === '[object Object]';
+}
+
+function isPlainObject(o) {
+  var ctor,prot;
+
+  if (isObject(o) === false) return false;
+
+  // If has modified constructor
+  ctor = o.constructor;
+  if (ctor === undefined) return true;
+
+  // If has modified prototype
+  prot = ctor.prototype;
+  if (isObject(prot) === false) return false;
+
+  // If constructor does not have an Object-specific method
+  if (prot.hasOwnProperty('isPrototypeOf') === false) {
+    return false;
+  }
+
+  // Most likely a plain Object
+  return true;
+}
+
+exports.isPlainObject = isPlainObject;
+
+
+/***/ }),
 /* 747 */
 /***/ (function(module) {
 
@@ -37314,6 +37904,7 @@ module.exports.mergeIntoConfig = function* ({
   command,
   cwd,
   dryRun = false,
+  filterPackages = [],
 }) {
   // build in assembledChanges to only issue commands with ones with changes
   // and pipe in data to template function
@@ -37370,7 +37961,10 @@ module.exports.mergeIntoConfig = function* ({
   const pipeOutput = {};
   let commands = [];
   for (let pkg of Object.keys(
-    command !== "version" ? pkgCommands : assembledChanges.releases
+    uesPackageSubset(
+      command !== "version" ? pkgCommands : assembledChanges.releases,
+      filterPackages
+    )
   )) {
     if (!pkgCommands[pkg]) continue;
 
@@ -37491,6 +38085,18 @@ const mergeCommand = ({ pkg, pkgManager, command, config }) => {
 
   return mergedCommand;
 };
+
+const uesPackageSubset = (commands, subset = []) =>
+  !!subset && subset.length === 0
+    ? commands
+    : subset.reduce((pkgCommands, pkg) => {
+        if (!commands[pkg]) {
+          return pkgCommands;
+        } else {
+          pkgCommands[pkg] = commands[pkg];
+          return pkgCommands;
+        }
+      }, {});
 
 const templateCommands = (command, pipe, complexCommands) => {
   if (!command) return null;
@@ -37631,7 +38237,22 @@ function pick(schema, prop) {
 
 
 /***/ }),
-/* 754 */,
+/* 754 */
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+var entities = __webpack_require__(869)
+
+var characters = {}
+var name
+
+module.exports = characters
+
+for (name in entities) {
+  characters[entities[name]] = name
+}
+
+
+/***/ }),
 /* 755 */,
 /* 756 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
@@ -37769,7 +38390,26 @@ module.exports.default = isFullwidthCodePoint;
 
 
 /***/ }),
-/* 760 */,
+/* 760 */
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+
+var xtend = __webpack_require__(81)
+var core = __webpack_require__(465)
+var smart = __webpack_require__(131)
+
+module.exports = encode
+
+// Encode special characters in `value`.
+function encode(value, options) {
+  // Note: Switch to `Object.assign` next major.
+  return core(value, xtend(options, {format: smart}))
+}
+
+
+/***/ }),
 /* 761 */
 /***/ (function(module) {
 
@@ -37778,46 +38418,7 @@ module.exports = require("zlib");
 /***/ }),
 /* 762 */,
 /* 763 */,
-/* 764 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-"use strict";
-
-
-var count = __webpack_require__(808)
-
-module.exports = enclose
-
-var leftParenthesis = '('
-var rightParenthesis = ')'
-var lessThan = '<'
-var greaterThan = '>'
-
-var expression = /\s/
-
-// Wrap `url` in angle brackets when needed, or when
-// forced.
-// In links, images, and definitions, the URL part needs
-// to be enclosed when it:
-//
-// - has a length of `0`
-// - contains white-space
-// - has more or less opening than closing parentheses
-function enclose(uri, always) {
-  if (
-    always ||
-    uri.length === 0 ||
-    expression.test(uri) ||
-    count(uri, leftParenthesis) !== count(uri, rightParenthesis)
-  ) {
-    return lessThan + uri + greaterThan
-  }
-
-  return uri
-}
-
-
-/***/ }),
+/* 764 */,
 /* 765 */,
 /* 766 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
@@ -38226,7 +38827,40 @@ vfile.writeSync = sync.write
 
 
 /***/ }),
-/* 770 */,
+/* 770 */
+/***/ (function(module) {
+
+const commandText = (pkg) => {
+  const { precommand, command, postcommand } = pkg;
+  let text = "";
+
+  if (typeof precommand !== "boolean") {
+    text = `${text}${precommand}\n`;
+  }
+
+  if (typeof command !== "boolean") {
+    text = `${text}${command}\n`;
+  }
+
+  if (typeof postcommand !== "boolean") {
+    text = `${text}${postcommand}\n`;
+  }
+
+  return text === "" ? "Publish complete." : text;
+};
+
+const packageListToArray = (list) => {
+  if (list === "") {
+    return [];
+  } else {
+    return list.split(",");
+  }
+};
+
+module.exports = { commandText, packageListToArray };
+
+
+/***/ }),
 /* 771 */
 /***/ (function(module) {
 
@@ -38357,79 +38991,74 @@ visitParents.SKIP = SKIP
 visitParents.EXIT = EXIT
 
 function visitParents(tree, test, visitor, reverse) {
+  var step
   var is
 
-  if (func(test) && !func(visitor)) {
+  if (typeof test === 'function' && typeof visitor !== 'function') {
     reverse = visitor
     visitor = test
     test = null
   }
 
   is = convert(test)
+  step = reverse ? -1 : 1
 
-  one(tree, null, [])()
+  factory(tree, null, [])()
 
-  function one(child, index, parents) {
-    var value = object(child) ? child : {}
+  function factory(node, index, parents) {
+    var value = typeof node === 'object' && node !== null ? node : {}
     var name
 
-    if (string(value.type)) {
-      name = string(value.tagName)
-        ? value.tagName
-        : string(value.name)
-        ? value.name
-        : undefined
+    if (typeof value.type === 'string') {
+      name =
+        typeof value.tagName === 'string'
+          ? value.tagName
+          : typeof value.name === 'string'
+          ? value.name
+          : undefined
 
-      node.displayName =
+      visit.displayName =
         'node (' + color(value.type + (name ? '<' + name + '>' : '')) + ')'
     }
 
-    return node
+    return visit
 
-    function node() {
+    function visit() {
+      var grandparents = parents.concat(node)
       var result = []
       var subresult
+      var offset
 
-      if (!test || is(child, index, parents[parents.length - 1] || null)) {
-        result = toResult(visitor(child, parents))
+      if (!test || is(node, index, parents[parents.length - 1] || null)) {
+        result = toResult(visitor(node, parents))
 
         if (result[0] === EXIT) {
           return result
         }
       }
 
-      if (!child.children || result[0] === SKIP) {
-        return result
+      if (node.children && result[0] !== SKIP) {
+        offset = (reverse ? node.children.length : -1) + step
+
+        while (offset > -1 && offset < node.children.length) {
+          subresult = factory(node.children[offset], offset, grandparents)()
+
+          if (subresult[0] === EXIT) {
+            return subresult
+          }
+
+          offset =
+            typeof subresult[1] === 'number' ? subresult[1] : offset + step
+        }
       }
 
-      subresult = toResult(children(child.children, parents.concat(child)))
-      return subresult[0] === EXIT ? subresult : result
-    }
-  }
-
-  // Visit children in `parent`.
-  function children(children, parents) {
-    var min = -1
-    var step = reverse ? -1 : 1
-    var index = (reverse ? children.length : min) + step
-    var child
-    var result
-
-    while (index > min && index < children.length) {
-      child = children[index]
-      result = one(child, index, parents)()
-
-      if (result[0] === EXIT) {
-        return result
-      }
-
-      index = typeof result[1] === 'number' ? result[1] : index + step
+      return result
     }
   }
 }
 
 function toResult(value) {
-  if (object(value) && 'length' in value) {
+  if (value !== null && typeof value === 'object' && 'length' in value) {
     return value
   }
 
@@ -38438,18 +39067,6 @@ function toResult(value) {
   }
 
   return [value]
-}
-
-function func(d) {
-  return typeof d === 'function'
-}
-
-function string(d) {
-  return typeof d === 'string'
-}
-
-function object(d) {
-  return typeof d === 'object' && d !== null
 }
 
 
@@ -38493,83 +39110,7 @@ module.exports.sync = path => {
 
 
 /***/ }),
-/* 781 */
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(exports,"__esModule",{value:true});exports.signalsByNumber=exports.signalsByName=void 0;var _os=__webpack_require__(87);
-
-var _signals=__webpack_require__(111);
-var _realtime=__webpack_require__(843);
-
-
-
-const getSignalsByName=function(){
-const signals=(0,_signals.getSignals)();
-return signals.reduce(getSignalByName,{});
-};
-
-const getSignalByName=function(
-signalByNameMemo,
-{name,number,description,supported,action,forced,standard})
-{
-return{
-...signalByNameMemo,
-[name]:{name,number,description,supported,action,forced,standard}};
-
-};
-
-const signalsByName=getSignalsByName();exports.signalsByName=signalsByName;
-
-
-
-
-const getSignalsByNumber=function(){
-const signals=(0,_signals.getSignals)();
-const length=_realtime.SIGRTMAX+1;
-const signalsA=Array.from({length},(value,number)=>
-getSignalByNumber(number,signals));
-
-return Object.assign({},...signalsA);
-};
-
-const getSignalByNumber=function(number,signals){
-const signal=findSignalByNumber(number,signals);
-
-if(signal===undefined){
-return{};
-}
-
-const{name,description,supported,action,forced,standard}=signal;
-return{
-[number]:{
-name,
-number,
-description,
-supported,
-action,
-forced,
-standard}};
-
-
-};
-
-
-
-const findSignalByNumber=function(number,signals){
-const signal=signals.find(({name})=>_os.constants.signals[name]===number);
-
-if(signal!==undefined){
-return signal;
-}
-
-return signals.find(signalA=>signalA.number===number);
-};
-
-const signalsByNumber=getSignalsByNumber();exports.signalsByNumber=signalsByNumber;
-//# sourceMappingURL=main.js.map
-
-/***/ }),
+/* 781 */,
 /* 782 */,
 /* 783 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
@@ -38578,9 +39119,9 @@ const SemVer = __webpack_require__(840)
 const Comparator = __webpack_require__(9)
 const {ANY} = Comparator
 const Range = __webpack_require__(46)
-const satisfies = __webpack_require__(845)
+const satisfies = __webpack_require__(60)
 const gt = __webpack_require__(855)
-const lt = __webpack_require__(921)
+const lt = __webpack_require__(296)
 const lte = __webpack_require__(508)
 const gte = __webpack_require__(989)
 
@@ -38658,30 +39199,91 @@ module.exports = outside
 
 /***/ }),
 /* 784 */,
-/* 785 */,
+/* 785 */
+/***/ (function(module) {
+
+"use strict";
+
+
+const isWin = process.platform === 'win32';
+
+function notFoundError(original, syscall) {
+    return Object.assign(new Error(`${syscall} ${original.command} ENOENT`), {
+        code: 'ENOENT',
+        errno: 'ENOENT',
+        syscall: `${syscall} ${original.command}`,
+        path: original.command,
+        spawnargs: original.args,
+    });
+}
+
+function hookChildProcess(cp, parsed) {
+    if (!isWin) {
+        return;
+    }
+
+    const originalEmit = cp.emit;
+
+    cp.emit = function (name, arg1) {
+        // If emitting "exit" event and exit code is 1, we need to check if
+        // the command exists and emit an "error" instead
+        // See https://github.com/IndigoUnited/node-cross-spawn/issues/16
+        if (name === 'exit') {
+            const err = verifyENOENT(arg1, parsed, 'spawn');
+
+            if (err) {
+                return originalEmit.call(cp, 'error', err);
+            }
+        }
+
+        return originalEmit.apply(cp, arguments); // eslint-disable-line prefer-rest-params
+    };
+}
+
+function verifyENOENT(status, parsed) {
+    if (isWin && status === 1 && !parsed.file) {
+        return notFoundError(parsed.original, 'spawn');
+    }
+
+    return null;
+}
+
+function verifyENOENTSync(status, parsed) {
+    if (isWin && status === 1 && !parsed.file) {
+        return notFoundError(parsed.original, 'spawnSync');
+    }
+
+    return null;
+}
+
+module.exports = {
+    hookChildProcess,
+    verifyENOENT,
+    verifyENOENTSync,
+    notFoundError,
+};
+
+
+/***/ }),
 /* 786 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
 "use strict";
 
-const shebangRegex = __webpack_require__(76);
 
-module.exports = (string = '') => {
-	const match = string.match(shebangRegex);
+var core = __webpack_require__(465)
+var smart = __webpack_require__(131)
 
-	if (!match) {
-		return null;
-	}
+module.exports = escape
 
-	const [path, argument] = match[0].replace(/#! ?/, '').split(' ');
-	const binary = path.split('/').pop();
-
-	if (binary === 'env') {
-		return argument;
-	}
-
-	return argument ? `${binary} ${argument}` : binary;
-};
+// Shortcut to escape special characters in HTML.
+function escape(value) {
+  return core(value, {
+    escapeOnly: true,
+    useNamedReferences: true,
+    format: smart
+  })
+}
 
 
 /***/ }),
@@ -39265,7 +39867,7 @@ function blockquote(node) {
 
 
 var streak = __webpack_require__(934)
-var repeat = __webpack_require__(360)
+var repeat = __webpack_require__(342)
 var pad = __webpack_require__(455)
 
 module.exports = code
@@ -39371,7 +39973,7 @@ module.exports = {
   re: internalRe.re,
   src: internalRe.src,
   tokens: internalRe.t,
-  SEMVER_SPEC_VERSION: __webpack_require__(511).SEMVER_SPEC_VERSION,
+  SEMVER_SPEC_VERSION: __webpack_require__(656).SEMVER_SPEC_VERSION,
   SemVer: __webpack_require__(341),
   compareIdentifiers: __webpack_require__(758).compareIdentifiers,
   rcompareIdentifiers: __webpack_require__(758).rcompareIdentifiers,
@@ -39475,122 +40077,8 @@ module.exports = Schema.DEFAULT = new Schema({
 
 
 /***/ }),
-/* 804 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-"use strict";
-
-const {signalsByName} = __webpack_require__(781);
-
-const getErrorPrefix = ({timedOut, timeout, errorCode, signal, signalDescription, exitCode, isCanceled}) => {
-	if (timedOut) {
-		return `timed out after ${timeout} milliseconds`;
-	}
-
-	if (isCanceled) {
-		return 'was canceled';
-	}
-
-	if (errorCode !== undefined) {
-		return `failed with ${errorCode}`;
-	}
-
-	if (signal !== undefined) {
-		return `was killed with ${signal} (${signalDescription})`;
-	}
-
-	if (exitCode !== undefined) {
-		return `failed with exit code ${exitCode}`;
-	}
-
-	return 'failed';
-};
-
-const makeError = ({
-	stdout,
-	stderr,
-	all,
-	error,
-	signal,
-	exitCode,
-	command,
-	timedOut,
-	isCanceled,
-	killed,
-	parsed: {options: {timeout}}
-}) => {
-	// `signal` and `exitCode` emitted on `spawned.on('exit')` event can be `null`.
-	// We normalize them to `undefined`
-	exitCode = exitCode === null ? undefined : exitCode;
-	signal = signal === null ? undefined : signal;
-	const signalDescription = signal === undefined ? undefined : signalsByName[signal].description;
-
-	const errorCode = error && error.code;
-
-	const prefix = getErrorPrefix({timedOut, timeout, errorCode, signal, signalDescription, exitCode, isCanceled});
-	const execaMessage = `Command ${prefix}: ${command}`;
-	const isError = Object.prototype.toString.call(error) === '[object Error]';
-	const shortMessage = isError ? `${execaMessage}\n${error.message}` : execaMessage;
-	const message = [shortMessage, stderr, stdout].filter(Boolean).join('\n');
-
-	if (isError) {
-		error.originalMessage = error.message;
-		error.message = message;
-	} else {
-		error = new Error(message);
-	}
-
-	error.shortMessage = shortMessage;
-	error.command = command;
-	error.exitCode = exitCode;
-	error.signal = signal;
-	error.signalDescription = signalDescription;
-	error.stdout = stdout;
-	error.stderr = stderr;
-
-	if (all !== undefined) {
-		error.all = all;
-	}
-
-	if ('bufferedData' in error) {
-		delete error.bufferedData;
-	}
-
-	error.failed = true;
-	error.timedOut = Boolean(timedOut);
-	error.isCanceled = isCanceled;
-	error.killed = killed && !timedOut;
-
-	return error;
-};
-
-module.exports = makeError;
-
-
-/***/ }),
-/* 805 */
-/***/ (function(module) {
-
-"use strict";
-
-
-const pathKey = (options = {}) => {
-	const environment = options.env || process.env;
-	const platform = options.platform || process.platform;
-
-	if (platform !== 'win32') {
-		return 'PATH';
-	}
-
-	return Object.keys(environment).reverse().find(key => key.toUpperCase() === 'PATH') || 'Path';
-};
-
-module.exports = pathKey;
-// TODO: Remove this for the next major release
-module.exports.default = pathKey;
-
-
-/***/ }),
+/* 804 */,
+/* 805 */,
 /* 806 */,
 /* 807 */,
 /* 808 */
@@ -39601,20 +40089,20 @@ module.exports.default = pathKey;
 
 module.exports = ccount
 
-function ccount(value, character) {
-  var val = String(value)
+function ccount(source, character) {
+  var value = String(source)
   var count = 0
   var index
 
-  if (typeof character !== 'string' || character.length !== 1) {
+  if (typeof character !== 'string') {
     throw new Error('Expected character')
   }
 
-  index = val.indexOf(character)
+  index = value.indexOf(character)
 
   while (index !== -1) {
     count++
-    index = val.indexOf(character, index + 1)
+    index = value.indexOf(character, index + character.length)
   }
 
   return count
@@ -39751,7 +40239,32 @@ exports.objFilter = objFilter;
 
 /***/ }),
 /* 817 */,
-/* 818 */,
+/* 818 */
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+const { platform } = __webpack_require__(87);
+const { join } = __webpack_require__(622);
+
+const native = __webpack_require__(369);
+
+module.exports = {
+  ctrlc(pid) {
+    try {
+      // don't even attempt if the
+      // process is not running
+      if (process.kill(pid, 0)) {
+        native.ctrlc(pid, join(__dirname, "..", "dist/killer.exe"));
+      }
+    } catch (error) {
+      if (error.code !== 'ESRCH') {
+        throw error;
+      }
+    }
+  }
+};
+
+
+/***/ }),
 /* 819 */,
 /* 820 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
@@ -39826,51 +40339,7 @@ exports.applyExtends = applyExtends;
 
 /***/ }),
 /* 821 */,
-/* 822 */
-/***/ (function(module) {
-
-"use strict";
-
-const SPACES_REGEXP = / +/g;
-
-const joinCommand = (file, args = []) => {
-	if (!Array.isArray(args)) {
-		return file;
-	}
-
-	return [file, ...args].join(' ');
-};
-
-// Allow spaces to be escaped by a backslash if not meant as a delimiter
-const handleEscaping = (tokens, token, index) => {
-	if (index === 0) {
-		return [token];
-	}
-
-	const previousToken = tokens[tokens.length - 1];
-
-	if (previousToken.endsWith('\\')) {
-		return [...tokens.slice(0, -1), `${previousToken.slice(0, -1)} ${token}`];
-	}
-
-	return [...tokens, token];
-};
-
-// Handle `execa.command()`
-const parseCommand = command => {
-	return command
-		.trim()
-		.split(SPACES_REGEXP)
-		.reduce(handleEscaping, []);
-};
-
-module.exports = {
-	joinCommand,
-	parseCommand
-};
-
-
-/***/ }),
+/* 822 */,
 /* 823 */
 /***/ (function(module) {
 
@@ -40015,7 +40484,53 @@ function writeSync(description, options) {
 
 /***/ }),
 /* 828 */,
-/* 829 */,
+/* 829 */
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+// classic singleton yargs API, to use yargs
+// without running as a singleton do:
+// require('yargs/yargs')(process.argv.slice(2))
+const yargs = __webpack_require__(704)
+const processArgv = __webpack_require__(381)
+
+Argv(processArgv.getProcessArgvWithoutBin())
+
+module.exports = Argv
+
+function Argv (processArgs, cwd) {
+  const argv = yargs(processArgs, cwd, require)
+  singletonify(argv)
+  return argv
+}
+
+/*  Hack an instance of Argv with process.argv into Argv
+    so people can do
+    require('yargs')(['--beeble=1','-z','zizzle']).argv
+    to parse a list of args and
+    require('yargs').argv
+    to get a parsed version of process.argv.
+*/
+function singletonify (inst) {
+  Object.keys(inst).forEach((key) => {
+    if (key === 'argv') {
+      Argv.__defineGetter__(key, inst.__lookupGetter__(key))
+    } else if (typeof inst[key] === 'function') {
+      Argv[key] = inst[key].bind(inst)
+    } else {
+      Argv.__defineGetter__('$0', () => {
+        return inst.$0
+      })
+      Argv.__defineGetter__('parsed', () => {
+        return inst.parsed
+      })
+    }
+  })
+}
+
+
+/***/ }),
 /* 830 */,
 /* 831 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
@@ -40041,1199 +40556,18 @@ exports.default = SyncProvider;
 /* 832 */,
 /* 833 */,
 /* 834 */
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
+/***/ (function(module) {
 
 "use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.isYargsInstance = exports.rebase = exports.Yargs = void 0;
-const command_1 = __webpack_require__(359);
-const common_types_1 = __webpack_require__(45);
-const yerror_1 = __webpack_require__(946);
-const usage_1 = __webpack_require__(21);
-const argsert_1 = __webpack_require__(997);
-const fs = __webpack_require__(747);
-const completion_1 = __webpack_require__(792);
-const path = __webpack_require__(622);
-const validation_1 = __webpack_require__(655);
-const obj_filter_1 = __webpack_require__(816);
-const apply_extends_1 = __webpack_require__(820);
-const middleware_1 = __webpack_require__(233);
-const processArgv = __webpack_require__(381);
-const is_promise_1 = __webpack_require__(91);
-const Parser = __webpack_require__(453);
-const y18nFactory = __webpack_require__(407);
-const setBlocking = __webpack_require__(411);
-const findUp = __webpack_require__(239);
-const requireMainFilename = __webpack_require__(630);
-function Yargs(processArgs = [], cwd = process.cwd(), parentRequire = require) {
-    const self = {};
-    let command;
-    let completion = null;
-    let groups = {};
-    const globalMiddleware = [];
-    let output = '';
-    const preservedGroups = {};
-    let usage;
-    let validation;
-    let handlerFinishCommand = null;
-    const y18n = y18nFactory({
-        directory: __webpack_require__.ab + "locales",
-        updateFiles: false
-    });
-    self.middleware = middleware_1.globalMiddlewareFactory(globalMiddleware, self);
-    self.scriptName = function (scriptName) {
-        self.customScriptName = true;
-        self.$0 = scriptName;
-        return self;
-    };
-    // ignore the node bin, specify this in your
-    // bin file with #!/usr/bin/env node
-    let default$0;
-    if (/\b(node|iojs|electron)(\.exe)?$/.test(process.argv[0])) {
-        default$0 = process.argv.slice(1, 2);
-    }
-    else {
-        default$0 = process.argv.slice(0, 1);
-    }
-    self.$0 = default$0
-        .map(x => {
-        const b = rebase(cwd, x);
-        return x.match(/^(\/|([a-zA-Z]:)?\\)/) && b.length < x.length ? b : x;
-    })
-        .join(' ').trim();
-    if (process.env._ !== undefined && processArgv.getProcessArgvBin() === process.env._) {
-        self.$0 = process.env._.replace(`${path.dirname(process.execPath)}/`, '');
-    }
-    // use context object to keep track of resets, subcommand execution, etc
-    // submodules should modify and check the state of context as necessary
-    const context = { resets: -1, commands: [], fullCommands: [], files: [] };
-    self.getContext = () => context;
-    // puts yargs back into an initial state. any keys
-    // that have been set to "global" will not be reset
-    // by this action.
-    let options;
-    self.resetOptions = self.reset = function resetOptions(aliases = {}) {
-        context.resets++;
-        options = options || {};
-        // put yargs back into an initial state, this
-        // logic is used to build a nested command
-        // hierarchy.
-        const tmpOptions = {};
-        tmpOptions.local = options.local ? options.local : [];
-        tmpOptions.configObjects = options.configObjects ? options.configObjects : [];
-        // if a key has been explicitly set as local,
-        // we should reset it before passing options to command.
-        const localLookup = {};
-        tmpOptions.local.forEach((l) => {
-            localLookup[l] = true;
-            (aliases[l] || []).forEach((a) => {
-                localLookup[a] = true;
-            });
-        });
-        // add all groups not set to local to preserved groups
-        Object.assign(preservedGroups, Object.keys(groups).reduce((acc, groupName) => {
-            const keys = groups[groupName].filter(key => !(key in localLookup));
-            if (keys.length > 0) {
-                acc[groupName] = keys;
-            }
-            return acc;
-        }, {}));
-        // groups can now be reset
-        groups = {};
-        const arrayOptions = [
-            'array', 'boolean', 'string', 'skipValidation',
-            'count', 'normalize', 'number',
-            'hiddenOptions'
-        ];
-        const objectOptions = [
-            'narg', 'key', 'alias', 'default', 'defaultDescription',
-            'config', 'choices', 'demandedOptions', 'demandedCommands', 'coerce',
-            'deprecatedOptions'
-        ];
-        arrayOptions.forEach(k => {
-            tmpOptions[k] = (options[k] || []).filter(k => !localLookup[k]);
-        });
-        objectOptions.forEach((k) => {
-            tmpOptions[k] = obj_filter_1.objFilter(options[k], k => !localLookup[k]);
-        });
-        tmpOptions.envPrefix = options.envPrefix;
-        options = tmpOptions;
-        // if this is the first time being executed, create
-        // instances of all our helpers -- otherwise just reset.
-        usage = usage ? usage.reset(localLookup) : usage_1.usage(self, y18n);
-        validation = validation ? validation.reset(localLookup) : validation_1.validation(self, usage, y18n);
-        command = command ? command.reset() : command_1.command(self, usage, validation, globalMiddleware);
-        if (!completion)
-            completion = completion_1.completion(self, usage, command);
-        completionCommand = null;
-        output = '';
-        exitError = null;
-        hasOutput = false;
-        self.parsed = false;
-        return self;
-    };
-    self.resetOptions();
-    // temporary hack: allow "freezing" of reset-able state for parse(msg, cb)
-    const frozens = [];
-    function freeze() {
-        frozens.push({
-            options,
-            configObjects: options.configObjects.slice(0),
-            exitProcess,
-            groups,
-            strict,
-            strictCommands,
-            completionCommand,
-            output,
-            exitError,
-            hasOutput,
-            parsed: self.parsed,
-            parseFn,
-            parseContext,
-            handlerFinishCommand
-        });
-        usage.freeze();
-        validation.freeze();
-        command.freeze();
-    }
-    function unfreeze() {
-        const frozen = frozens.pop();
-        common_types_1.assertNotStrictEqual(frozen, undefined);
-        let configObjects;
-        ({
-            options,
-            configObjects,
-            exitProcess,
-            groups,
-            output,
-            exitError,
-            hasOutput,
-            parsed: self.parsed,
-            strict,
-            strictCommands,
-            completionCommand,
-            parseFn,
-            parseContext,
-            handlerFinishCommand
-        } = frozen);
-        options.configObjects = configObjects;
-        usage.unfreeze();
-        validation.unfreeze();
-        command.unfreeze();
-    }
-    self.boolean = function (keys) {
-        argsert_1.argsert('<array|string>', [keys], arguments.length);
-        populateParserHintArray('boolean', keys);
-        return self;
-    };
-    self.array = function (keys) {
-        argsert_1.argsert('<array|string>', [keys], arguments.length);
-        populateParserHintArray('array', keys);
-        return self;
-    };
-    self.number = function (keys) {
-        argsert_1.argsert('<array|string>', [keys], arguments.length);
-        populateParserHintArray('number', keys);
-        return self;
-    };
-    self.normalize = function (keys) {
-        argsert_1.argsert('<array|string>', [keys], arguments.length);
-        populateParserHintArray('normalize', keys);
-        return self;
-    };
-    self.count = function (keys) {
-        argsert_1.argsert('<array|string>', [keys], arguments.length);
-        populateParserHintArray('count', keys);
-        return self;
-    };
-    self.string = function (keys) {
-        argsert_1.argsert('<array|string>', [keys], arguments.length);
-        populateParserHintArray('string', keys);
-        return self;
-    };
-    self.requiresArg = function (keys) {
-        // the 2nd paramter [number] in the argsert the assertion is mandatory
-        // as populateParserHintSingleValueDictionary recursively calls requiresArg
-        // with Nan as a 2nd parameter, although we ignore it
-        argsert_1.argsert('<array|string|object> [number]', [keys], arguments.length);
-        // If someone configures nargs at the same time as requiresArg,
-        // nargs should take precedent,
-        // see: https://github.com/yargs/yargs/pull/1572
-        // TODO: make this work with aliases, using a check similar to
-        // checkAllAliases() in yargs-parser.
-        if (typeof keys === 'string' && options.narg[keys]) {
-            return self;
-        }
-        else {
-            populateParserHintSingleValueDictionary(self.requiresArg, 'narg', keys, NaN);
-        }
-        return self;
-    };
-    self.skipValidation = function (keys) {
-        argsert_1.argsert('<array|string>', [keys], arguments.length);
-        populateParserHintArray('skipValidation', keys);
-        return self;
-    };
-    function populateParserHintArray(type, keys) {
-        keys = [].concat(keys);
-        keys.forEach((key) => {
-            key = sanitizeKey(key);
-            options[type].push(key);
-        });
-    }
-    self.nargs = function (key, value) {
-        argsert_1.argsert('<string|object|array> [number]', [key, value], arguments.length);
-        populateParserHintSingleValueDictionary(self.nargs, 'narg', key, value);
-        return self;
-    };
-    self.choices = function (key, value) {
-        argsert_1.argsert('<object|string|array> [string|array]', [key, value], arguments.length);
-        populateParserHintArrayDictionary(self.choices, 'choices', key, value);
-        return self;
-    };
-    self.alias = function (key, value) {
-        argsert_1.argsert('<object|string|array> [string|array]', [key, value], arguments.length);
-        populateParserHintArrayDictionary(self.alias, 'alias', key, value);
-        return self;
-    };
-    // TODO: actually deprecate self.defaults.
-    self.default = self.defaults = function (key, value, defaultDescription) {
-        argsert_1.argsert('<object|string|array> [*] [string]', [key, value, defaultDescription], arguments.length);
-        if (defaultDescription) {
-            common_types_1.assertSingleKey(key);
-            options.defaultDescription[key] = defaultDescription;
-        }
-        if (typeof value === 'function') {
-            common_types_1.assertSingleKey(key);
-            if (!options.defaultDescription[key])
-                options.defaultDescription[key] = usage.functionDescription(value);
-            value = value.call();
-        }
-        populateParserHintSingleValueDictionary(self.default, 'default', key, value);
-        return self;
-    };
-    self.describe = function (key, desc) {
-        argsert_1.argsert('<object|string|array> [string]', [key, desc], arguments.length);
-        setKey(key, true);
-        usage.describe(key, desc);
-        return self;
-    };
-    function setKey(key, set) {
-        populateParserHintSingleValueDictionary(setKey, 'key', key, set);
-        return self;
-    }
-    function demandOption(keys, msg) {
-        argsert_1.argsert('<object|string|array> [string]', [keys, msg], arguments.length);
-        populateParserHintSingleValueDictionary(self.demandOption, 'demandedOptions', keys, msg);
-        return self;
-    }
-    self.demandOption = demandOption;
-    self.coerce = function (keys, value) {
-        argsert_1.argsert('<object|string|array> [function]', [keys, value], arguments.length);
-        populateParserHintSingleValueDictionary(self.coerce, 'coerce', keys, value);
-        return self;
-    };
-    function populateParserHintSingleValueDictionary(builder, type, key, value) {
-        populateParserHintDictionary(builder, type, key, value, (type, key, value) => {
-            options[type][key] = value;
-        });
-    }
-    function populateParserHintArrayDictionary(builder, type, key, value) {
-        populateParserHintDictionary(builder, type, key, value, (type, key, value) => {
-            options[type][key] = (options[type][key] || []).concat(value);
-        });
-    }
-    function populateParserHintDictionary(builder, type, key, value, singleKeyHandler) {
-        if (Array.isArray(key)) {
-            // an array of keys with one value ['x', 'y', 'z'], function parse () {}
-            key.forEach((k) => {
-                builder(k, value);
-            });
-        }
-        else if (((key) => typeof key === 'object')(key)) {
-            // an object of key value pairs: {'x': parse () {}, 'y': parse() {}}
-            for (const k of common_types_1.objectKeys(key)) {
-                builder(k, key[k]);
-            }
-        }
-        else {
-            singleKeyHandler(type, sanitizeKey(key), value);
-        }
-    }
-    function sanitizeKey(key) {
-        if (key === '__proto__')
-            return '___proto___';
-        return key;
-    }
-    function deleteFromParserHintObject(optionKey) {
-        // delete from all parsing hints:
-        // boolean, array, key, alias, etc.
-        common_types_1.objectKeys(options).forEach((hintKey) => {
-            // configObjects is not a parsing hint array
-            if (((key) => key === 'configObjects')(hintKey))
-                return;
-            const hint = options[hintKey];
-            if (Array.isArray(hint)) {
-                if (~hint.indexOf(optionKey))
-                    hint.splice(hint.indexOf(optionKey), 1);
-            }
-            else if (typeof hint === 'object') {
-                delete hint[optionKey];
-            }
-        });
-        // now delete the description from usage.js.
-        delete usage.getDescriptions()[optionKey];
-    }
-    self.config = function config(key = 'config', msg, parseFn) {
-        argsert_1.argsert('[object|string] [string|function] [function]', [key, msg, parseFn], arguments.length);
-        // allow a config object to be provided directly.
-        if ((typeof key === 'object') && !Array.isArray(key)) {
-            key = apply_extends_1.applyExtends(key, cwd, self.getParserConfiguration()['deep-merge-config']);
-            options.configObjects = (options.configObjects || []).concat(key);
-            return self;
-        }
-        // allow for a custom parsing function.
-        if (typeof msg === 'function') {
-            parseFn = msg;
-            msg = undefined;
-        }
-        self.describe(key, msg || usage.deferY18nLookup('Path to JSON config file'));
-        (Array.isArray(key) ? key : [key]).forEach((k) => {
-            options.config[k] = parseFn || true;
-        });
-        return self;
-    };
-    self.example = function (cmd, description) {
-        argsert_1.argsert('<string|array> [string]', [cmd, description], arguments.length);
-        if (Array.isArray(cmd)) {
-            cmd.forEach((exampleParams) => self.example(...exampleParams));
-        }
-        else {
-            usage.example(cmd, description);
-        }
-        return self;
-    };
-    self.command = function (cmd, description, builder, handler, middlewares, deprecated) {
-        argsert_1.argsert('<string|array|object> [string|boolean] [function|object] [function] [array] [boolean|string]', [cmd, description, builder, handler, middlewares, deprecated], arguments.length);
-        command.addHandler(cmd, description, builder, handler, middlewares, deprecated);
-        return self;
-    };
-    self.commandDir = function (dir, opts) {
-        argsert_1.argsert('<string> [object]', [dir, opts], arguments.length);
-        const req = parentRequire || require;
-        command.addDirectory(dir, self.getContext(), req, __webpack_require__(732)(), opts);
-        return self;
-    };
-    // TODO: deprecate self.demand in favor of
-    // .demandCommand() .demandOption().
-    self.demand = self.required = self.require = function demand(keys, max, msg) {
-        // you can optionally provide a 'max' key,
-        // which will raise an exception if too many '_'
-        // options are provided.
-        if (Array.isArray(max)) {
-            max.forEach((key) => {
-                common_types_1.assertNotStrictEqual(msg, true);
-                demandOption(key, msg);
-            });
-            max = Infinity;
-        }
-        else if (typeof max !== 'number') {
-            msg = max;
-            max = Infinity;
-        }
-        if (typeof keys === 'number') {
-            common_types_1.assertNotStrictEqual(msg, true);
-            self.demandCommand(keys, max, msg, msg);
-        }
-        else if (Array.isArray(keys)) {
-            keys.forEach((key) => {
-                common_types_1.assertNotStrictEqual(msg, true);
-                demandOption(key, msg);
-            });
-        }
-        else {
-            if (typeof msg === 'string') {
-                demandOption(keys, msg);
-            }
-            else if (msg === true || typeof msg === 'undefined') {
-                demandOption(keys);
-            }
-        }
-        return self;
-    };
-    self.demandCommand = function demandCommand(min = 1, max, minMsg, maxMsg) {
-        argsert_1.argsert('[number] [number|string] [string|null|undefined] [string|null|undefined]', [min, max, minMsg, maxMsg], arguments.length);
-        if (typeof max !== 'number') {
-            minMsg = max;
-            max = Infinity;
-        }
-        self.global('_', false);
-        options.demandedCommands._ = {
-            min,
-            max,
-            minMsg,
-            maxMsg
-        };
-        return self;
-    };
-    self.getDemandedOptions = () => {
-        argsert_1.argsert([], 0);
-        return options.demandedOptions;
-    };
-    self.getDemandedCommands = () => {
-        argsert_1.argsert([], 0);
-        return options.demandedCommands;
-    };
-    self.deprecateOption = function deprecateOption(option, message) {
-        argsert_1.argsert('<string> [string|boolean]', [option, message], arguments.length);
-        options.deprecatedOptions[option] = message;
-        return self;
-    };
-    self.getDeprecatedOptions = () => {
-        argsert_1.argsert([], 0);
-        return options.deprecatedOptions;
-    };
-    self.implies = function (key, value) {
-        argsert_1.argsert('<string|object> [number|string|array]', [key, value], arguments.length);
-        validation.implies(key, value);
-        return self;
-    };
-    self.conflicts = function (key1, key2) {
-        argsert_1.argsert('<string|object> [string|array]', [key1, key2], arguments.length);
-        validation.conflicts(key1, key2);
-        return self;
-    };
-    self.usage = function (msg, description, builder, handler) {
-        argsert_1.argsert('<string|null|undefined> [string|boolean] [function|object] [function]', [msg, description, builder, handler], arguments.length);
-        if (description !== undefined) {
-            common_types_1.assertNotStrictEqual(msg, null);
-            // .usage() can be used as an alias for defining
-            // a default command.
-            if ((msg || '').match(/^\$0( |$)/)) {
-                return self.command(msg, description, builder, handler);
-            }
-            else {
-                throw new yerror_1.YError('.usage() description must start with $0 if being used as alias for .command()');
-            }
-        }
-        else {
-            usage.usage(msg);
-            return self;
-        }
-    };
-    self.epilogue = self.epilog = function (msg) {
-        argsert_1.argsert('<string>', [msg], arguments.length);
-        usage.epilog(msg);
-        return self;
-    };
-    self.fail = function (f) {
-        argsert_1.argsert('<function>', [f], arguments.length);
-        usage.failFn(f);
-        return self;
-    };
-    self.onFinishCommand = function (f) {
-        argsert_1.argsert('<function>', [f], arguments.length);
-        handlerFinishCommand = f;
-        return self;
-    };
-    self.getHandlerFinishCommand = () => handlerFinishCommand;
-    self.check = function (f, _global) {
-        argsert_1.argsert('<function> [boolean]', [f, _global], arguments.length);
-        validation.check(f, _global !== false);
-        return self;
-    };
-    self.global = function global(globals, global) {
-        argsert_1.argsert('<string|array> [boolean]', [globals, global], arguments.length);
-        globals = [].concat(globals);
-        if (global !== false) {
-            options.local = options.local.filter(l => globals.indexOf(l) === -1);
-        }
-        else {
-            globals.forEach((g) => {
-                if (options.local.indexOf(g) === -1)
-                    options.local.push(g);
-            });
-        }
-        return self;
-    };
-    self.pkgConf = function pkgConf(key, rootPath) {
-        argsert_1.argsert('<string> [string]', [key, rootPath], arguments.length);
-        let conf = null;
-        // prefer cwd to require-main-filename in this method
-        // since we're looking for e.g. "nyc" config in nyc consumer
-        // rather than "yargs" config in nyc (where nyc is the main filename)
-        const obj = pkgUp(rootPath || cwd);
-        // If an object exists in the key, add it to options.configObjects
-        if (obj[key] && typeof obj[key] === 'object') {
-            conf = apply_extends_1.applyExtends(obj[key], rootPath || cwd, self.getParserConfiguration()['deep-merge-config']);
-            options.configObjects = (options.configObjects || []).concat(conf);
-        }
-        return self;
-    };
-    const pkgs = {};
-    function pkgUp(rootPath) {
-        const npath = rootPath || '*';
-        if (pkgs[npath])
-            return pkgs[npath];
-        let obj = {};
-        try {
-            let startDir = rootPath || requireMainFilename(parentRequire);
-            // When called in an environment that lacks require.main.filename, such as a jest test runner,
-            // startDir is already process.cwd(), and should not be shortened.
-            // Whether or not it is _actually_ a directory (e.g., extensionless bin) is irrelevant, find-up handles it.
-            if (!rootPath && path.extname(startDir)) {
-                startDir = path.dirname(startDir);
-            }
-            const pkgJsonPath = findUp.sync('package.json', {
-                cwd: startDir
-            });
-            common_types_1.assertNotStrictEqual(pkgJsonPath, undefined);
-            obj = JSON.parse(fs.readFileSync(pkgJsonPath).toString());
-        }
-        catch (noop) { }
-        pkgs[npath] = obj || {};
-        return pkgs[npath];
-    }
-    let parseFn = null;
-    let parseContext = null;
-    self.parse = function parse(args, shortCircuit, _parseFn) {
-        argsert_1.argsert('[string|array] [function|boolean|object] [function]', [args, shortCircuit, _parseFn], arguments.length);
-        freeze();
-        if (typeof args === 'undefined') {
-            const argv = self._parseArgs(processArgs);
-            const tmpParsed = self.parsed;
-            unfreeze();
-            // TODO: remove this compatibility hack when we release yargs@15.x:
-            self.parsed = tmpParsed;
-            return argv;
-        }
-        // a context object can optionally be provided, this allows
-        // additional information to be passed to a command handler.
-        if (typeof shortCircuit === 'object') {
-            parseContext = shortCircuit;
-            shortCircuit = _parseFn;
-        }
-        // by providing a function as a second argument to
-        // parse you can capture output that would otherwise
-        // default to printing to stdout/stderr.
-        if (typeof shortCircuit === 'function') {
-            parseFn = shortCircuit;
-            shortCircuit = false;
-        }
-        // completion short-circuits the parsing process,
-        // skipping validation, etc.
-        if (!shortCircuit)
-            processArgs = args;
-        if (parseFn)
-            exitProcess = false;
-        const parsed = self._parseArgs(args, !!shortCircuit);
-        completion.setParsed(self.parsed);
-        if (parseFn)
-            parseFn(exitError, parsed, output);
-        unfreeze();
-        return parsed;
-    };
-    self._getParseContext = () => parseContext || {};
-    self._hasParseCallback = () => !!parseFn;
-    self.option = self.options = function option(key, opt) {
-        argsert_1.argsert('<string|object> [object]', [key, opt], arguments.length);
-        if (typeof key === 'object') {
-            Object.keys(key).forEach((k) => {
-                self.options(k, key[k]);
-            });
-        }
-        else {
-            if (typeof opt !== 'object') {
-                opt = {};
-            }
-            options.key[key] = true; // track manually set keys.
-            if (opt.alias)
-                self.alias(key, opt.alias);
-            const deprecate = opt.deprecate || opt.deprecated;
-            if (deprecate) {
-                self.deprecateOption(key, deprecate);
-            }
-            const demand = opt.demand || opt.required || opt.require;
-            // A required option can be specified via "demand: true".
-            if (demand) {
-                self.demand(key, demand);
-            }
-            if (opt.demandOption) {
-                self.demandOption(key, typeof opt.demandOption === 'string' ? opt.demandOption : undefined);
-            }
-            if (opt.conflicts) {
-                self.conflicts(key, opt.conflicts);
-            }
-            if ('default' in opt) {
-                self.default(key, opt.default);
-            }
-            if (opt.implies !== undefined) {
-                self.implies(key, opt.implies);
-            }
-            if (opt.nargs !== undefined) {
-                self.nargs(key, opt.nargs);
-            }
-            if (opt.config) {
-                self.config(key, opt.configParser);
-            }
-            if (opt.normalize) {
-                self.normalize(key);
-            }
-            if (opt.choices) {
-                self.choices(key, opt.choices);
-            }
-            if (opt.coerce) {
-                self.coerce(key, opt.coerce);
-            }
-            if (opt.group) {
-                self.group(key, opt.group);
-            }
-            if (opt.boolean || opt.type === 'boolean') {
-                self.boolean(key);
-                if (opt.alias)
-                    self.boolean(opt.alias);
-            }
-            if (opt.array || opt.type === 'array') {
-                self.array(key);
-                if (opt.alias)
-                    self.array(opt.alias);
-            }
-            if (opt.number || opt.type === 'number') {
-                self.number(key);
-                if (opt.alias)
-                    self.number(opt.alias);
-            }
-            if (opt.string || opt.type === 'string') {
-                self.string(key);
-                if (opt.alias)
-                    self.string(opt.alias);
-            }
-            if (opt.count || opt.type === 'count') {
-                self.count(key);
-            }
-            if (typeof opt.global === 'boolean') {
-                self.global(key, opt.global);
-            }
-            if (opt.defaultDescription) {
-                options.defaultDescription[key] = opt.defaultDescription;
-            }
-            if (opt.skipValidation) {
-                self.skipValidation(key);
-            }
-            const desc = opt.describe || opt.description || opt.desc;
-            self.describe(key, desc);
-            if (opt.hidden) {
-                self.hide(key);
-            }
-            if (opt.requiresArg) {
-                self.requiresArg(key);
-            }
-        }
-        return self;
-    };
-    self.getOptions = () => options;
-    self.positional = function (key, opts) {
-        argsert_1.argsert('<string> <object>', [key, opts], arguments.length);
-        if (context.resets === 0) {
-            throw new yerror_1.YError(".positional() can only be called in a command's builder function");
-        }
-        // .positional() only supports a subset of the configuration
-        // options available to .option().
-        const supportedOpts = ['default', 'defaultDescription', 'implies', 'normalize',
-            'choices', 'conflicts', 'coerce', 'type', 'describe',
-            'desc', 'description', 'alias'];
-        opts = obj_filter_1.objFilter(opts, (k, v) => {
-            let accept = supportedOpts.indexOf(k) !== -1;
-            // type can be one of string|number|boolean.
-            if (k === 'type' && ['string', 'number', 'boolean'].indexOf(v) === -1)
-                accept = false;
-            return accept;
-        });
-        // copy over any settings that can be inferred from the command string.
-        const fullCommand = context.fullCommands[context.fullCommands.length - 1];
-        const parseOptions = fullCommand ? command.cmdToParseOptions(fullCommand) : {
-            array: [],
-            alias: {},
-            default: {},
-            demand: {}
-        };
-        common_types_1.objectKeys(parseOptions).forEach((pk) => {
-            const parseOption = parseOptions[pk];
-            if (Array.isArray(parseOption)) {
-                if (parseOption.indexOf(key) !== -1)
-                    opts[pk] = true;
-            }
-            else {
-                if (parseOption[key] && !(pk in opts))
-                    opts[pk] = parseOption[key];
-            }
-        });
-        self.group(key, usage.getPositionalGroupName());
-        return self.option(key, opts);
-    };
-    self.group = function group(opts, groupName) {
-        argsert_1.argsert('<string|array> <string>', [opts, groupName], arguments.length);
-        const existing = preservedGroups[groupName] || groups[groupName];
-        if (preservedGroups[groupName]) {
-            // we now only need to track this group name in groups.
-            delete preservedGroups[groupName];
-        }
-        const seen = {};
-        groups[groupName] = (existing || []).concat(opts).filter((key) => {
-            if (seen[key])
-                return false;
-            return (seen[key] = true);
-        });
-        return self;
-    };
-    // combine explicit and preserved groups. explicit groups should be first
-    self.getGroups = () => Object.assign({}, groups, preservedGroups);
-    // as long as options.envPrefix is not undefined,
-    // parser will apply env vars matching prefix to argv
-    self.env = function (prefix) {
-        argsert_1.argsert('[string|boolean]', [prefix], arguments.length);
-        if (prefix === false)
-            delete options.envPrefix;
-        else
-            options.envPrefix = prefix || '';
-        return self;
-    };
-    self.wrap = function (cols) {
-        argsert_1.argsert('<number|null|undefined>', [cols], arguments.length);
-        usage.wrap(cols);
-        return self;
-    };
-    let strict = false;
-    self.strict = function (enabled) {
-        argsert_1.argsert('[boolean]', [enabled], arguments.length);
-        strict = enabled !== false;
-        return self;
-    };
-    self.getStrict = () => strict;
-    let strictCommands = false;
-    self.strictCommands = function (enabled) {
-        argsert_1.argsert('[boolean]', [enabled], arguments.length);
-        strictCommands = enabled !== false;
-        return self;
-    };
-    self.getStrictCommands = () => strictCommands;
-    let parserConfig = {};
-    self.parserConfiguration = function parserConfiguration(config) {
-        argsert_1.argsert('<object>', [config], arguments.length);
-        parserConfig = config;
-        return self;
-    };
-    self.getParserConfiguration = () => parserConfig;
-    self.showHelp = function (level) {
-        argsert_1.argsert('[string|function]', [level], arguments.length);
-        if (!self.parsed)
-            self._parseArgs(processArgs); // run parser, if it has not already been executed.
-        if (command.hasDefaultCommand()) {
-            context.resets++; // override the restriction on top-level positoinals.
-            command.runDefaultBuilderOn(self);
-        }
-        usage.showHelp(level);
-        return self;
-    };
-    let versionOpt = null;
-    self.version = function version(opt, msg, ver) {
-        const defaultVersionOpt = 'version';
-        argsert_1.argsert('[boolean|string] [string] [string]', [opt, msg, ver], arguments.length);
-        // nuke the key previously configured
-        // to return version #.
-        if (versionOpt) {
-            deleteFromParserHintObject(versionOpt);
-            usage.version(undefined);
-            versionOpt = null;
-        }
-        if (arguments.length === 0) {
-            ver = guessVersion();
-            opt = defaultVersionOpt;
-        }
-        else if (arguments.length === 1) {
-            if (opt === false) { // disable default 'version' key.
-                return self;
-            }
-            ver = opt;
-            opt = defaultVersionOpt;
-        }
-        else if (arguments.length === 2) {
-            ver = msg;
-            msg = undefined;
-        }
-        versionOpt = typeof opt === 'string' ? opt : defaultVersionOpt;
-        msg = msg || usage.deferY18nLookup('Show version number');
-        usage.version(ver || undefined);
-        self.boolean(versionOpt);
-        self.describe(versionOpt, msg);
-        return self;
-    };
-    function guessVersion() {
-        const obj = pkgUp();
-        return obj.version || 'unknown';
-    }
-    let helpOpt = null;
-    self.addHelpOpt = self.help = function addHelpOpt(opt, msg) {
-        const defaultHelpOpt = 'help';
-        argsert_1.argsert('[string|boolean] [string]', [opt, msg], arguments.length);
-        // nuke the key previously configured
-        // to return help.
-        if (helpOpt) {
-            deleteFromParserHintObject(helpOpt);
-            helpOpt = null;
-        }
-        if (arguments.length === 1) {
-            if (opt === false)
-                return self;
-        }
-        // use arguments, fallback to defaults for opt and msg
-        helpOpt = typeof opt === 'string' ? opt : defaultHelpOpt;
-        self.boolean(helpOpt);
-        self.describe(helpOpt, msg || usage.deferY18nLookup('Show help'));
-        return self;
-    };
-    const defaultShowHiddenOpt = 'show-hidden';
-    options.showHiddenOpt = defaultShowHiddenOpt;
-    self.addShowHiddenOpt = self.showHidden = function addShowHiddenOpt(opt, msg) {
-        argsert_1.argsert('[string|boolean] [string]', [opt, msg], arguments.length);
-        if (arguments.length === 1) {
-            if (opt === false)
-                return self;
-        }
-        const showHiddenOpt = typeof opt === 'string' ? opt : defaultShowHiddenOpt;
-        self.boolean(showHiddenOpt);
-        self.describe(showHiddenOpt, msg || usage.deferY18nLookup('Show hidden options'));
-        options.showHiddenOpt = showHiddenOpt;
-        return self;
-    };
-    self.hide = function hide(key) {
-        argsert_1.argsert('<string>', [key], arguments.length);
-        options.hiddenOptions.push(key);
-        return self;
-    };
-    self.showHelpOnFail = function showHelpOnFail(enabled, message) {
-        argsert_1.argsert('[boolean|string] [string]', [enabled, message], arguments.length);
-        usage.showHelpOnFail(enabled, message);
-        return self;
-    };
-    var exitProcess = true;
-    self.exitProcess = function (enabled = true) {
-        argsert_1.argsert('[boolean]', [enabled], arguments.length);
-        exitProcess = enabled;
-        return self;
-    };
-    self.getExitProcess = () => exitProcess;
-    var completionCommand = null;
-    self.completion = function (cmd, desc, fn) {
-        argsert_1.argsert('[string] [string|boolean|function] [function]', [cmd, desc, fn], arguments.length);
-        // a function to execute when generating
-        // completions can be provided as the second
-        // or third argument to completion.
-        if (typeof desc === 'function') {
-            fn = desc;
-            desc = undefined;
-        }
-        // register the completion command.
-        completionCommand = cmd || completionCommand || 'completion';
-        if (!desc && desc !== false) {
-            desc = 'generate completion script';
-        }
-        self.command(completionCommand, desc);
-        // a function can be provided
-        if (fn)
-            completion.registerFunction(fn);
-        return self;
-    };
-    self.showCompletionScript = function ($0, cmd) {
-        argsert_1.argsert('[string] [string]', [$0, cmd], arguments.length);
-        $0 = $0 || self.$0;
-        _logger.log(completion.generateCompletionScript($0, cmd || completionCommand || 'completion'));
-        return self;
-    };
-    self.getCompletion = function (args, done) {
-        argsert_1.argsert('<array> <function>', [args, done], arguments.length);
-        completion.getCompletion(args, done);
-    };
-    self.locale = function (locale) {
-        argsert_1.argsert('[string]', [locale], arguments.length);
-        if (!locale) {
-            guessLocale();
-            return y18n.getLocale();
-        }
-        detectLocale = false;
-        y18n.setLocale(locale);
-        return self;
-    };
-    self.updateStrings = self.updateLocale = function (obj) {
-        argsert_1.argsert('<object>', [obj], arguments.length);
-        detectLocale = false;
-        y18n.updateLocale(obj);
-        return self;
-    };
-    let detectLocale = true;
-    self.detectLocale = function (detect) {
-        argsert_1.argsert('<boolean>', [detect], arguments.length);
-        detectLocale = detect;
-        return self;
-    };
-    self.getDetectLocale = () => detectLocale;
-    var hasOutput = false;
-    var exitError = null;
-    // maybe exit, always capture
-    // context about why we wanted to exit.
-    self.exit = (code, err) => {
-        hasOutput = true;
-        exitError = err;
-        if (exitProcess)
-            process.exit(code);
-    };
-    // we use a custom logger that buffers output,
-    // so that we can print to non-CLIs, e.g., chat-bots.
-    const _logger = {
-        log(...args) {
-            if (!self._hasParseCallback())
-                console.log(...args);
-            hasOutput = true;
-            if (output.length)
-                output += '\n';
-            output += args.join(' ');
-        },
-        error(...args) {
-            if (!self._hasParseCallback())
-                console.error(...args);
-            hasOutput = true;
-            if (output.length)
-                output += '\n';
-            output += args.join(' ');
-        }
-    };
-    self._getLoggerInstance = () => _logger;
-    // has yargs output an error our help
-    // message in the current execution context.
-    self._hasOutput = () => hasOutput;
-    self._setHasOutput = () => {
-        hasOutput = true;
-    };
-    let recommendCommands;
-    self.recommendCommands = function (recommend = true) {
-        argsert_1.argsert('[boolean]', [recommend], arguments.length);
-        recommendCommands = recommend;
-        return self;
-    };
-    self.getUsageInstance = () => usage;
-    self.getValidationInstance = () => validation;
-    self.getCommandInstance = () => command;
-    self.terminalWidth = () => {
-        argsert_1.argsert([], 0);
-        return typeof process.stdout.columns !== 'undefined' ? process.stdout.columns : null;
-    };
-    Object.defineProperty(self, 'argv', {
-        get: () => self._parseArgs(processArgs),
-        enumerable: true
-    });
-    self._parseArgs = function parseArgs(args, shortCircuit, _calledFromCommand, commandIndex) {
-        let skipValidation = !!_calledFromCommand;
-        args = args || processArgs;
-        options.__ = y18n.__;
-        options.configuration = self.getParserConfiguration();
-        const populateDoubleDash = !!options.configuration['populate--'];
-        const config = Object.assign({}, options.configuration, {
-            'populate--': true
-        });
-        const parsed = Parser.detailed(args, Object.assign({}, options, {
-            configuration: config
-        }));
-        let argv = parsed.argv;
-        if (parseContext)
-            argv = Object.assign({}, argv, parseContext);
-        const aliases = parsed.aliases;
-        argv.$0 = self.$0;
-        self.parsed = parsed;
-        try {
-            guessLocale(); // guess locale lazily, so that it can be turned off in chain.
-            // while building up the argv object, there
-            // are two passes through the parser. If completion
-            // is being performed short-circuit on the first pass.
-            if (shortCircuit) {
-                return (populateDoubleDash || _calledFromCommand) ? argv : self._copyDoubleDash(argv);
-            }
-            // if there's a handler associated with a
-            // command defer processing to it.
-            if (helpOpt) {
-                // consider any multi-char helpOpt alias as a valid help command
-                // unless all helpOpt aliases are single-char
-                // note that parsed.aliases is a normalized bidirectional map :)
-                const helpCmds = [helpOpt]
-                    .concat(aliases[helpOpt] || [])
-                    .filter(k => k.length > 1);
-                // check if help should trigger and strip it from _.
-                if (~helpCmds.indexOf(argv._[argv._.length - 1])) {
-                    argv._.pop();
-                    argv[helpOpt] = true;
-                }
-            }
-            const handlerKeys = command.getCommands();
-            const requestCompletions = completion.completionKey in argv;
-            const skipRecommendation = argv[helpOpt] || requestCompletions;
-            const skipDefaultCommand = skipRecommendation && (handlerKeys.length > 1 || handlerKeys[0] !== '$0');
-            if (argv._.length) {
-                if (handlerKeys.length) {
-                    let firstUnknownCommand;
-                    for (let i = (commandIndex || 0), cmd; argv._[i] !== undefined; i++) {
-                        cmd = String(argv._[i]);
-                        if (~handlerKeys.indexOf(cmd) && cmd !== completionCommand) {
-                            // commands are executed using a recursive algorithm that executes
-                            // the deepest command first; we keep track of the position in the
-                            // argv._ array that is currently being executed.
-                            const innerArgv = command.runCommand(cmd, self, parsed, i + 1);
-                            return populateDoubleDash ? innerArgv : self._copyDoubleDash(innerArgv);
-                        }
-                        else if (!firstUnknownCommand && cmd !== completionCommand) {
-                            firstUnknownCommand = cmd;
-                            break;
-                        }
-                    }
-                    // run the default command, if defined
-                    if (command.hasDefaultCommand() && !skipDefaultCommand) {
-                        const innerArgv = command.runCommand(null, self, parsed);
-                        return populateDoubleDash ? innerArgv : self._copyDoubleDash(innerArgv);
-                    }
-                    // recommend a command if recommendCommands() has
-                    // been enabled, and no commands were found to execute
-                    if (recommendCommands && firstUnknownCommand && !skipRecommendation) {
-                        validation.recommendCommands(firstUnknownCommand, handlerKeys);
-                    }
-                }
-                // generate a completion script for adding to ~/.bashrc.
-                if (completionCommand && ~argv._.indexOf(completionCommand) && !requestCompletions) {
-                    if (exitProcess)
-                        setBlocking(true);
-                    self.showCompletionScript();
-                    self.exit(0);
-                }
-            }
-            else if (command.hasDefaultCommand() && !skipDefaultCommand) {
-                const innerArgv = command.runCommand(null, self, parsed);
-                return populateDoubleDash ? innerArgv : self._copyDoubleDash(innerArgv);
-            }
-            // we must run completions first, a user might
-            // want to complete the --help or --version option.
-            if (requestCompletions) {
-                if (exitProcess)
-                    setBlocking(true);
-                // we allow for asynchronous completions,
-                // e.g., loading in a list of commands from an API.
-                args = [].concat(args);
-                const completionArgs = args.slice(args.indexOf(`--${completion.completionKey}`) + 1);
-                completion.getCompletion(completionArgs, (completions) => {
-                    ;
-                    (completions || []).forEach((completion) => {
-                        _logger.log(completion);
-                    });
-                    self.exit(0);
-                });
-                return (populateDoubleDash || _calledFromCommand) ? argv : self._copyDoubleDash(argv);
-            }
-            // Handle 'help' and 'version' options
-            // if we haven't already output help!
-            if (!hasOutput) {
-                Object.keys(argv).forEach((key) => {
-                    if (key === helpOpt && argv[key]) {
-                        if (exitProcess)
-                            setBlocking(true);
-                        skipValidation = true;
-                        self.showHelp('log');
-                        self.exit(0);
-                    }
-                    else if (key === versionOpt && argv[key]) {
-                        if (exitProcess)
-                            setBlocking(true);
-                        skipValidation = true;
-                        usage.showVersion();
-                        self.exit(0);
-                    }
-                });
-            }
-            // Check if any of the options to skip validation were provided
-            if (!skipValidation && options.skipValidation.length > 0) {
-                skipValidation = Object.keys(argv).some(key => options.skipValidation.indexOf(key) >= 0 && argv[key] === true);
-            }
-            // If the help or version options where used and exitProcess is false,
-            // or if explicitly skipped, we won't run validations.
-            if (!skipValidation) {
-                if (parsed.error)
-                    throw new yerror_1.YError(parsed.error.message);
-                // if we're executed via bash completion, don't
-                // bother with validation.
-                if (!requestCompletions) {
-                    self._runValidation(argv, aliases, {}, parsed.error);
-                }
-            }
-        }
-        catch (err) {
-            if (err instanceof yerror_1.YError)
-                usage.fail(err.message, err);
-            else
-                throw err;
-        }
-        return (populateDoubleDash || _calledFromCommand) ? argv : self._copyDoubleDash(argv);
-    };
-    // to simplify the parsing of positionals in commands,
-    // we temporarily populate '--' rather than _, with arguments
-    // after the '--' directive. After the parse, we copy these back.
-    self._copyDoubleDash = function (argv) {
-        if (is_promise_1.isPromise(argv) || !argv._ || !argv['--'])
-            return argv;
-        argv._.push.apply(argv._, argv['--']);
-        // TODO(bcoe): refactor command parsing such that this delete is not
-        // necessary: https://github.com/yargs/yargs/issues/1482
-        try {
-            delete argv['--'];
-        }
-        catch (_err) { }
-        return argv;
-    };
-    self._runValidation = function runValidation(argv, aliases, positionalMap, parseErrors, isDefaultCommand = false) {
-        if (parseErrors)
-            throw new yerror_1.YError(parseErrors.message);
-        validation.nonOptionCount(argv);
-        validation.requiredArguments(argv);
-        let failedStrictCommands = false;
-        if (strictCommands) {
-            failedStrictCommands = validation.unknownCommands(argv);
-        }
-        if (strict && !failedStrictCommands) {
-            validation.unknownArguments(argv, aliases, positionalMap, isDefaultCommand);
-        }
-        validation.customChecks(argv, aliases);
-        validation.limitedChoices(argv);
-        validation.implications(argv);
-        validation.conflicting(argv);
-    };
-    function guessLocale() {
-        if (!detectLocale)
-            return;
-        const locale = process.env.LC_ALL || process.env.LC_MESSAGES || process.env.LANG || process.env.LANGUAGE || 'en_US';
-        self.locale(locale.replace(/[.:].*/, ''));
-    }
-    // an app should almost always have --version and --help,
-    // if you *really* want to disable this use .help(false)/.version(false).
-    self.help();
-    self.version();
-    return self;
-}
-exports.Yargs = Yargs;
-// rebase an absolute path to a relative one with respect to a base directory
-// exported for tests
-function rebase(base, dir) {
-    return path.relative(base, dir);
-}
-exports.rebase = rebase;
-function isYargsInstance(y) {
-    return !!y && (typeof y._parseArgs === 'function');
-}
-exports.isYargsInstance = isYargsInstance;
+
+const pTry = (fn, ...arguments_) => new Promise(resolve => {
+	resolve(fn(...arguments_));
+});
+
+module.exports = pTry;
+// TODO: remove this in the next major version
+module.exports.default = pTry;
 
 
 /***/ }),
@@ -41410,27 +40744,18 @@ module.exports = {
 "use strict";
 
 
-module.exports = input => {
-	const LF = typeof input === 'string' ? '\n' : '\n'.charCodeAt();
-	const CR = typeof input === 'string' ? '\r' : '\r'.charCodeAt();
+module.exports = locate
 
-	if (input[input.length - 1] === LF) {
-		input = input.slice(0, input.length - 1);
-	}
-
-	if (input[input.length - 1] === CR) {
-		input = input.slice(0, input.length - 1);
-	}
-
-	return input;
-};
+function locate(value, fromIndex) {
+  return value.indexOf('`', fromIndex)
+}
 
 
 /***/ }),
 /* 840 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
-const debug = __webpack_require__(940)
+const debug = __webpack_require__(957)
 const { MAX_LENGTH, MAX_SAFE_INTEGER } = __webpack_require__(94)
 const { re, t } = __webpack_require__(629)
 
@@ -41742,144 +41067,82 @@ module.exports = value => {
 /***/ }),
 /* 842 */,
 /* 843 */
-/***/ (function(__unusedmodule, exports) {
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
-Object.defineProperty(exports,"__esModule",{value:true});exports.SIGRTMAX=exports.getRealtimeSignals=void 0;
-const getRealtimeSignals=function(){
-const length=SIGRTMAX-SIGRTMIN+1;
-return Array.from({length},getRealtimeSignal);
-};exports.getRealtimeSignals=getRealtimeSignals;
 
-const getRealtimeSignal=function(value,index){
-return{
-name:`SIGRT${index+1}`,
-number:SIGRTMIN+index,
-action:"terminate",
-description:"Application-specific signal (realtime)",
-standard:"posix"};
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils = __webpack_require__(17);
+class EntryFilter {
+    constructor(_settings, _micromatchOptions) {
+        this._settings = _settings;
+        this._micromatchOptions = _micromatchOptions;
+        this.index = new Map();
+    }
+    getFilter(positive, negative) {
+        const positiveRe = utils.pattern.convertPatternsToRe(positive, this._micromatchOptions);
+        const negativeRe = utils.pattern.convertPatternsToRe(negative, this._micromatchOptions);
+        return (entry) => this._filter(entry, positiveRe, negativeRe);
+    }
+    _filter(entry, positiveRe, negativeRe) {
+        if (this._settings.unique && this._isDuplicateEntry(entry)) {
+            return false;
+        }
+        if (this._onlyFileFilter(entry) || this._onlyDirectoryFilter(entry)) {
+            return false;
+        }
+        if (this._isSkippedByAbsoluteNegativePatterns(entry.path, negativeRe)) {
+            return false;
+        }
+        const filepath = this._settings.baseNameMatch ? entry.name : entry.path;
+        const isMatched = this._isMatchToPatterns(filepath, positiveRe) && !this._isMatchToPatterns(entry.path, negativeRe);
+        if (this._settings.unique && isMatched) {
+            this._createIndexRecord(entry);
+        }
+        return isMatched;
+    }
+    _isDuplicateEntry(entry) {
+        return this.index.has(entry.path);
+    }
+    _createIndexRecord(entry) {
+        this.index.set(entry.path, undefined);
+    }
+    _onlyFileFilter(entry) {
+        return this._settings.onlyFiles && !entry.dirent.isFile();
+    }
+    _onlyDirectoryFilter(entry) {
+        return this._settings.onlyDirectories && !entry.dirent.isDirectory();
+    }
+    _isSkippedByAbsoluteNegativePatterns(entryPath, patternsRe) {
+        if (!this._settings.absolute) {
+            return false;
+        }
+        const fullpath = utils.path.makeAbsolute(this._settings.cwd, entryPath);
+        return utils.pattern.matchAny(fullpath, patternsRe);
+    }
+    _isMatchToPatterns(entryPath, patternsRe) {
+        const filepath = utils.path.removeLeadingDotSegment(entryPath);
+        return utils.pattern.matchAny(filepath, patternsRe);
+    }
+}
+exports.default = EntryFilter;
 
-};
-
-const SIGRTMIN=34;
-const SIGRTMAX=64;exports.SIGRTMAX=SIGRTMAX;
-//# sourceMappingURL=realtime.js.map
 
 /***/ }),
 /* 844 */,
-/* 845 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-const Range = __webpack_require__(46)
-const satisfies = (version, range, options) => {
-  try {
-    range = new Range(range, options)
-  } catch (er) {
-    return false
-  }
-  return range.test(version)
-}
-module.exports = satisfies
-
-
-/***/ }),
+/* 845 */,
 /* 846 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
-var once = __webpack_require__(538);
+"use strict";
 
-var noop = function() {};
 
-var isRequest = function(stream) {
-	return stream.setHeader && typeof stream.abort === 'function';
-};
 
-var isChildProcess = function(stream) {
-	return stream.stdio && Array.isArray(stream.stdio) && stream.stdio.length === 3
-};
-
-var eos = function(stream, opts, callback) {
-	if (typeof opts === 'function') return eos(stream, null, opts);
-	if (!opts) opts = {};
-
-	callback = once(callback || noop);
-
-	var ws = stream._writableState;
-	var rs = stream._readableState;
-	var readable = opts.readable || (opts.readable !== false && stream.readable);
-	var writable = opts.writable || (opts.writable !== false && stream.writable);
-	var cancelled = false;
-
-	var onlegacyfinish = function() {
-		if (!stream.writable) onfinish();
-	};
-
-	var onfinish = function() {
-		writable = false;
-		if (!readable) callback.call(stream);
-	};
-
-	var onend = function() {
-		readable = false;
-		if (!writable) callback.call(stream);
-	};
-
-	var onexit = function(exitCode) {
-		callback.call(stream, exitCode ? new Error('exited with error code: ' + exitCode) : null);
-	};
-
-	var onerror = function(err) {
-		callback.call(stream, err);
-	};
-
-	var onclose = function() {
-		process.nextTick(onclosenexttick);
-	};
-
-	var onclosenexttick = function() {
-		if (cancelled) return;
-		if (readable && !(rs && (rs.ended && !rs.destroyed))) return callback.call(stream, new Error('premature close'));
-		if (writable && !(ws && (ws.ended && !ws.destroyed))) return callback.call(stream, new Error('premature close'));
-	};
-
-	var onrequest = function() {
-		stream.req.on('finish', onfinish);
-	};
-
-	if (isRequest(stream)) {
-		stream.on('complete', onfinish);
-		stream.on('abort', onclose);
-		if (stream.req) onrequest();
-		else stream.on('request', onrequest);
-	} else if (writable && !ws) { // legacy streams
-		stream.on('end', onlegacyfinish);
-		stream.on('close', onlegacyfinish);
-	}
-
-	if (isChildProcess(stream)) stream.on('exit', onexit);
-
-	stream.on('end', onend);
-	stream.on('finish', onfinish);
-	if (opts.error !== false) stream.on('error', onerror);
-	stream.on('close', onclose);
-
-	return function() {
-		cancelled = true;
-		stream.removeListener('complete', onfinish);
-		stream.removeListener('abort', onclose);
-		stream.removeListener('request', onrequest);
-		if (stream.req) stream.req.removeListener('finish', onfinish);
-		stream.removeListener('end', onlegacyfinish);
-		stream.removeListener('close', onlegacyfinish);
-		stream.removeListener('finish', onfinish);
-		stream.removeListener('exit', onexit);
-		stream.removeListener('end', onend);
-		stream.removeListener('error', onerror);
-		stream.removeListener('close', onclose);
-	};
-};
-
-module.exports = eos;
+if (process.env.NODE_ENV === 'production') {
+  module.exports = __webpack_require__(491)
+} else {
+  module.exports = __webpack_require__(404)
+}
 
 
 /***/ }),
@@ -42676,6 +41939,12 @@ function convertBody(buffer, headers) {
 	// html4
 	if (!res && str) {
 		res = /<meta[\s]+?http-equiv=(['"])content-type\1[\s]+?content=(['"])(.+?)\2/i.exec(str);
+		if (!res) {
+			res = /<meta[\s]+?content=(['"])(.+?)\1[\s]+?http-equiv=(['"])content-type\3/i.exec(str);
+			if (res) {
+				res.pop(); // drop last quote
+			}
+		}
 
 		if (res) {
 			res = /charset=(.*)/i.exec(res.pop());
@@ -43683,7 +42952,7 @@ function fetch(url, opts) {
 				// HTTP fetch step 5.5
 				switch (request.redirect) {
 					case 'error':
-						reject(new FetchError(`redirect mode is set to error: ${request.url}`, 'no-redirect'));
+						reject(new FetchError(`uri requested responds with a redirect, redirect mode is set to error: ${request.url}`, 'no-redirect'));
 						finalize();
 						return;
 					case 'manual':
@@ -43722,7 +42991,8 @@ function fetch(url, opts) {
 							method: request.method,
 							body: request.body,
 							signal: request.signal,
-							timeout: request.timeout
+							timeout: request.timeout,
+							size: request.size
 						};
 
 						// HTTP-redirect fetch step 9
@@ -43878,6 +43148,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const command_1 = __webpack_require__(558);
+const file_command_1 = __webpack_require__(936);
+const utils_1 = __webpack_require__(589);
 const os = __importStar(__webpack_require__(87));
 const path = __importStar(__webpack_require__(622));
 /**
@@ -43904,9 +43176,17 @@ var ExitCode;
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function exportVariable(name, val) {
-    const convertedVal = command_1.toCommandValue(val);
+    const convertedVal = utils_1.toCommandValue(val);
     process.env[name] = convertedVal;
-    command_1.issueCommand('set-env', { name }, convertedVal);
+    const filePath = process.env['GITHUB_ENV'] || '';
+    if (filePath) {
+        const delimiter = '_GitHubActionsFileCommandDelimeter_';
+        const commandValue = `${name}<<${delimiter}${os.EOL}${convertedVal}${os.EOL}${delimiter}`;
+        file_command_1.issueCommand('ENV', commandValue);
+    }
+    else {
+        command_1.issueCommand('set-env', { name }, convertedVal);
+    }
 }
 exports.exportVariable = exportVariable;
 /**
@@ -43922,7 +43202,13 @@ exports.setSecret = setSecret;
  * @param inputPath
  */
 function addPath(inputPath) {
-    command_1.issueCommand('add-path', {}, inputPath);
+    const filePath = process.env['GITHUB_PATH'] || '';
+    if (filePath) {
+        file_command_1.issueCommand('PATH', inputPath);
+    }
+    else {
+        command_1.issueCommand('add-path', {}, inputPath);
+    }
     process.env['PATH'] = `${inputPath}${path.delimiter}${process.env['PATH']}`;
 }
 exports.addPath = addPath;
@@ -44157,7 +43443,6 @@ module.exports = gt
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const url = __webpack_require__(835);
 const http = __webpack_require__(605);
 const https = __webpack_require__(211);
 const pm = __webpack_require__(153);
@@ -44206,7 +43491,7 @@ var MediaTypes;
  * @param serverUrl  The server URL where the request will be sent. For example, https://api.github.com
  */
 function getProxyUrl(serverUrl) {
-    let proxyUrl = pm.getProxyUrl(url.parse(serverUrl));
+    let proxyUrl = pm.getProxyUrl(new URL(serverUrl));
     return proxyUrl ? proxyUrl.href : '';
 }
 exports.getProxyUrl = getProxyUrl;
@@ -44225,6 +43510,15 @@ const HttpResponseRetryCodes = [
 const RetryableHttpVerbs = ['OPTIONS', 'GET', 'DELETE', 'HEAD'];
 const ExponentialBackoffCeiling = 10;
 const ExponentialBackoffTimeSlice = 5;
+class HttpClientError extends Error {
+    constructor(message, statusCode) {
+        super(message);
+        this.name = 'HttpClientError';
+        this.statusCode = statusCode;
+        Object.setPrototypeOf(this, HttpClientError.prototype);
+    }
+}
+exports.HttpClientError = HttpClientError;
 class HttpClientResponse {
     constructor(message) {
         this.message = message;
@@ -44243,7 +43537,7 @@ class HttpClientResponse {
 }
 exports.HttpClientResponse = HttpClientResponse;
 function isHttps(requestUrl) {
-    let parsedUrl = url.parse(requestUrl);
+    let parsedUrl = new URL(requestUrl);
     return parsedUrl.protocol === 'https:';
 }
 exports.isHttps = isHttps;
@@ -44348,7 +43642,7 @@ class HttpClient {
         if (this._disposed) {
             throw new Error('Client has already been disposed.');
         }
-        let parsedUrl = url.parse(requestUrl);
+        let parsedUrl = new URL(requestUrl);
         let info = this._prepareRequest(verb, parsedUrl, headers);
         // Only perform retries on reads since writes may not be idempotent.
         let maxTries = this._allowRetries && RetryableHttpVerbs.indexOf(verb) != -1
@@ -44387,7 +43681,7 @@ class HttpClient {
                     // if there's no location to redirect to, we won't
                     break;
                 }
-                let parsedRedirectUrl = url.parse(redirectUrl);
+                let parsedRedirectUrl = new URL(redirectUrl);
                 if (parsedUrl.protocol == 'https:' &&
                     parsedUrl.protocol != parsedRedirectUrl.protocol &&
                     !this._allowRedirectDowngrade) {
@@ -44503,7 +43797,7 @@ class HttpClient {
      * @param serverUrl  The server URL where the request will be sent. For example, https://api.github.com
      */
     getAgent(serverUrl) {
-        let parsedUrl = url.parse(serverUrl);
+        let parsedUrl = new URL(serverUrl);
         return this._getAgent(parsedUrl);
     }
     _prepareRequest(method, requestUrl, headers) {
@@ -44576,7 +43870,7 @@ class HttpClient {
                 maxSockets: maxSockets,
                 keepAlive: this._keepAlive,
                 proxy: {
-                    proxyAuth: proxyUrl.auth,
+                    proxyAuth: `${proxyUrl.username}:${proxyUrl.password}`,
                     host: proxyUrl.hostname,
                     port: proxyUrl.port
                 }
@@ -44671,12 +43965,8 @@ class HttpClient {
                 else {
                     msg = 'Failed request: (' + statusCode + ')';
                 }
-                let err = new Error(msg);
-                // attach statusCode and body obj (if available) to the error object
-                err['statusCode'] = statusCode;
-                if (response.result) {
-                    err['result'] = response.result;
-                }
+                let err = new HttpClientError(msg, statusCode);
+                err.result = response.result;
                 reject(err);
             }
             else {
@@ -44719,74 +44009,54 @@ function decimal(character) {
 module.exports = factory
 
 function factory(file) {
-  var contents = indices(String(file))
+  var value = String(file)
+  var indices = []
+  var search = /\r?\n|\r/g
+
+  while (search.exec(value)) {
+    indices.push(search.lastIndex)
+  }
+
+  indices.push(value.length + 1)
 
   return {
-    toPosition: offsetToPositionFactory(contents),
-    toOffset: positionToOffsetFactory(contents)
+    toPoint: offsetToPoint,
+    toPosition: offsetToPoint,
+    toOffset: pointToOffset
   }
-}
 
-// Factory to get the line and column-based `position` for `offset` in the bound
-// indices.
-function offsetToPositionFactory(indices) {
-  return offsetToPosition
-
-  // Get the line and column-based `position` for `offset` in the bound indices.
-  function offsetToPosition(offset) {
+  // Get the line and column-based `point` for `offset` in the bound indices.
+  function offsetToPoint(offset) {
     var index = -1
-    var length = indices.length
 
-    if (offset < 0) {
-      return {}
-    }
-
-    while (++index < length) {
-      if (indices[index] > offset) {
-        return {
-          line: index + 1,
-          column: offset - (indices[index - 1] || 0) + 1,
-          offset: offset
+    if (offset > -1 && offset < indices[indices.length - 1]) {
+      while (++index < indices.length) {
+        if (indices[index] > offset) {
+          return {
+            line: index + 1,
+            column: offset - (indices[index - 1] || 0) + 1,
+            offset: offset
+          }
         }
       }
     }
 
     return {}
   }
-}
 
-// Factory to get the `offset` for a line and column-based `position` in the
-// bound indices.
-function positionToOffsetFactory(indices) {
-  return positionToOffset
-
-  // Get the `offset` for a line and column-based `position` in the bound
+  // Get the `offset` for a line and column-based `point` in the bound
   // indices.
-  function positionToOffset(position) {
-    var line = position && position.line
-    var column = position && position.column
+  function pointToOffset(point) {
+    var line = point && point.line
+    var column = point && point.column
+    var offset
 
     if (!isNaN(line) && !isNaN(column) && line - 1 in indices) {
-      return (indices[line - 2] || 0) + column - 1 || 0
+      offset = (indices[line - 2] || 0) + column - 1 || 0
     }
 
-    return -1
+    return offset > -1 && offset < indices[indices.length - 1] ? offset : -1
   }
-}
-
-// Get indices of line-breaks in `value`.
-function indices(value) {
-  var result = []
-  var index = value.indexOf('\n')
-
-  while (index !== -1) {
-    result.push(index + 1)
-    index = value.indexOf('\n', index + 1)
-  }
-
-  result.push(value.length + 1)
-
-  return result
 }
 
 
@@ -44974,7 +44244,7 @@ module.exports = rsort
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const fsStat = __webpack_require__(892);
+const fsStat = __webpack_require__(573);
 const constants_1 = __webpack_require__(416);
 const utils = __webpack_require__(1);
 function read(directory, settings) {
@@ -45546,7 +44816,7 @@ module.exports = new Type('tag:yaml.org,2002:int', {
 /* 881 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
-const {MAX_LENGTH} = __webpack_require__(511)
+const {MAX_LENGTH} = __webpack_require__(656)
 const { re, t } = __webpack_require__(275)
 const SemVer = __webpack_require__(341)
 
@@ -45624,7 +44894,51 @@ module.exports = compareLoose
 
 /***/ }),
 /* 887 */,
-/* 888 */,
+/* 888 */
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
+/*!
+ * is-plain-object <https://github.com/jonschlinkert/is-plain-object>
+ *
+ * Copyright (c) 2014-2017, Jon Schlinkert.
+ * Released under the MIT License.
+ */
+
+function isObject(o) {
+  return Object.prototype.toString.call(o) === '[object Object]';
+}
+
+function isPlainObject(o) {
+  var ctor,prot;
+
+  if (isObject(o) === false) return false;
+
+  // If has modified constructor
+  ctor = o.constructor;
+  if (ctor === undefined) return true;
+
+  // If has modified prototype
+  prot = ctor.prototype;
+  if (isObject(prot) === false) return false;
+
+  // If constructor does not have an Object-specific method
+  if (prot.hasOwnProperty('isPrototypeOf') === false) {
+    return false;
+  }
+
+  // Most likely a plain Object
+  return true;
+}
+
+exports.isPlainObject = isPlainObject;
+
+
+/***/ }),
 /* 889 */,
 /* 890 */,
 /* 891 */
@@ -45634,7 +44948,7 @@ module.exports = compareLoose
 
 
 var trim = __webpack_require__(235)
-var repeat = __webpack_require__(360)
+var repeat = __webpack_require__(342)
 var getIndent = __webpack_require__(313)
 
 module.exports = indentation
@@ -45698,37 +45012,7 @@ function indentation(value, maximum) {
 
 
 /***/ }),
-/* 892 */
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const async = __webpack_require__(120);
-const sync = __webpack_require__(719);
-const settings_1 = __webpack_require__(300);
-exports.Settings = settings_1.default;
-function stat(path, optionsOrSettingsOrCallback, callback) {
-    if (typeof optionsOrSettingsOrCallback === 'function') {
-        return async.read(path, getSettings(), optionsOrSettingsOrCallback);
-    }
-    async.read(path, getSettings(optionsOrSettingsOrCallback), callback);
-}
-exports.stat = stat;
-function statSync(path, optionsOrSettings) {
-    const settings = getSettings(optionsOrSettings);
-    return sync.read(path, settings);
-}
-exports.statSync = statSync;
-function getSettings(settingsOrOptions = {}) {
-    if (settingsOrOptions instanceof settings_1.default) {
-        return settingsOrOptions;
-    }
-    return new settings_1.default(settingsOrOptions);
-}
-
-
-/***/ }),
+/* 892 */,
 /* 893 */,
 /* 894 */,
 /* 895 */,
@@ -45758,7 +45042,7 @@ var invalid = __webpack_require__(779)
 var decimal = __webpack_require__(858)
 var hexadecimal = __webpack_require__(970)
 var alphanumerical = __webpack_require__(668)
-var decodeEntity = __webpack_require__(953)
+var decodeEntity = __webpack_require__(188)
 
 module.exports = parseEntities
 
@@ -46335,49 +45619,33 @@ function map(tree, iteratee) {
 
 /***/ }),
 /* 907 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
+/***/ (function(__unusedmodule, exports) {
 
 "use strict";
 
-// classic singleton yargs API, to use yargs
-// without running as a singleton do:
-// require('yargs/yargs')(process.argv.slice(2))
-const yargs = __webpack_require__(704)
-const processArgv = __webpack_require__(381)
-
-Argv(processArgv.getProcessArgvWithoutBin())
-
-module.exports = Argv
-
-function Argv (processArgs, cwd) {
-  const argv = yargs(processArgs, cwd, require)
-  singletonify(argv)
-  return argv
-}
-
-/*  Hack an instance of Argv with process.argv into Argv
-    so people can do
-    require('yargs')(['--beeble=1','-z','zizzle']).argv
-    to parse a list of args and
-    require('yargs').argv
-    to get a parsed version of process.argv.
-*/
-function singletonify (inst) {
-  Object.keys(inst).forEach((key) => {
-    if (key === 'argv') {
-      Argv.__defineGetter__(key, inst.__lookupGetter__(key))
-    } else if (typeof inst[key] === 'function') {
-      Argv[key] = inst[key].bind(inst)
-    } else {
-      Argv.__defineGetter__('$0', () => {
-        return inst.$0
-      })
-      Argv.__defineGetter__('parsed', () => {
-        return inst.parsed
-      })
+Object.defineProperty(exports, "__esModule", { value: true });
+function isFatalError(settings, error) {
+    if (settings.errorFilter === null) {
+        return true;
     }
-  })
+    return !settings.errorFilter(error);
 }
+exports.isFatalError = isFatalError;
+function isAppliedFilter(filter, value) {
+    return filter === null || filter(value);
+}
+exports.isAppliedFilter = isAppliedFilter;
+function replacePathSegmentSeparator(filepath, separator) {
+    return filepath.split(/[\\/]/).join(separator);
+}
+exports.replacePathSegmentSeparator = replacePathSegmentSeparator;
+function joinPathSegments(a, b, separator) {
+    if (a === '') {
+        return b;
+    }
+    return a + separator + b;
+}
+exports.joinPathSegments = joinPathSegments;
 
 
 /***/ }),
@@ -46388,7 +45656,7 @@ function singletonify (inst) {
 // given a set of versions and a range, create a "simplified" range
 // that includes the same versions that the original range does
 // If the original range is shorter than the simplified one, return that.
-const satisfies = __webpack_require__(845)
+const satisfies = __webpack_require__(60)
 const compare = __webpack_require__(217)
 module.exports = (versions, range, options) => {
   const set = []
@@ -46758,15 +46026,7 @@ function enclose(title) {
 
 /***/ }),
 /* 920 */,
-/* 921 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-const compare = __webpack_require__(217)
-const lt = (a, b, loose) => compare(a, b, loose) < 0
-module.exports = lt
-
-
-/***/ }),
+/* 921 */,
 /* 922 */,
 /* 923 */
 /***/ (function(module) {
@@ -46830,95 +46090,15 @@ function matcher(reference) {
  */
 var SymbolSubscribable = /*#__PURE__*/Symbol["for"]('Symbol.subscription');
 
-function* _forEach(source, visit) {
-  var subscription = yield subscribe(source);
-
-  while (true) {
-    var result = yield subscription.next();
-
-    if (result.done) {
-      return result.value;
-    } else {
-      yield visit(result.value);
-    }
-  }
+function isSubscribable(value) {
+  return !!value[SymbolSubscribable];
 }
-var Subscribable = {
-  from: function from(source) {
-    return new Chain(source);
-  }
-};
-var Chain = /*#__PURE__*/function () {
-  function Chain(source) {
-    this.source = source;
-  }
-
-  var _proto = Chain.prototype;
-
-  _proto[SymbolSubscribable] = function () {
-    return subscribe(this.source);
-  };
-
-  _proto.map = function map(fn) {
-    return this.chain(function (source) {
-      return function (publish) {
-        return _forEach(source, function* (item) {
-          publish(fn(item));
-        });
-      };
-    });
-  };
-
-  _proto.filter = function filter(predicate) {
-    return this.chain(function (source) {
-      return function (publish) {
-        return _forEach(source, function* (item) {
-          if (predicate(item)) {
-            publish(item);
-          }
-        });
-      };
-    });
-  };
-
-  _proto.match = function match(reference) {
-    return this.filter(matcher(reference));
-  };
-
-  _proto.chain = function chain(next) {
-    return new Chain(createSubscription(next(this.source)));
-  };
-
-  _proto.forEach = function forEach(visit) {
-    return _forEach(this.source, visit);
-  };
-
-  _proto.first = function* first() {
-    var subscription = yield subscribe(this.source);
-
-    var _yield$subscription$n = yield subscription.next(),
-        done = _yield$subscription$n.done,
-        value = _yield$subscription$n.value;
-
-    if (done) {
-      return undefined;
-    } else {
-      return value;
-    }
-  };
-
-  return Chain;
-}();
-function subscribe(source) {
+function rawSubscribe(source) {
   if (isSubscribable(source)) {
     return source[SymbolSubscribable]();
   } else {
     return source;
   }
-} // eslint-disable-next-line @typescript-eslint/no-explicit-any
-
-function isSubscribable(value) {
-  return !!value[SymbolSubscribable];
 }
 
 var DUMMY = {
@@ -46934,7 +46114,16 @@ var ChainableSubscription = /*#__PURE__*/function () {
   ChainableSubscription.of = function* of(source) {
     var chain = new ChainableSubscription(DUMMY);
     return yield effection.resource(chain, function* () {
-      chain.subscription = yield subscribe(source);
+      chain.subscription = yield rawSubscribe(source);
+      yield;
+    });
+  };
+
+  ChainableSubscription.wrap = function* wrap(source, fn) {
+    var chain = new ChainableSubscription(DUMMY);
+    return yield effection.resource(chain, function* () {
+      var subscription = yield source;
+      chain.subscription = fn(subscription);
       yield;
     });
   };
@@ -47021,6 +46210,40 @@ var ChainableSubscription = /*#__PURE__*/function () {
   return ChainableSubscription;
 }();
 
+function makeChainable(operation) {
+  var _Object$assign;
+
+  return Object.assign(operation, (_Object$assign = {}, _Object$assign[SymbolSubscribable] = function* () {
+    return yield operation;
+  }, _Object$assign.filter = function filter(predicate) {
+    return makeChainable(function* () {
+      return yield ChainableSubscription.wrap(operation, function (inner) {
+        return inner.filter(predicate);
+      });
+    });
+  }, _Object$assign.match = function match(reference) {
+    return makeChainable(function* () {
+      return yield ChainableSubscription.wrap(operation, function (inner) {
+        return inner.match(reference);
+      });
+    });
+  }, _Object$assign.map = function map(mapper) {
+    return makeChainable(function* () {
+      return yield ChainableSubscription.wrap(operation, function (inner) {
+        return inner.map(mapper);
+      });
+    });
+  }, _Object$assign.first = function* first() {
+    return yield (yield operation).first();
+  }, _Object$assign.expect = function* expect() {
+    return yield (yield operation).expect();
+  }, _Object$assign.forEach = function* forEach(visit) {
+    return yield (yield operation).forEach(visit);
+  }, _Object$assign.next = function* next() {
+    return yield (yield operation).next();
+  }, _Object$assign));
+}
+
 var Semaphore = function Semaphore() {
   var _this = this;
 
@@ -47042,7 +46265,7 @@ var Semaphore = function Semaphore() {
 };
 
 function createSubscription(subscribe) {
-  return function* () {
+  return makeChainable(function* () {
     var results = [];
     var semaphore = new Semaphore();
 
@@ -47089,7 +46312,7 @@ function createSubscription(subscribe) {
       }
     });
     return subscription;
-  };
+  });
 }
 
 function InvalidPublication(value) {
@@ -47098,16 +46321,59 @@ function InvalidPublication(value) {
   return error;
 }
 
-function* subscribe$1(source) {
-  return yield ChainableSubscription.of(source);
+function subscribe(source) {
+  return makeChainable(function* () {
+    return yield ChainableSubscription.of(source);
+  });
 }
+
+function deprecated(message, fn) {
+  var _impl = function impl() {
+    try {
+      throw new Error('trace');
+    } catch (trace) {
+      var _trace$stack$split$sl = trace.stack.split("\n").slice(3, 4),
+          line = _trace$stack$split$sl[0];
+
+      console.warn(message, "\n" + line);
+    }
+
+    _impl = fn;
+
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    return fn.call.apply(fn, [this].concat(args));
+  };
+
+  return function () {
+    var _impl2;
+
+    for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+      args[_key2] = arguments[_key2];
+    }
+
+    return (_impl2 = _impl).call.apply(_impl2, [this].concat(args));
+  };
+}
+
+var Subscribable = {
+  from: /*#__PURE__*/deprecated('`Subscribable.from(source)` is deprecated, use `subscribe(source).map(...)` instead', function (source) {
+    return subscribe(source);
+  })
+};
+
+var forEach = /*#__PURE__*/deprecated('`forEach(source, ...)` is deprecated, use `subscribe(source).forEach(...)` instead', function* forEach(source, visit) {
+  return yield subscribe(source).forEach(visit);
+});
 
 exports.ChainableSubscription = ChainableSubscription;
 exports.Subscribable = Subscribable;
 exports.SymbolSubscribable = SymbolSubscribable;
 exports.createSubscription = createSubscription;
-exports.forEach = _forEach;
-exports.subscribe = subscribe$1;
+exports.forEach = forEach;
+exports.subscribe = subscribe;
 //# sourceMappingURL=subscription.cjs.development.js.map
 
 
@@ -47297,7 +46563,7 @@ module.exports = inc
 
 module.exports = parseAsync
 
-const TOMLParser = __webpack_require__(725)
+const TOMLParser = __webpack_require__(329)
 const prettyError = __webpack_require__(985)
 
 function parseAsync (str, opts) {
@@ -47558,67 +46824,38 @@ function longestStreak(value, character) {
 /***/ }),
 /* 935 */,
 /* 936 */
-/***/ (function(module) {
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
-
-module.exports = {
-  MAX_LENGTH: 1024 * 64,
-
-  // Digits
-  CHAR_0: '0', /* 0 */
-  CHAR_9: '9', /* 9 */
-
-  // Alphabet chars.
-  CHAR_UPPERCASE_A: 'A', /* A */
-  CHAR_LOWERCASE_A: 'a', /* a */
-  CHAR_UPPERCASE_Z: 'Z', /* Z */
-  CHAR_LOWERCASE_Z: 'z', /* z */
-
-  CHAR_LEFT_PARENTHESES: '(', /* ( */
-  CHAR_RIGHT_PARENTHESES: ')', /* ) */
-
-  CHAR_ASTERISK: '*', /* * */
-
-  // Non-alphabetic chars.
-  CHAR_AMPERSAND: '&', /* & */
-  CHAR_AT: '@', /* @ */
-  CHAR_BACKSLASH: '\\', /* \ */
-  CHAR_BACKTICK: '`', /* ` */
-  CHAR_CARRIAGE_RETURN: '\r', /* \r */
-  CHAR_CIRCUMFLEX_ACCENT: '^', /* ^ */
-  CHAR_COLON: ':', /* : */
-  CHAR_COMMA: ',', /* , */
-  CHAR_DOLLAR: '$', /* . */
-  CHAR_DOT: '.', /* . */
-  CHAR_DOUBLE_QUOTE: '"', /* " */
-  CHAR_EQUAL: '=', /* = */
-  CHAR_EXCLAMATION_MARK: '!', /* ! */
-  CHAR_FORM_FEED: '\f', /* \f */
-  CHAR_FORWARD_SLASH: '/', /* / */
-  CHAR_HASH: '#', /* # */
-  CHAR_HYPHEN_MINUS: '-', /* - */
-  CHAR_LEFT_ANGLE_BRACKET: '<', /* < */
-  CHAR_LEFT_CURLY_BRACE: '{', /* { */
-  CHAR_LEFT_SQUARE_BRACKET: '[', /* [ */
-  CHAR_LINE_FEED: '\n', /* \n */
-  CHAR_NO_BREAK_SPACE: '\u00A0', /* \u00A0 */
-  CHAR_PERCENT: '%', /* % */
-  CHAR_PLUS: '+', /* + */
-  CHAR_QUESTION_MARK: '?', /* ? */
-  CHAR_RIGHT_ANGLE_BRACKET: '>', /* > */
-  CHAR_RIGHT_CURLY_BRACE: '}', /* } */
-  CHAR_RIGHT_SQUARE_BRACKET: ']', /* ] */
-  CHAR_SEMICOLON: ';', /* ; */
-  CHAR_SINGLE_QUOTE: '\'', /* ' */
-  CHAR_SPACE: ' ', /*   */
-  CHAR_TAB: '\t', /* \t */
-  CHAR_UNDERSCORE: '_', /* _ */
-  CHAR_VERTICAL_LINE: '|', /* | */
-  CHAR_ZERO_WIDTH_NOBREAK_SPACE: '\uFEFF' /* \uFEFF */
+// For internal use, subject to change.
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
 };
-
+Object.defineProperty(exports, "__esModule", { value: true });
+// We use any as a valid input type
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const fs = __importStar(__webpack_require__(747));
+const os = __importStar(__webpack_require__(87));
+const utils_1 = __webpack_require__(589);
+function issueCommand(command, message) {
+    const filePath = process.env[`GITHUB_${command}`];
+    if (!filePath) {
+        throw new Error(`Unable to find environment variable for file command ${command}`);
+    }
+    if (!fs.existsSync(filePath)) {
+        throw new Error(`Missing file at path: ${filePath}`);
+    }
+    fs.appendFileSync(filePath, `${utils_1.toCommandValue(message)}${os.EOL}`, {
+        encoding: 'utf8'
+    });
+}
+exports.issueCommand = issueCommand;
+//# sourceMappingURL=file-command.js.map
 
 /***/ }),
 /* 937 */
@@ -47910,21 +47147,7 @@ module.exports = fill;
 
 
 /***/ }),
-/* 940 */
-/***/ (function(module) {
-
-const debug = (
-  typeof process === 'object' &&
-  process.env &&
-  process.env.NODE_DEBUG &&
-  /\bsemver\b/i.test(process.env.NODE_DEBUG)
-) ? (...args) => console.error('SEMVER', ...args)
-  : () => {}
-
-module.exports = debug
-
-
-/***/ }),
+/* 940 */,
 /* 941 */,
 /* 942 */,
 /* 943 */,
@@ -47935,7 +47158,7 @@ module.exports = debug
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const fsScandir = __webpack_require__(592);
-const common = __webpack_require__(720);
+const common = __webpack_require__(907);
 const reader_1 = __webpack_require__(139);
 class SyncReader extends reader_1.default {
     constructor() {
@@ -48117,14 +47340,27 @@ function create(EConstructor) {
 
 
 /***/ }),
-/* 948 */,
+/* 948 */
+/***/ (function(module) {
+
+"use strict";
+
+
+module.exports = identity
+
+function identity(value) {
+  return value
+}
+
+
+/***/ }),
 /* 949 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
 "use strict";
 
 
-var repeat = __webpack_require__(360)
+var repeat = __webpack_require__(342)
 var trim = __webpack_require__(716)
 
 module.exports = indentedCode
@@ -48314,211 +47550,43 @@ exports.throwOnErrorEvent = throwOnErrorEvent;
 /***/ }),
 /* 951 */,
 /* 952 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
-
-const path = __webpack_require__(622);
-const resolveCommand = __webpack_require__(220);
-const escape = __webpack_require__(385);
-const readShebang = __webpack_require__(546);
-
-const isWin = process.platform === 'win32';
-const isExecutableRegExp = /\.(?:com|exe)$/i;
-const isCmdShimRegExp = /node_modules[\\/].bin[\\/][^\\/]+\.cmd$/i;
-
-function detectShebang(parsed) {
-    parsed.file = resolveCommand(parsed);
-
-    const shebang = parsed.file && readShebang(parsed.file);
-
-    if (shebang) {
-        parsed.args.unshift(parsed.file);
-        parsed.command = shebang;
-
-        return resolveCommand(parsed);
+Object.defineProperty(exports, "__esModule", { value: true });
+const utils = __webpack_require__(17);
+class ErrorFilter {
+    constructor(_settings) {
+        this._settings = _settings;
     }
-
-    return parsed.file;
+    getFilter() {
+        return (error) => this._isNonFatalError(error);
+    }
+    _isNonFatalError(error) {
+        return utils.errno.isEnoentCodeError(error) || this._settings.suppressErrors;
+    }
 }
-
-function parseNonShell(parsed) {
-    if (!isWin) {
-        return parsed;
-    }
-
-    // Detect & add support for shebangs
-    const commandFile = detectShebang(parsed);
-
-    // We don't need a shell if the command filename is an executable
-    const needsShell = !isExecutableRegExp.test(commandFile);
-
-    // If a shell is required, use cmd.exe and take care of escaping everything correctly
-    // Note that `forceShell` is an hidden option used only in tests
-    if (parsed.options.forceShell || needsShell) {
-        // Need to double escape meta chars if the command is a cmd-shim located in `node_modules/.bin/`
-        // The cmd-shim simply calls execute the package bin file with NodeJS, proxying any argument
-        // Because the escape of metachars with ^ gets interpreted when the cmd.exe is first called,
-        // we need to double escape them
-        const needsDoubleEscapeMetaChars = isCmdShimRegExp.test(commandFile);
-
-        // Normalize posix paths into OS compatible paths (e.g.: foo/bar -> foo\bar)
-        // This is necessary otherwise it will always fail with ENOENT in those cases
-        parsed.command = path.normalize(parsed.command);
-
-        // Escape command & arguments
-        parsed.command = escape.command(parsed.command);
-        parsed.args = parsed.args.map((arg) => escape.argument(arg, needsDoubleEscapeMetaChars));
-
-        const shellCommand = [parsed.command].concat(parsed.args).join(' ');
-
-        parsed.args = ['/d', '/s', '/c', `"${shellCommand}"`];
-        parsed.command = process.env.comspec || 'cmd.exe';
-        parsed.options.windowsVerbatimArguments = true; // Tell node's spawn that the arguments are already escaped
-    }
-
-    return parsed;
-}
-
-function parse(command, args, options) {
-    // Normalize arguments, similar to nodejs
-    if (args && !Array.isArray(args)) {
-        options = args;
-        args = null;
-    }
-
-    args = args ? args.slice(0) : []; // Clone array to avoid changing the original
-    options = Object.assign({}, options); // Clone object to avoid changing the original
-
-    // Build our parsed object
-    const parsed = {
-        command,
-        args,
-        options,
-        file: undefined,
-        original: {
-            command,
-            args,
-        },
-    };
-
-    // Delegate further parsing to shell or non-shell
-    return options.shell ? parsed : parseNonShell(parsed);
-}
-
-module.exports = parse;
+exports.default = ErrorFilter;
 
 
 /***/ }),
-/* 953 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-"use strict";
-
-
-var characterEntities = __webpack_require__(671)
-
-module.exports = decodeEntity
-
-var own = {}.hasOwnProperty
-
-function decodeEntity(characters) {
-  return own.call(characterEntities, characters)
-    ? characterEntities[characters]
-    : false
-}
-
-
-/***/ }),
+/* 953 */,
 /* 954 */,
 /* 955 */,
 /* 956 */,
 /* 957 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
+/***/ (function(module) {
 
-var once = __webpack_require__(538)
-var eos = __webpack_require__(846)
-var fs = __webpack_require__(747) // we only need fs to get the ReadStream and WriteStream prototypes
+const debug = (
+  typeof process === 'object' &&
+  process.env &&
+  process.env.NODE_DEBUG &&
+  /\bsemver\b/i.test(process.env.NODE_DEBUG)
+) ? (...args) => console.error('SEMVER', ...args)
+  : () => {}
 
-var noop = function () {}
-var ancient = /^v?\.0/.test(process.version)
-
-var isFn = function (fn) {
-  return typeof fn === 'function'
-}
-
-var isFS = function (stream) {
-  if (!ancient) return false // newer node version do not need to care about fs is a special way
-  if (!fs) return false // browser
-  return (stream instanceof (fs.ReadStream || noop) || stream instanceof (fs.WriteStream || noop)) && isFn(stream.close)
-}
-
-var isRequest = function (stream) {
-  return stream.setHeader && isFn(stream.abort)
-}
-
-var destroyer = function (stream, reading, writing, callback) {
-  callback = once(callback)
-
-  var closed = false
-  stream.on('close', function () {
-    closed = true
-  })
-
-  eos(stream, {readable: reading, writable: writing}, function (err) {
-    if (err) return callback(err)
-    closed = true
-    callback()
-  })
-
-  var destroyed = false
-  return function (err) {
-    if (closed) return
-    if (destroyed) return
-    destroyed = true
-
-    if (isFS(stream)) return stream.close(noop) // use close for fs streams to avoid fd leaks
-    if (isRequest(stream)) return stream.abort() // request.destroy just do .end - .abort is what we want
-
-    if (isFn(stream.destroy)) return stream.destroy()
-
-    callback(err || new Error('stream was destroyed'))
-  }
-}
-
-var call = function (fn) {
-  fn()
-}
-
-var pipe = function (from, to) {
-  return from.pipe(to)
-}
-
-var pump = function () {
-  var streams = Array.prototype.slice.call(arguments)
-  var callback = isFn(streams[streams.length - 1] || noop) && streams.pop() || noop
-
-  if (Array.isArray(streams[0])) streams = streams[0]
-  if (streams.length < 2) throw new Error('pump requires two streams per minimum')
-
-  var error
-  var destroys = streams.map(function (stream, i) {
-    var reading = i < streams.length - 1
-    var writing = i > 0
-    return destroyer(stream, reading, writing, function (err) {
-      if (!error) error = err
-      if (err) destroys.forEach(call)
-      if (reading) return
-      destroys.forEach(call)
-      callback(error)
-    })
-  })
-
-  return streams.reduce(pipe)
-}
-
-module.exports = pump
+module.exports = debug
 
 
 /***/ }),
@@ -48542,7 +47610,7 @@ var Schema = __webpack_require__(717);
 
 module.exports = new Schema({
   include: [
-    __webpack_require__(420)
+    __webpack_require__(242)
   ],
   implicit: [
     __webpack_require__(514),
@@ -48558,320 +47626,57 @@ module.exports = new Schema({
 
 
 /***/ }),
-/* 960 */
+/* 960 */,
+/* 961 */,
+/* 962 */
 /***/ (function(module) {
 
 "use strict";
 
 
-const nativePromisePrototype = (async () => {})().constructor.prototype;
-const descriptors = ['then', 'catch', 'finally'].map(property => [
-	property,
-	Reflect.getOwnPropertyDescriptor(nativePromisePrototype, property)
-]);
+// See http://www.robvanderwoude.com/escapechars.php
+const metaCharsRegExp = /([()\][%!^"`<>&|;, *?])/g;
 
-// The return value is a mixin of `childProcess` and `Promise`
-const mergePromise = (spawned, promise) => {
-	for (const [property, descriptor] of descriptors) {
-		// Starting the main `promise` is deferred to avoid consuming streams
-		const value = typeof promise === 'function' ?
-			(...args) => Reflect.apply(descriptor.value, promise(), args) :
-			descriptor.value.bind(promise);
+function escapeCommand(arg) {
+    // Escape meta chars
+    arg = arg.replace(metaCharsRegExp, '^$1');
 
-		Reflect.defineProperty(spawned, property, {...descriptor, value});
-	}
+    return arg;
+}
 
-	return spawned;
-};
+function escapeArgument(arg, doubleEscapeMetaChars) {
+    // Convert to string
+    arg = `${arg}`;
 
-// Use promises instead of `child_process` events
-const getSpawnedPromise = spawned => {
-	return new Promise((resolve, reject) => {
-		spawned.on('exit', (exitCode, signal) => {
-			resolve({exitCode, signal});
-		});
+    // Algorithm below is based on https://qntm.org/cmd
 
-		spawned.on('error', error => {
-			reject(error);
-		});
+    // Sequence of backslashes followed by a double quote:
+    // double up all the backslashes and escape the double quote
+    arg = arg.replace(/(\\*)"/g, '$1$1\\"');
 
-		if (spawned.stdin) {
-			spawned.stdin.on('error', error => {
-				reject(error);
-			});
-		}
-	});
-};
+    // Sequence of backslashes followed by the end of the string
+    // (which will become a double quote later):
+    // double up all the backslashes
+    arg = arg.replace(/(\\*)$/, '$1$1');
 
-module.exports = {
-	mergePromise,
-	getSpawnedPromise
-};
+    // All other backslashes occur literally
 
+    // Quote the whole thing:
+    arg = `"${arg}"`;
 
+    // Escape meta chars
+    arg = arg.replace(metaCharsRegExp, '^$1');
 
-/***/ }),
-/* 961 */,
-/* 962 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
+    // Double escape meta chars if necessary
+    if (doubleEscapeMetaChars) {
+        arg = arg.replace(metaCharsRegExp, '^$1');
+    }
 
-"use strict";
+    return arg;
+}
 
-const path = __webpack_require__(622);
-const childProcess = __webpack_require__(129);
-const crossSpawn = __webpack_require__(429);
-const stripFinalNewline = __webpack_require__(839);
-const npmRunPath = __webpack_require__(329);
-const onetime = __webpack_require__(530);
-const makeError = __webpack_require__(804);
-const normalizeStdio = __webpack_require__(550);
-const {spawnedKill, spawnedCancel, setupTimeout, setExitHandler} = __webpack_require__(79);
-const {handleInput, getSpawnedResult, makeAllStream, validateInputSync} = __webpack_require__(452);
-const {mergePromise, getSpawnedPromise} = __webpack_require__(960);
-const {joinCommand, parseCommand} = __webpack_require__(822);
-
-const DEFAULT_MAX_BUFFER = 1000 * 1000 * 100;
-
-const getEnv = ({env: envOption, extendEnv, preferLocal, localDir, execPath}) => {
-	const env = extendEnv ? {...process.env, ...envOption} : envOption;
-
-	if (preferLocal) {
-		return npmRunPath.env({env, cwd: localDir, execPath});
-	}
-
-	return env;
-};
-
-const handleArguments = (file, args, options = {}) => {
-	const parsed = crossSpawn._parse(file, args, options);
-	file = parsed.command;
-	args = parsed.args;
-	options = parsed.options;
-
-	options = {
-		maxBuffer: DEFAULT_MAX_BUFFER,
-		buffer: true,
-		stripFinalNewline: true,
-		extendEnv: true,
-		preferLocal: false,
-		localDir: options.cwd || process.cwd(),
-		execPath: process.execPath,
-		encoding: 'utf8',
-		reject: true,
-		cleanup: true,
-		all: false,
-		windowsHide: true,
-		...options
-	};
-
-	options.env = getEnv(options);
-
-	options.stdio = normalizeStdio(options);
-
-	if (process.platform === 'win32' && path.basename(file, '.exe') === 'cmd') {
-		// #116
-		args.unshift('/q');
-	}
-
-	return {file, args, options, parsed};
-};
-
-const handleOutput = (options, value, error) => {
-	if (typeof value !== 'string' && !Buffer.isBuffer(value)) {
-		// When `execa.sync()` errors, we normalize it to '' to mimic `execa()`
-		return error === undefined ? undefined : '';
-	}
-
-	if (options.stripFinalNewline) {
-		return stripFinalNewline(value);
-	}
-
-	return value;
-};
-
-const execa = (file, args, options) => {
-	const parsed = handleArguments(file, args, options);
-	const command = joinCommand(file, args);
-
-	let spawned;
-	try {
-		spawned = childProcess.spawn(parsed.file, parsed.args, parsed.options);
-	} catch (error) {
-		// Ensure the returned error is always both a promise and a child process
-		const dummySpawned = new childProcess.ChildProcess();
-		const errorPromise = Promise.reject(makeError({
-			error,
-			stdout: '',
-			stderr: '',
-			all: '',
-			command,
-			parsed,
-			timedOut: false,
-			isCanceled: false,
-			killed: false
-		}));
-		return mergePromise(dummySpawned, errorPromise);
-	}
-
-	const spawnedPromise = getSpawnedPromise(spawned);
-	const timedPromise = setupTimeout(spawned, parsed.options, spawnedPromise);
-	const processDone = setExitHandler(spawned, parsed.options, timedPromise);
-
-	const context = {isCanceled: false};
-
-	spawned.kill = spawnedKill.bind(null, spawned.kill.bind(spawned));
-	spawned.cancel = spawnedCancel.bind(null, spawned, context);
-
-	const handlePromise = async () => {
-		const [{error, exitCode, signal, timedOut}, stdoutResult, stderrResult, allResult] = await getSpawnedResult(spawned, parsed.options, processDone);
-		const stdout = handleOutput(parsed.options, stdoutResult);
-		const stderr = handleOutput(parsed.options, stderrResult);
-		const all = handleOutput(parsed.options, allResult);
-
-		if (error || exitCode !== 0 || signal !== null) {
-			const returnedError = makeError({
-				error,
-				exitCode,
-				signal,
-				stdout,
-				stderr,
-				all,
-				command,
-				parsed,
-				timedOut,
-				isCanceled: context.isCanceled,
-				killed: spawned.killed
-			});
-
-			if (!parsed.options.reject) {
-				return returnedError;
-			}
-
-			throw returnedError;
-		}
-
-		return {
-			command,
-			exitCode: 0,
-			stdout,
-			stderr,
-			all,
-			failed: false,
-			timedOut: false,
-			isCanceled: false,
-			killed: false
-		};
-	};
-
-	const handlePromiseOnce = onetime(handlePromise);
-
-	crossSpawn._enoent.hookChildProcess(spawned, parsed.parsed);
-
-	handleInput(spawned, parsed.options.input);
-
-	spawned.all = makeAllStream(spawned, parsed.options);
-
-	return mergePromise(spawned, handlePromiseOnce);
-};
-
-module.exports = execa;
-
-module.exports.sync = (file, args, options) => {
-	const parsed = handleArguments(file, args, options);
-	const command = joinCommand(file, args);
-
-	validateInputSync(parsed.options);
-
-	let result;
-	try {
-		result = childProcess.spawnSync(parsed.file, parsed.args, parsed.options);
-	} catch (error) {
-		throw makeError({
-			error,
-			stdout: '',
-			stderr: '',
-			all: '',
-			command,
-			parsed,
-			timedOut: false,
-			isCanceled: false,
-			killed: false
-		});
-	}
-
-	const stdout = handleOutput(parsed.options, result.stdout, result.error);
-	const stderr = handleOutput(parsed.options, result.stderr, result.error);
-
-	if (result.error || result.status !== 0 || result.signal !== null) {
-		const error = makeError({
-			stdout,
-			stderr,
-			error: result.error,
-			signal: result.signal,
-			exitCode: result.status,
-			command,
-			parsed,
-			timedOut: result.error && result.error.code === 'ETIMEDOUT',
-			isCanceled: false,
-			killed: result.signal !== null
-		});
-
-		if (!parsed.options.reject) {
-			return error;
-		}
-
-		throw error;
-	}
-
-	return {
-		command,
-		exitCode: 0,
-		stdout,
-		stderr,
-		failed: false,
-		timedOut: false,
-		isCanceled: false,
-		killed: false
-	};
-};
-
-module.exports.command = (command, options) => {
-	const [file, ...args] = parseCommand(command);
-	return execa(file, args, options);
-};
-
-module.exports.commandSync = (command, options) => {
-	const [file, ...args] = parseCommand(command);
-	return execa.sync(file, args, options);
-};
-
-module.exports.node = (scriptPath, args, options = {}) => {
-	if (args && !Array.isArray(args) && typeof args === 'object') {
-		options = args;
-		args = [];
-	}
-
-	const stdio = normalizeStdio.node(options);
-
-	const {nodePath = process.execPath, nodeOptions = process.execArgv} = options;
-
-	return execa(
-		nodePath,
-		[
-			...nodeOptions,
-			scriptPath,
-			...(Array.isArray(args) ? args : [])
-		],
-		{
-			...options,
-			stdin: undefined,
-			stdout: undefined,
-			stderr: undefined,
-			stdio,
-			shell: false
-		}
-	);
-};
+module.exports.command = escapeCommand;
+module.exports.argument = escapeArgument;
 
 
 /***/ }),
@@ -50047,13 +48852,16 @@ Object.defineProperty(exports, '__esModule', { value: true });
 var request = __webpack_require__(59);
 var universalUserAgent = __webpack_require__(523);
 
-const VERSION = "4.5.2";
+const VERSION = "4.5.7";
 
 class GraphqlError extends Error {
   constructor(request, response) {
     const message = response.data.errors[0].message;
     super(message);
     Object.assign(this, response.data);
+    Object.assign(this, {
+      headers: response.headers
+    });
     this.name = "GraphqlError";
     this.request = request; // Maintains proper stack trace (only available on V8)
 
@@ -50067,13 +48875,18 @@ class GraphqlError extends Error {
 }
 
 const NON_VARIABLE_OPTIONS = ["method", "baseUrl", "url", "headers", "request", "query", "mediaType"];
+const GHES_V3_SUFFIX_REGEX = /\/api\/v3\/?$/;
 function graphql(request, query, options) {
-  options = typeof query === "string" ? options = Object.assign({
+  if (typeof query === "string" && options && "query" in options) {
+    return Promise.reject(new Error(`[@octokit/graphql] "query" cannot be used as variable name`));
+  }
+
+  const parsedOptions = typeof query === "string" ? Object.assign({
     query
-  }, options) : options = query;
-  const requestOptions = Object.keys(options).reduce((result, key) => {
+  }, options) : query;
+  const requestOptions = Object.keys(parsedOptions).reduce((result, key) => {
     if (NON_VARIABLE_OPTIONS.includes(key)) {
-      result[key] = options[key];
+      result[key] = parsedOptions[key];
       return result;
     }
 
@@ -50081,12 +48894,27 @@ function graphql(request, query, options) {
       result.variables = {};
     }
 
-    result.variables[key] = options[key];
+    result.variables[key] = parsedOptions[key];
     return result;
-  }, {});
+  }, {}); // workaround for GitHub Enterprise baseUrl set with /api/v3 suffix
+  // https://github.com/octokit/auth-app.js/issues/111#issuecomment-657610451
+
+  const baseUrl = parsedOptions.baseUrl || request.endpoint.DEFAULTS.baseUrl;
+
+  if (GHES_V3_SUFFIX_REGEX.test(baseUrl)) {
+    requestOptions.url = baseUrl.replace(GHES_V3_SUFFIX_REGEX, "/api/graphql");
+  }
+
   return request(requestOptions).then(response => {
     if (response.data.errors) {
+      const headers = {};
+
+      for (const key of Object.keys(response.headers)) {
+        headers[key] = response.headers[key];
+      }
+
       throw new GraphqlError(requestOptions, {
+        headers,
         data: response.data
       });
     }
@@ -50136,7 +48964,7 @@ exports.withCustomRequest = withCustomRequest;
 "use strict";
 
 
-var uri = __webpack_require__(764)
+var uri = __webpack_require__(452)
 var title = __webpack_require__(919)
 
 module.exports = image
@@ -50436,7 +49264,7 @@ module.exports.prettyError = __webpack_require__(985)
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const fsStat = __webpack_require__(892);
+const fsStat = __webpack_require__(573);
 const fsWalk = __webpack_require__(227);
 const reader_1 = __webpack_require__(245);
 class ReaderSync extends reader_1.default {
@@ -50490,46 +49318,7 @@ module.exports = gte
 
 
 /***/ }),
-/* 990 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-"use strict";
-
-
-var identity = __webpack_require__(491)
-
-module.exports = enter
-
-// Shortcut and collapsed link references need no escaping and encoding during
-// the processing of child nodes (it must be implied from identifier).
-//
-// This toggler turns encoding and escaping off for shortcut and collapsed
-// references.
-//
-// Implies `enterLink`.
-function enter(compiler, node) {
-  var encode = compiler.encode
-  var escape = compiler.escape
-  var exitLink = compiler.enterLink()
-
-  if (node.referenceType !== 'shortcut' && node.referenceType !== 'collapsed') {
-    return exitLink
-  }
-
-  compiler.escape = identity
-  compiler.encode = identity
-
-  return exit
-
-  function exit() {
-    compiler.encode = encode
-    compiler.escape = escape
-    exitLink()
-  }
-}
-
-
-/***/ }),
+/* 990 */,
 /* 991 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
@@ -50702,12 +49491,13 @@ const {
 } = __webpack_require__(916);
 const { assemble, mergeIntoConfig } = __webpack_require__(749);
 const { fillChangelogs } = __webpack_require__(72);
-const { apply, changesConsideringParents } = __webpack_require__(334);
+const { apply, changesConsideringParents } = __webpack_require__(108);
 
 module.exports.covector = function* covector({
   command,
   dryRun = false,
   cwd = process.cwd(),
+  filterPackages = [],
 }) {
   const config = yield configFile({ cwd });
   const changesPaths = yield changeFiles({
@@ -50717,6 +49507,7 @@ module.exports.covector = function* covector({
   const changesVfiles = changeFilesToVfile({
     cwd,
     paths: changesPaths,
+    filterPackages,
   });
   const assembledChanges = yield assemble({
     cwd,
@@ -50755,6 +49546,7 @@ module.exports.covector = function* covector({
       config,
       command,
       dryRun,
+      filterPackages,
     });
 
     if (dryRun) {
@@ -50828,6 +49620,7 @@ module.exports.covector = function* covector({
       command,
       cwd,
       dryRun,
+      filterPackages,
     });
 
     if (dryRun) {
@@ -51040,7 +49833,7 @@ module.exports.Type                = __webpack_require__(773);
 module.exports.Schema              = __webpack_require__(717);
 module.exports.FAILSAFE_SCHEMA     = __webpack_require__(738);
 module.exports.JSON_SCHEMA         = __webpack_require__(937);
-module.exports.CORE_SCHEMA         = __webpack_require__(420);
+module.exports.CORE_SCHEMA         = __webpack_require__(242);
 module.exports.DEFAULT_SAFE_SCHEMA = __webpack_require__(959);
 module.exports.DEFAULT_FULL_SCHEMA = __webpack_require__(803);
 module.exports.load                = loader.load;
